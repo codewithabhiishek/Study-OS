@@ -1,0 +1,523 @@
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
+import { base44 } from '@/api/base44Client';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { Play, Pause, RotateCcw, Maximize2, Minimize2, Bell, BellOff } from 'lucide-react';
+
+const PRESETS = [
+  { label: '25/5', work: 25, rest: 5 },
+  { label: '50/10', work: 50, rest: 10 },
+];
+
+// Play a short beep using the Web Audio API — avoids shipping an audio file.
+function playAlarm() {
+  try {
+    const AC = window.AudioContext || window.webkitAudioContext;
+    if (!AC) return;
+    const ctx = new AC();
+    const beep = (freq, start, dur) => {
+      const o = ctx.createOscillator();
+      const g = ctx.createGain();
+      o.type = 'sine';
+      o.frequency.value = freq;
+      o.connect(g);
+      g.connect(ctx.destination);
+      g.gain.setValueAtTime(0.0001, ctx.currentTime + start);
+      g.gain.exponentialRampToValueAtTime(0.3, ctx.currentTime + start + 0.02);
+      g.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + start + dur);
+      o.start(ctx.currentTime + start);
+      o.stop(ctx.currentTime + start + dur + 0.02);
+    };
+    beep(880, 0, 0.18);
+    beep(1175, 0.22, 0.18);
+    beep(1568, 0.44, 0.32);
+    setTimeout(() => ctx.close().catch(() => {}), 1200);
+  } catch {
+    // ignore
+  }
+}
+
+function notify(title, body) {
+  try {
+    if (typeof Notification === 'undefined') return;
+    if (Notification.permission === 'granted') {
+      // eslint-disable-next-line no-new
+      new Notification(title, { body });
+    }
+  } catch {
+    // ignore
+  }
+}
+
+const SETTINGS_KEY = 'studyos.focus.settings.v1';
+
+function loadSettings() {
+  try {
+    const raw = localStorage.getItem(SETTINGS_KEY);
+    if (!raw) return null;
+    return JSON.parse(raw);
+  } catch {
+    return null;
+  }
+}
+
+export default function Focus() {
+  const initial = loadSettings();
+  const [preset, setPreset] = useState(PRESETS[0]);
+  const [customWork, setCustomWork] = useState(30);
+  const [isCustom, setIsCustom] = useState(false);
+  const [seconds, setSeconds] = useState(PRESETS[0].work * 60);
+  const [running, setRunning] = useState(false);
+  const [selectedProject, setSelectedProject] = useState(null);
+  const [phase, setPhase] = useState('work'); // 'work' | 'break'
+  const [pomodoroEnabled, setPomodoroEnabled] = useState(initial?.pomodoroEnabled ?? false);
+  const [soundEnabled, setSoundEnabled] = useState(initial?.soundEnabled ?? true);
+  const [notificationsEnabled, setNotificationsEnabled] = useState(initial?.notificationsEnabled ?? false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const intervalRef = useRef(null);
+  const containerRef = useRef(null);
+  const queryClient = useQueryClient();
+
+  const workMinutes = isCustom ? customWork : preset.work;
+  const breakMinutes = isCustom ? Math.max(1, Math.round(customWork / 5)) : preset.rest;
+  const phaseMinutes = phase === 'work' ? workMinutes : breakMinutes;
+
+  // Persist user settings
+  useEffect(() => {
+    try {
+      localStorage.setItem(
+        SETTINGS_KEY,
+        JSON.stringify({ pomodoroEnabled, soundEnabled, notificationsEnabled })
+      );
+    } catch {
+      // ignore
+    }
+  }, [pomodoroEnabled, soundEnabled, notificationsEnabled]);
+
+  const { data: projects = [] } = useQuery({
+    queryKey: ['projects'],
+    queryFn: () => base44.entities.Project.list(),
+  });
+
+  const today = new Date().toISOString().split('T')[0];
+  const { data: todaySessions = [] } = useQuery({
+    queryKey: ['focus_sessions', today],
+    queryFn: () => base44.entities.FocusSession.filter({ session_date: today }),
+  });
+
+  const stats = useMemo(() => {
+    const count = todaySessions.length;
+    const minutes = todaySessions.reduce((sum, s) => sum + (s.duration_minutes || 0), 0);
+    return { count, minutes };
+  }, [todaySessions]);
+
+  const logMutation = useMutation({
+    mutationFn: (data) => base44.entities.FocusSession.create(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['focus_sessions', today] });
+    },
+  });
+
+  const reset = useCallback(() => {
+    setRunning(false);
+    setPhase('work');
+    setSeconds(workMinutes * 60);
+    if (intervalRef.current) clearInterval(intervalRef.current);
+  }, [workMinutes]);
+
+  // When the phase or duration changes (e.g. preset change), reset the visible timer.
+  useEffect(() => {
+    setSeconds(phaseMinutes * 60);
+  }, [phaseMinutes]);
+
+  useEffect(() => {
+    if (!running) {
+      if (intervalRef.current) clearInterval(intervalRef.current);
+      return undefined;
+    }
+    intervalRef.current = setInterval(() => {
+      setSeconds((s) => {
+        if (s > 1) return s - 1;
+        // Tick reached zero — handle phase completion.
+        clearInterval(intervalRef.current);
+        if (soundEnabled) playAlarm();
+        if (phase === 'work') {
+          if (notificationsEnabled) {
+            notify('Focus session complete', 'Great job! Time for a break.');
+          }
+          logMutation.mutate({
+            project_id: selectedProject?.id || '',
+            project_name: selectedProject?.title || 'Unassigned',
+            duration_minutes: workMinutes,
+            session_date: new Date().toISOString().split('T')[0],
+            type: isCustom ? 'custom' : 'pomodoro',
+          });
+          if (pomodoroEnabled) {
+            setPhase('break');
+            setSeconds(breakMinutes * 60);
+            // keep running through the break
+            return breakMinutes * 60;
+          }
+          setRunning(false);
+          return 0;
+        }
+        // break finished
+        if (notificationsEnabled) notify('Break over', 'Back to focus.');
+        setPhase('work');
+        setRunning(false);
+        return workMinutes * 60;
+      });
+    }, 1000);
+    return () => {
+      if (intervalRef.current) clearInterval(intervalRef.current);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [running, phase]);
+
+  // Fullscreen change listener
+  useEffect(() => {
+    const onChange = () => setIsFullscreen(Boolean(document.fullscreenElement));
+    document.addEventListener('fullscreenchange', onChange);
+    return () => document.removeEventListener('fullscreenchange', onChange);
+  }, []);
+
+  const enterFullscreen = useCallback(async () => {
+    try {
+      const el = containerRef.current;
+      if (!el) return;
+      if (document.fullscreenElement) {
+        await document.exitFullscreen();
+      } else if (el.requestFullscreen) {
+        await el.requestFullscreen();
+      }
+    } catch {
+      // ignore
+    }
+  }, []);
+
+  const requestNotificationPermission = useCallback(async () => {
+    if (typeof Notification === 'undefined') return;
+    if (Notification.permission === 'granted') {
+      setNotificationsEnabled((v) => !v);
+      return;
+    }
+    if (Notification.permission !== 'denied') {
+      const res = await Notification.requestPermission();
+      setNotificationsEnabled(res === 'granted');
+    }
+  }, []);
+
+  // Keyboard shortcuts
+  useEffect(() => {
+    const handler = (e) => {
+      const tag = (e.target && e.target.tagName) || '';
+      if (tag === 'INPUT' || tag === 'TEXTAREA') return;
+      if (e.code === 'Space') {
+        e.preventDefault();
+        setRunning((r) => !r);
+      } else if (e.key === 'r' || e.key === 'R') {
+        reset();
+      } else if (e.key === 'f' || e.key === 'F') {
+        enterFullscreen();
+      }
+    };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, [reset, enterFullscreen]);
+
+  const mins = Math.floor(seconds / 60);
+  const secs = seconds % 60;
+  const progress = 1 - seconds / (phaseMinutes * 60);
+  const circumference = 2 * Math.PI * 45;
+
+  const accent = phase === 'break' ? '#FF006E' : '#00FF87';
+
+  return (
+    <div
+      ref={containerRef}
+      className={
+        isFullscreen
+          ? 'flex flex-col items-center justify-center min-h-screen bg-black px-6'
+          : 'flex flex-col items-center min-h-[70vh] pt-4'
+      }
+    >
+      {!isFullscreen && (
+        <h1 className="text-4xl font-black tracking-tighter mb-8 self-start">
+          <span style={{ color: '#00FF87', textShadow: '0 0 20px #00FF87' }}>FOCUS</span>
+          <span style={{ color: '#fff' }}>.</span>
+        </h1>
+      )}
+
+      {/* Project selector */}
+      {!isFullscreen && (
+        <div className="flex flex-wrap gap-2 mb-10 self-start">
+          {projects.map((p) => (
+            <button
+              key={p.id}
+              onClick={() => setSelectedProject(selectedProject?.id === p.id ? null : p)}
+              className="px-3 py-1.5 text-[11px] font-mono font-bold tracking-wider transition-all"
+              style={{
+                border: selectedProject?.id === p.id ? '1px solid #FF006E' : '1px solid #222',
+                color: selectedProject?.id === p.id ? '#000' : '#555',
+                background: selectedProject?.id === p.id ? '#FF006E' : 'transparent',
+                boxShadow: selectedProject?.id === p.id ? '3px 3px 0 #00FF87' : 'none',
+              }}
+            >
+              {p.emoji} {p.title.toUpperCase()}
+            </button>
+          ))}
+        </div>
+      )}
+
+      {isFullscreen && selectedProject && (
+        <div className="mb-6 font-mono text-xs tracking-widest" style={{ color: '#555' }}>
+          {selectedProject.emoji} {selectedProject.title.toUpperCase()}
+        </div>
+      )}
+
+      {/* Phase label */}
+      <div className="mb-3 font-mono text-[10px] tracking-[0.3em]" style={{ color: accent }}>
+        {phase === 'work' ? 'FOCUS' : 'BREAK'}
+      </div>
+
+      {/* Timer ring */}
+      <div
+        className="relative mb-8"
+        style={{ width: isFullscreen ? 360 : 220, height: isFullscreen ? 360 : 220 }}
+      >
+        <div
+          className="absolute inset-0 rounded-full"
+          style={{
+            boxShadow: running ? `0 0 40px ${accent}55, 0 0 80px ${accent}33` : 'none',
+            transition: 'box-shadow 0.5s ease',
+            borderRadius: '50%',
+          }}
+        />
+        <svg className="w-full h-full -rotate-90" viewBox="0 0 100 100">
+          <circle cx="50" cy="50" r="45" fill="none" stroke="#111" strokeWidth="2" />
+          <circle
+            cx="50"
+            cy="50"
+            r="45"
+            fill="none"
+            stroke="#FF006E"
+            strokeWidth="2"
+            strokeLinecap="square"
+            strokeDasharray={`${progress * circumference} ${circumference}`}
+            style={{ filter: 'drop-shadow(0 0 4px #FF006E)', transition: 'stroke-dasharray 1s linear' }}
+          />
+          {[...Array(12)].map((_, i) => {
+            const angle = (i / 12) * 2 * Math.PI - Math.PI / 2;
+            const x1 = 50 + 42 * Math.cos(angle);
+            const y1 = 50 + 42 * Math.sin(angle);
+            const x2 = 50 + 39 * Math.cos(angle);
+            const y2 = 50 + 39 * Math.sin(angle);
+            return (
+              <line
+                key={i}
+                x1={x1}
+                y1={y1}
+                x2={x2}
+                y2={y2}
+                stroke="#00FF87"
+                strokeWidth="1"
+                opacity="0.4"
+              />
+            );
+          })}
+        </svg>
+        <div className="absolute inset-0 flex flex-col items-center justify-center">
+          <span
+            className="font-mono font-bold tabular-nums"
+            style={{
+              fontSize: isFullscreen ? '5.5rem' : '3rem',
+              lineHeight: 1,
+              color: running ? accent : '#fff',
+              textShadow: running ? `0 0 20px ${accent}, 0 0 40px ${accent}` : 'none',
+              transition: 'all 0.3s',
+            }}
+          >
+            {String(mins).padStart(2, '0')}:{String(secs).padStart(2, '0')}
+          </span>
+          <span
+            className="text-[10px] font-mono tracking-widest mt-1"
+            style={{ color: '#333' }}
+          >
+            {running ? 'RUNNING' : 'PAUSED'}
+          </span>
+        </div>
+      </div>
+
+      {/* Controls */}
+      <div className="flex items-center gap-4 mb-10">
+        <button
+          onClick={reset}
+          aria-label="Reset timer"
+          className="w-10 h-10 flex items-center justify-center border border-[#333] transition-all hover:border-[#00FF87] hover:text-[#00FF87]"
+          style={{ color: '#444' }}
+        >
+          <RotateCcw className="w-4 h-4" />
+        </button>
+        <button
+          onClick={() => setRunning(!running)}
+          aria-label={running ? 'Pause' : 'Start'}
+          className="w-16 h-16 flex items-center justify-center font-bold transition-all"
+          style={
+            running
+              ? {
+                  background: 'transparent',
+                  border: '2px solid #FF006E',
+                  color: '#FF006E',
+                  boxShadow: '0 0 20px rgba(255,0,110,0.4)',
+                }
+              : {
+                  background: '#00FF87',
+                  border: '2px solid #00FF87',
+                  color: '#000',
+                  boxShadow: '4px 4px 0 #FF006E',
+                }
+          }
+        >
+          {running ? <Pause className="w-6 h-6" /> : <Play className="w-6 h-6 ml-0.5" />}
+        </button>
+        <button
+          onClick={enterFullscreen}
+          aria-label={isFullscreen ? 'Exit fullscreen' : 'Enter fullscreen'}
+          className="w-10 h-10 flex items-center justify-center border border-[#333] transition-all hover:border-[#00FF87] hover:text-[#00FF87]"
+          style={{ color: '#444' }}
+        >
+          {isFullscreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
+        </button>
+      </div>
+
+      {/* Presets */}
+      {!isFullscreen && (
+        <>
+          <div className="flex gap-2 mb-4">
+            {PRESETS.map((p) => (
+              <button
+                key={p.label}
+                onClick={() => {
+                  setPreset(p);
+                  setIsCustom(false);
+                }}
+                className="px-4 py-2 text-[11px] font-mono font-bold tracking-widest transition-all"
+                style={
+                  !isCustom && preset.label === p.label
+                    ? {
+                        background: '#00FF87',
+                        color: '#000',
+                        border: '1px solid #00FF87',
+                        boxShadow: '3px 3px 0 #FF006E',
+                      }
+                    : { background: 'transparent', color: '#444', border: '1px solid #222' }
+                }
+              >
+                {p.label}
+              </button>
+            ))}
+            <button
+              onClick={() => setIsCustom(true)}
+              className="px-4 py-2 text-[11px] font-mono font-bold tracking-widest transition-all"
+              style={
+                isCustom
+                  ? {
+                      background: '#FF006E',
+                      color: '#000',
+                      border: '1px solid #FF006E',
+                      boxShadow: '3px 3px 0 #00FF87',
+                    }
+                  : { background: 'transparent', color: '#444', border: '1px solid #222' }
+              }
+            >
+              CUSTOM
+            </button>
+          </div>
+
+          {isCustom && (
+            <div className="flex items-center gap-3 mb-6">
+              <input
+                type="number"
+                value={customWork}
+                onChange={(e) => setCustomWork(Math.max(1, parseInt(e.target.value, 10) || 1))}
+                className="w-16 text-center text-sm font-mono bg-black py-2 outline-none"
+                style={{ border: '1px solid #00FF87', color: '#00FF87', caretColor: '#00FF87' }}
+                min="1"
+              />
+              <span className="text-[11px] font-mono" style={{ color: '#444' }}>
+                MIN
+              </span>
+            </div>
+          )}
+
+          {/* Toggles */}
+          <div className="flex flex-wrap items-center justify-center gap-2 mb-6">
+            <button
+              onClick={() => setPomodoroEnabled((v) => !v)}
+              className="px-3 py-2 text-[10px] font-mono font-bold tracking-widest transition-all"
+              style={
+                pomodoroEnabled
+                  ? { background: '#00FF87', color: '#000', border: '1px solid #00FF87' }
+                  : { background: 'transparent', color: '#444', border: '1px solid #222' }
+              }
+            >
+              POMODORO
+            </button>
+            <button
+              onClick={() => setSoundEnabled((v) => !v)}
+              className="px-3 py-2 text-[10px] font-mono font-bold tracking-widest transition-all flex items-center gap-1.5"
+              style={
+                soundEnabled
+                  ? { background: '#00FF87', color: '#000', border: '1px solid #00FF87' }
+                  : { background: 'transparent', color: '#444', border: '1px solid #222' }
+              }
+            >
+              {soundEnabled ? <Bell className="w-3 h-3" /> : <BellOff className="w-3 h-3" />}
+              SOUND
+            </button>
+            <button
+              onClick={requestNotificationPermission}
+              className="px-3 py-2 text-[10px] font-mono font-bold tracking-widest transition-all"
+              style={
+                notificationsEnabled
+                  ? { background: '#00FF87', color: '#000', border: '1px solid #00FF87' }
+                  : { background: 'transparent', color: '#444', border: '1px solid #222' }
+              }
+            >
+              NOTIFY
+            </button>
+          </div>
+
+          {/* Today's stats */}
+          <div className="flex gap-8 font-mono text-[10px] tracking-widest mb-4" style={{ color: '#555' }}>
+            <div>
+              SESSIONS TODAY{' '}
+              <span style={{ color: '#00FF87' }}>{stats.count}</span>
+            </div>
+            <div>
+              MINUTES{' '}
+              <span style={{ color: '#00FF87' }}>{stats.minutes}</span>
+            </div>
+          </div>
+
+          <div className="font-mono text-[9px] tracking-widest text-center" style={{ color: '#2a2a2a' }}>
+            SPACE PAUSE · R RESET · F FULLSCREEN · ESC EXIT
+          </div>
+        </>
+      )}
+
+      {seconds === 0 && !running && phase === 'work' && (
+        <div
+          className="mt-8 px-6 py-3 font-mono font-bold text-sm tracking-widest"
+          style={{
+            border: '1px solid #00FF87',
+            color: '#00FF87',
+            boxShadow: '4px 4px 0 #FF006E',
+            background: 'rgba(0,255,135,0.05)',
+          }}
+        >
+          ✓ SESSION LOGGED
+        </div>
+      )}
+    </div>
+  );
+}

@@ -1,0 +1,184 @@
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 0%;
+    --foreground: 0 0% 96%;
+    --card: 0 0% 4%;
+    --card-foreground: 0 0% 96%;
+    --popover: 0 0% 4%;
+    --popover-foreground: 0 0% 96%;
+    --primary: 154 100% 50%;
+    --primary-foreground: 0 0% 0%;
+    --secondary: 328 100% 50%;
+    --secondary-foreground: 0 0% 0%;
+    --muted: 0 0% 8%;
+    --muted-foreground: 0 0% 50%;
+    --accent: 0 0% 8%;
+    --accent-foreground: 0 0% 96%;
+    --destructive: 328 100% 50%;
+    --destructive-foreground: 0 0% 0%;
+    --border: 154 100% 25%;
+    --input: 0 0% 8%;
+    --ring: 154 100% 50%;
+    --radius: 0rem;
+    --font-heading: 'Space Grotesk', ui-sans-serif, system-ui, sans-serif;
+    --font-body: 'Space Grotesk', ui-sans-serif, system-ui, sans-serif;
+    --font-display: 'Space Mono', ui-monospace, monospace;
+    --font-mono: 'Space Mono', ui-monospace, monospace;
+    --neon-green: #00FF87;
+    --neon-magenta: #FF006E;
+    --sidebar-background: 0 0% 0%;
+    --sidebar-foreground: 0 0% 96%;
+    --sidebar-primary: 154 100% 50%;
+    --sidebar-primary-foreground: 0 0% 0%;
+    --sidebar-accent: 0 0% 8%;
+    --sidebar-accent-foreground: 154 100% 50%;
+    --sidebar-border: 154 100% 15%;
+    --sidebar-ring: 154 100% 50%;
+    --chart-1: 154 100% 50%;
+    --chart-2: 328 100% 50%;
+    --chart-3: 60 100% 50%;
+    --chart-4: 200 100% 50%;
+    --chart-5: 280 100% 60%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-black text-foreground font-body antialiased;
+    background-color: #000000;
+  }
+}
+
+/* Neon glow utilities */
+.neon-green {
+  color: #00FF87;
+  text-shadow: 0 0 10px #00FF87, 0 0 20px #00FF87, 0 0 40px #00FF87;
+}
+
+.neon-magenta {
+  color: #FF006E;
+  text-shadow: 0 0 10px #FF006E, 0 0 20px #FF006E, 0 0 40px #FF006E;
+}
+
+.neon-border-green {
+  border-color: #00FF87;
+  box-shadow: 0 0 8px #00FF87, inset 0 0 8px rgba(0,255,135,0.05);
+}
+
+.neon-border-magenta {
+  border-color: #FF006E;
+  box-shadow: 0 0 8px #FF006E, inset 0 0 8px rgba(255,0,110,0.05);
+}
+
+/* 3D hard shadow cards */
+.card-3d {
+  box-shadow: 4px 4px 0px #00FF87;
+  border: 1px solid #00FF87;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.card-3d:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: 6px 6px 0px #00FF87;
+}
+
+.card-3d-magenta {
+  box-shadow: 4px 4px 0px #FF006E;
+  border: 1px solid #FF006E;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.card-3d-magenta:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: 6px 6px 0px #FF006E;
+}
+
+/* Scanline overlay */
+.scanlines::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    to bottom,
+    transparent 0px,
+    transparent 2px,
+    rgba(0,0,0,0.15) 2px,
+    rgba(0,0,0,0.15) 4px
+  );
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Glitch hover */
+.glitch:hover {
+  animation: glitch 0.3s steps(2) forwards;
+}
+@keyframes glitch {
+  0%   { text-shadow: 2px 0 #FF006E, -2px 0 #00FF87; }
+  25%  { text-shadow: -2px 0 #FF006E, 2px 0 #00FF87; clip-path: inset(20% 0 60% 0); }
+  50%  { text-shadow: 2px 0 #FF006E, -2px 0 #00FF87; clip-path: inset(80% 0 0 0); }
+  75%  { text-shadow: -2px 0 #FF006E, 2px 0 #00FF87; clip-path: inset(0 0 20% 0); }
+  100% { text-shadow: none; clip-path: none; }
+}
+
+/* Electric pulse animation */
+@keyframes electric-pulse {
+  0%, 100% { box-shadow: 0 0 5px #00FF87, 0 0 10px #00FF87; }
+  50% { box-shadow: 0 0 15px #00FF87, 0 0 30px #00FF87, 0 0 60px #00FF87; }
+}
+
+.pulse-green {
+  animation: electric-pulse 2s ease-in-out infinite;
+}
+
+@keyframes electric-pulse-magenta {
+  0%, 100% { box-shadow: 0 0 5px #FF006E, 0 0 10px #FF006E; }
+  50% { box-shadow: 0 0 15px #FF006E, 0 0 30px #FF006E, 0 0 60px #FF006E; }
+}
+
+.pulse-magenta {
+  animation: electric-pulse-magenta 2s ease-in-out infinite;
+}
+
+/* Ticker/blink cursor */
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+.blink { animation: blink 1s step-end infinite; }
+
+/* Neon button */
+.btn-neon-magenta {
+  background: #FF006E;
+  color: #000;
+  font-weight: 700;
+  border: 1px solid #FF006E;
+  box-shadow: 4px 4px 0px #00FF87;
+  transition: all 0.15s ease;
+}
+.btn-neon-magenta:hover {
+  background: #FF006E;
+  transform: translate(-2px, -2px);
+  box-shadow: 6px 6px 0px #00FF87;
+}
+
+.btn-neon-green {
+  background: #00FF87;
+  color: #000;
+  font-weight: 700;
+  border: 1px solid #00FF87;
+  box-shadow: 4px 4px 0px #FF006E;
+  transition: all 0.15s ease;
+}
+.btn-neon-green:hover {
+  background: #00FF87;
+  transform: translate(-2px, -2px);
+  box-shadow: 6px 6px 0px #FF006E;
+}
