@@ -40,6 +40,11 @@ export default function ProjectCard({ project }) {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['projects'] }),
   });
 
+  const deleteProjectMutation = useMutation({
+    mutationFn: () => base44.entities.Project.delete(project.id),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['projects'] }),
+  });
+
   const deleteTaskMutation = useMutation({
     mutationFn: (id) => base44.entities.Task.delete(id),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['project-tasks', project.id] }),
@@ -77,11 +82,16 @@ export default function ProjectCard({ project }) {
     ? Math.ceil((new Date(project.deadline) - new Date()) / (1000 * 60 * 60 * 24))
     : null;
 
+  const handleDeleteProject = (e) => {
+    e.stopPropagation();
+    deleteProjectMutation.mutate();
+  };
+
   return (
     <div className="transition-all" style={{ border: '1px solid #00FF87', boxShadow: expanded ? '4px 4px 0 #FF006E' : '4px 4px 0 #00FF87' }}>
       <button
         onClick={() => setExpanded(!expanded)}
-        className="flex items-center gap-3 w-full px-4 py-3.5 text-left transition-all hover:bg-[rgba(0,255,135,0.05)]"
+        className="flex items-center gap-3 w-full px-4 py-3.5 text-left transition-all hover:bg-[rgba(0,255,135,0.05)] group"
       >
         <span className="text-[10px] font-mono" style={{ color: '#00FF87' }}>
           {expanded ? '▼' : '▶'}
@@ -94,6 +104,15 @@ export default function ProjectCard({ project }) {
           style={{ color: '#fff' }}
         />
         <div className="flex items-center gap-3">
+          <button
+            onClick={handleDeleteProject}
+            className="opacity-0 group-hover:opacity-40 hover:!opacity-100 transition-opacity mr-1"
+            style={{ color: '#FF006E' }}
+            title="Delete Project"
+          >
+            <Trash2 className="w-3.5 h-3.5" />
+          </button>
+          
           {daysLeft !== null && (
             <span className="text-[11px] font-mono font-bold tabular-nums"
               style={{ color: daysLeft <= 60 ? '#FF006E' : '#444', textShadow: daysLeft <= 60 ? '0 0 6px #FF006E' : 'none' }}>
