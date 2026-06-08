@@ -32,7 +32,10 @@ export default function UpcomingDeadlines() {
   const queryClient = useQueryClient();
   const { data: deadlines = [] } = useQuery({
     queryKey: ['deadlines'],
-    queryFn: () => base44.entities.Deadline.list('date', 10),
+    queryFn: async () => {
+      const all = await base44.entities.Deadline.list('date', 10);
+      return all.filter(d => d.category !== 'mission');
+    },
   });
 
   const updateMutation = useMutation({

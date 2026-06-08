@@ -21,6 +21,16 @@ export default function Review() {
   });
 
   const now = new Date();
+  const todayStr = now.toISOString().split('T')[0];
+  const todaySessions = sessions.filter(s => s.session_date === todayStr);
+  const totalTodayMinutes = todaySessions.reduce((sum, s) => sum + (s.duration_minutes || 0), 0);
+
+  const todayHoursByProject = {};
+  todaySessions.forEach(s => {
+    const name = s.project_name || 'Other';
+    todayHoursByProject[name] = (todayHoursByProject[name] || 0) + (s.duration_minutes || 0);
+  });
+
   const weekAgo = new Date(now); weekAgo.setDate(weekAgo.getDate() - 7);
   const weekSessions = sessions.filter(s => new Date(s.session_date) >= weekAgo);
   const totalWeekMinutes = weekSessions.reduce((sum, s) => sum + (s.duration_minutes || 0), 0);
@@ -43,6 +53,7 @@ export default function Review() {
   });
 
   const maxHours = Math.max(...Object.values(hoursByProject), 1);
+  const maxTodayHours = Math.max(...Object.values(todayHoursByProject), 1);
 
   return (
     <div>
@@ -51,6 +62,33 @@ export default function Review() {
         <span style={{ color: '#FF006E', textShadow: '0 0 20px #FF006E' }}>VIEW</span>
         <span style={{ color: '#fff' }}>.</span>
       </h1>
+
+      {/* Daily Hours */}
+      <section className="mb-8 p-4" style={{ border: '1px solid #00FF87', boxShadow: '4px 4px 0 #FF006E', background: 'rgba(0,255,135,0.03)' }}>
+        <div className="text-[10px] font-mono tracking-widest mb-3" style={{ color: '#00FF87', opacity: 0.7 }}>▶ DAILY FOCUS HOURS</div>
+        <div className="flex items-end gap-2 mb-4">
+          <span className="text-5xl font-mono font-bold tabular-nums" style={{ color: '#00FF87', textShadow: '0 0 20px rgba(0,255,135,0.5)' }}>
+            {(totalTodayMinutes / 60).toFixed(1)}
+          </span>
+          <span className="text-[11px] font-mono pb-2" style={{ color: '#444' }}>HRS TODAY</span>
+        </div>
+        <div className="space-y-2">
+          {Object.entries(todayHoursByProject).map(([name, mins]) => (
+            <div key={name}>
+              <div className="flex items-center justify-between mb-1">
+                <span className="text-xs font-mono" style={{ color: '#888' }}>{name.toUpperCase()}</span>
+                <span className="text-xs font-mono font-bold tabular-nums" style={{ color: '#00FF87' }}>{(mins / 60).toFixed(1)}H</span>
+              </div>
+              <div className="w-full h-1.5 bg-[#0a0a0a]">
+                <div className="h-full transition-all" style={{ width: `${(mins / maxTodayHours) * 100}%`, background: '#00FF87', boxShadow: '0 0 6px #00FF87' }} />
+              </div>
+            </div>
+          ))}
+          {Object.keys(todayHoursByProject).length === 0 && (
+            <div className="text-xs font-mono py-2" style={{ color: '#333' }}>// NO DATA TODAY</div>
+          )}
+        </div>
+      </section>
 
       {/* Weekly Hours */}
       <section className="mb-8 p-4" style={{ border: '1px solid #00FF87', boxShadow: '4px 4px 0 #FF006E', background: 'rgba(0,255,135,0.03)' }}>
@@ -87,7 +125,9 @@ export default function Review() {
             {consistency}
           </span>
           <span className="text-2xl font-mono font-bold pb-1" style={{ color: '#FF006E' }}>%</span>
-          <span className="text-[11px] font-mono pb-2" style={{ color: '#444' }}>ACTIVE DAYS</span>
+          <span className="text-[11px] font-mono pb-2 ml-2" style={{ color: '#888' }}>
+            ({sessionDates.size} OF 30 DAYS ACTIVE)
+          </span>
         </div>
       </section>
 

@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { CalendarDays, FolderOpen, GraduationCap, Timer, BarChart3, Calendar } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useQuery } from '@tanstack/react-query';
+import { base44 } from '@/api/base44Client';
 
 const navItems = [
   { path: '/', label: 'TODAY', icon: CalendarDays },
@@ -14,6 +16,11 @@ const navItems = [
 
 export default function Sidebar() {
   const location = useLocation();
+  const { data: missions = [] } = useQuery({
+    queryKey: ['active-mission'],
+    queryFn: () => base44.entities.Deadline.filter({ category: 'mission' }),
+  });
+  const activeMission = missions[0] || { title: 'GERMANY 2027' };
 
   return (
     <>
@@ -65,8 +72,8 @@ export default function Sidebar() {
         </nav>
 
         <div className="px-5 py-4 border-t border-[#00FF87]/30 relative z-10">
-          <div className="text-[10px] font-mono" style={{ color: '#FF006E' }}>
-            MISSION: DE 2027
+          <div className="text-[10px] font-mono uppercase" style={{ color: '#FF006E' }}>
+            MISSION: {activeMission.title}
           </div>
         </div>
       </aside>

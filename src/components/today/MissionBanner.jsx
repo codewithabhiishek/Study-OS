@@ -1,21 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { Pencil, Check, X } from 'lucide-react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { base44 } from '@/api/base44Client';
 
-const STORAGE_KEY = 'studyos_mission';
-
-function getDefaultMission() {
-  try {
-    const saved = localStorage.getItem(STORAGE_KEY);
-    if (saved) return JSON.parse(saved);
-  } catch {}
-  return { title: 'GERMANY 2027', date: '2027-06-01' };
-}
+const DEFAULT_MISSION = { title: 'GERMANY 2027', date: '2027-06-01' };
 
 function useLiveCountdown(targetDate) {
   const [timeLeft, setTimeLeft] = useState({});
 
   useEffect(() => {
     const calc = () => {
+      if (!targetDate) return;
       const diff = new Date(targetDate) - new Date();
       if (diff <= 0) return setTimeLeft({ days: 0, hours: 0, minutes: 0, seconds: 0 });
       setTimeLeft({
@@ -34,19 +29,61 @@ function useLiveCountdown(targetDate) {
 }
 
 export default function MissionBanner() {
-  const [mission, setMission] = useState(getDefaultMission);
+  const queryClient = useQueryClient();
   const [editing, setEditing] = useState(false);
-  const [draft, setDraft] = useState(mission);
-  const timeLeft = useLiveCountdown(mission.date);
+  const [draft, setDraft] = useState({ title: '', date: '' });
+
+  const { data: missions = [], isLoading } = useQuery({
+    queryKey: ['active-mission'],
+    queryFn: () => base44.entities.Deadline.filter({ category: 'mission' }),
+  });
+
+  const activeMission = missions[0] || DEFAULT_MISSION;
+  const timeLeft = useLiveCountdown(activeMission.date);
+
+  const saveMutation = useMutation({
+    mutationFn: async (newMission) => {
+      if (missions[0]?.id) {
+        return base44.entities.Deadline.update(missions[0].id, {
+          title: newMission.title,
+          date: newMission.date,
+        });
+      } else {
+        return base44.entities.Deadline.create({
+          title: newMission.title,
+          date: newMission.date,
+          category: 'mission',
+        });
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['active-mission'] });
+      setEditing(false);
+    },
+  });
+
+  const startEditing = () => {
+    setDraft({ title: activeMission.title, date: activeMission.date });
+    setEditing(true);
+  };
 
   const save = () => {
-    setMission(draft);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(draft));
+    saveMutation.mutate(draft);
+  };
+
+  const cancel = () => {
     setEditing(false);
   };
-  const cancel = () => { setDraft(mission); setEditing(false); };
 
   const pad = (n) => String(n ?? 0).padStart(2, '0');
+
+  if (isLoading) {
+    return (
+      <div className="mb-8 p-4 border border-[#FF006E]/30 font-mono text-xs text-center" style={{ color: '#FF006E' }}>
+        LOADING ACTIVE MISSION...
+      </div>
+    );
+  }
 
   return (
     <div className="mb-8 relative overflow-hidden p-4 border border-[#FF006E]"
@@ -56,15 +93,19 @@ export default function MissionBanner() {
           ▶ ACTIVE MISSION
         </div>
         {!editing ? (
-          <button onClick={() => { setDraft(mission); setEditing(true); }}
+          <button onClick={startEditing}
             className="p-1 transition-all hover:scale-110"
             style={{ color: '#FF006E' }}>
             <Pencil className="w-3 h-3" />
           </button>
         ) : (
           <div className="flex items-center gap-1">
-            <button onClick={save} className="p-1" style={{ color: '#00FF87' }}><Check className="w-3.5 h-3.5" /></button>
-            <button onClick={cancel} className="p-1" style={{ color: '#FF006E' }}><X className="w-3.5 h-3.5" /></button>
+            <button onClick={save} disabled={saveMutation.isPending} className="p-1" style={{ color: '#00FF87' }}>
+              <Check className="w-3.5 h-3.5" />
+            </button>
+            <button onClick={cancel} className="p-1" style={{ color: '#FF006E' }}>
+              <X className="w-3.5 h-3.5" />
+            </button>
           </div>
         )}
       </div>
@@ -90,7 +131,7 @@ export default function MissionBanner() {
       ) : (
         <div className="flex items-end justify-between flex-wrap gap-3">
           <div className="text-2xl font-black tracking-tight uppercase" style={{ color: '#00FF87', textShadow: '0 0 20px rgba(0,255,135,0.5)' }}>
-            {mission.title}
+            {activeMission.title}
           </div>
           <div className="flex items-end gap-3">
             {[

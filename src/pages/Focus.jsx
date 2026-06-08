@@ -3,95 +3,36 @@ import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Play, Pause, RotateCcw, Maximize2, Minimize2, Bell, BellOff } from 'lucide-react';
 
-const PRESETS = [
-  { label: '25/5', work: 25, rest: 5 },
-  { label: '50/10', work: 50, rest: 10 },
-];
-
-// Play a short beep using the Web Audio API — avoids shipping an audio file.
-function playAlarm() {
-  try {
-    const AC = window.AudioContext || window.webkitAudioContext;
-    if (!AC) return;
-    const ctx = new AC();
-    const beep = (freq, start, dur) => {
-      const o = ctx.createOscillator();
-      const g = ctx.createGain();
-      o.type = 'sine';
-      o.frequency.value = freq;
-      o.connect(g);
-      g.connect(ctx.destination);
-      g.gain.setValueAtTime(0.0001, ctx.currentTime + start);
-      g.gain.exponentialRampToValueAtTime(0.3, ctx.currentTime + start + 0.02);
-      g.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + start + dur);
-      o.start(ctx.currentTime + start);
-      o.stop(ctx.currentTime + start + dur + 0.02);
-    };
-    beep(880, 0, 0.18);
-    beep(1175, 0.22, 0.18);
-    beep(1568, 0.44, 0.32);
-    setTimeout(() => ctx.close().catch(() => {}), 1200);
-  } catch {
-    // ignore
-  }
-}
-
-function notify(title, body) {
-  try {
-    if (typeof Notification === 'undefined') return;
-    if (Notification.permission === 'granted') {
-      // eslint-disable-next-line no-new
-      new Notification(title, { body });
-    }
-  } catch {
-    // ignore
-  }
-}
-
-const SETTINGS_KEY = 'studyos.focus.settings.v1';
-
-function loadSettings() {
-  try {
-    const raw = localStorage.getItem(SETTINGS_KEY);
-    if (!raw) return null;
-    return JSON.parse(raw);
-  } catch {
-    return null;
-  }
-}
+import { useFocus, PRESETS } from '@/hooks/FocusContext';
 
 export default function Focus() {
-  const initial = loadSettings();
-  const [preset, setPreset] = useState(PRESETS[0]);
-  const [customWork, setCustomWork] = useState(30);
-  const [isCustom, setIsCustom] = useState(false);
-  const [seconds, setSeconds] = useState(PRESETS[0].work * 60);
-  const [running, setRunning] = useState(false);
-  const [selectedProject, setSelectedProject] = useState(null);
-  const [phase, setPhase] = useState('work'); // 'work' | 'break'
-  const [pomodoroEnabled, setPomodoroEnabled] = useState(initial?.pomodoroEnabled ?? false);
-  const [soundEnabled, setSoundEnabled] = useState(initial?.soundEnabled ?? true);
-  const [notificationsEnabled, setNotificationsEnabled] = useState(initial?.notificationsEnabled ?? false);
+  const {
+    preset,
+    setPreset,
+    customWork,
+    setCustomWork,
+    isCustom,
+    setIsCustom,
+    seconds,
+    running,
+    setRunning,
+    selectedProject,
+    setSelectedProject,
+    phase,
+    pomodoroEnabled,
+    setPomodoroEnabled,
+    soundEnabled,
+    setSoundEnabled,
+    notificationsEnabled,
+    setNotificationsEnabled,
+    reset,
+    workMinutes,
+    phaseMinutes,
+    logMutation,
+  } = useFocus();
+
   const [isFullscreen, setIsFullscreen] = useState(false);
-  const intervalRef = useRef(null);
   const containerRef = useRef(null);
-  const queryClient = useQueryClient();
-
-  const workMinutes = isCustom ? customWork : preset.work;
-  const breakMinutes = isCustom ? Math.max(1, Math.round(customWork / 5)) : preset.rest;
-  const phaseMinutes = phase === 'work' ? workMinutes : breakMinutes;
-
-  // Persist user settings
-  useEffect(() => {
-    try {
-      localStorage.setItem(
-        SETTINGS_KEY,
-        JSON.stringify({ pomodoroEnabled, soundEnabled, notificationsEnabled })
-      );
-    } catch {
-      // ignore
-    }
-  }, [pomodoroEnabled, soundEnabled, notificationsEnabled]);
 
   const { data: projects = [] } = useQuery({
     queryKey: ['projects'],
@@ -109,69 +50,6 @@ export default function Focus() {
     const minutes = todaySessions.reduce((sum, s) => sum + (s.duration_minutes || 0), 0);
     return { count, minutes };
   }, [todaySessions]);
-
-  const logMutation = useMutation({
-    mutationFn: (data) => base44.entities.FocusSession.create(data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['focus_sessions', today] });
-    },
-  });
-
-  const reset = useCallback(() => {
-    setRunning(false);
-    setPhase('work');
-    setSeconds(workMinutes * 60);
-    if (intervalRef.current) clearInterval(intervalRef.current);
-  }, [workMinutes]);
-
-  // When the phase or duration changes (e.g. preset change), reset the visible timer.
-  useEffect(() => {
-    setSeconds(phaseMinutes * 60);
-  }, [phaseMinutes]);
-
-  useEffect(() => {
-    if (!running) {
-      if (intervalRef.current) clearInterval(intervalRef.current);
-      return undefined;
-    }
-    intervalRef.current = setInterval(() => {
-      setSeconds((s) => {
-        if (s > 1) return s - 1;
-        // Tick reached zero — handle phase completion.
-        clearInterval(intervalRef.current);
-        if (soundEnabled) playAlarm();
-        if (phase === 'work') {
-          if (notificationsEnabled) {
-            notify('Focus session complete', 'Great job! Time for a break.');
-          }
-          logMutation.mutate({
-            project_id: selectedProject?.id || '',
-            project_name: selectedProject?.title || 'Unassigned',
-            duration_minutes: workMinutes,
-            session_date: new Date().toISOString().split('T')[0],
-            type: isCustom ? 'custom' : 'pomodoro',
-          });
-          if (pomodoroEnabled) {
-            setPhase('break');
-            setSeconds(breakMinutes * 60);
-            // keep running through the break
-            return breakMinutes * 60;
-          }
-          setRunning(false);
-          return 0;
-        }
-        // break finished
-        if (notificationsEnabled) notify('Break over', 'Back to focus.');
-        setPhase('work');
-        setRunning(false);
-        return workMinutes * 60;
-      });
-    }, 1000);
-    return () => {
-      if (intervalRef.current) clearInterval(intervalRef.current);
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [running, phase]);
 
   // Fullscreen change listener
   useEffect(() => {
@@ -204,7 +82,7 @@ export default function Focus() {
       const res = await Notification.requestPermission();
       setNotificationsEnabled(res === 'granted');
     }
-  }, []);
+  }, [setNotificationsEnabled]);
 
   // Keyboard shortcuts
   useEffect(() => {
@@ -222,7 +100,7 @@ export default function Focus() {
     };
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
-  }, [reset, enterFullscreen]);
+  }, [reset, enterFullscreen, setRunning]);
 
   const mins = Math.floor(seconds / 60);
   const secs = seconds % 60;

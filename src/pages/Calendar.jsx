@@ -73,7 +73,10 @@ export default function Calendar() {
 
   const { data: deadlines = [] } = useQuery({
     queryKey: ['deadlines'],
-    queryFn: () => base44.entities.Deadline.list('date', 50),
+    queryFn: async () => {
+      const all = await base44.entities.Deadline.list('date', 50);
+      return all.filter(d => d.category !== 'mission');
+    },
   });
 
   const { data: tasks = [] } = useQuery({

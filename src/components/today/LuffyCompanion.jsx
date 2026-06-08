@@ -8,7 +8,36 @@ import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/lib/AuthContext';
 
 const FALLBACK_MESSAGES = [
-  "THIS IS THE FALLBACK MESSAGE123"
+  "If you don't take risks, you can't create a future! Keep grinding!",
+  "No matter how hard or impossible it is, never lose sight of your goal!",
+  "Power isn't determined by your size, but the size of your heart and dreams! Let's study!",
+  "If you don't try, you'll never win! Push forward!",
+  "Don't start a fight you can't finish, but always finish your goals!",
+  "If I die trying to achieve my dream, then at least I tried! Don't hold back!",
+  "It's not about whether it's possible or not. I'm doing it because I want to!",
+  "I have my own dream, and I will make it happen no matter what! Keep moving!",
+  "When the world shoves you around, you just gotta stand up and shove back!",
+  "If you can't even protect your dream, then your dream is nothing but talk!",
+  "No matter how deep the night, it always turns to day eventually. Keep pushing!",
+  "You can't see what you still have if you keep focusing on what you've lost!",
+  "If you don't fight to the very end, you will never see the dawn!",
+  "I'll make my own path, even if it leads straight through a wall!",
+  "If you're too afraid to make mistakes, you'll never achieve anything great!",
+  "It is a righteous path to pursue what you believe in, no matter what others say!",
+  "Never underestimate the power of a determined mind! You can do this!",
+  "We have to live a life of no regrets. Get up and make today count!",
+  "There is something I must meet again. And until that day... not even Death itself can take my life away!",
+  "When do you think people die? When they are forgotten! Keep your dream alive!",
+  "Destiny... fate... dreams... these unstoppable ideas are held deep in the heart of man.",
+  "Fools who don't respect the past are likely to repeat it. Focus on your growth!",
+  "Being alone is more painful than getting hurt. I'm glad I have my nakama!",
+  "One day, I will find the greatest treasure in the world! Start with today's grind!",
+  "If you lose credibility by just admitting defeat, then you never had any in the first place. Stand tall!",
+  "Compared to the 'righteous' greed of the rulers, the world's criminals seem far more honorable.",
+  "I don't want to conquer anything. I just think the person with the most freedom on the ocean is the Pirate King!",
+  "A wound that would make an ordinary man unconscious... I won't lose to it! Stand up!",
+  "Inherited Will, The Destiny of Age, and The Dreams of People. As long as people pursue Freedom, these will never cease!",
+  "Stand up and walk! Keep moving forward. You've got two strong legs, so use them!"
 ];
 
 function getLocalFallback() {
@@ -40,7 +69,7 @@ Rules:
 Return only the message, no preamble, no quotes.`;
 
 async function generateFromGemini(apiKey) {
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${encodeURIComponent(
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${encodeURIComponent(
     apiKey,
   )}`;
   const res = await fetch(url, {
@@ -85,31 +114,60 @@ export default function LuffyCompanion() {
     const date = todayKey();
 
     async function load() {
+      // 1. Check database first if authenticated
       if (user?.id) {
         try {
-          const { data } = await supabase
+          const { data, error } = await supabase
             .from('luffy_motivations')
             .select('message')
             .eq('user_id', user.id)
             .eq('date', date)
             .maybeSingle();
+          if (error) console.error("Supabase load error:", error);
           if (!cancelled && data?.message) {
             setMessage(data.message);
             return;
           }
-        } catch {}
+        } catch (err) {
+          console.error("Supabase load exception:", err);
+        }
       }
 
+      // 2. Check localStorage as a secondary quick cache to prevent API spam
+      try {
+        const localSaved = localStorage.getItem(`luffy_msg_${date}`);
+        if (localSaved === "THIS IS THE FALLBACK MESSAGE123") {
+          localStorage.removeItem(`luffy_msg_${date}`);
+        } else if (localSaved && !cancelled) {
+          setMessage(localSaved);
+          return;
+        }
+      } catch (err) {
+        console.error("Local storage read error:", err);
+      }
+
+      // 3. Call API / Fallback
       const fresh = await generateMessage();
       if (cancelled) return;
       setMessage(fresh);
 
+      // 4. Save to localStorage
+      try {
+        localStorage.setItem(`luffy_msg_${date}`, fresh);
+      } catch (err) {
+        console.error("Local storage save error:", err);
+      }
+
+      // 5. Save to database if authenticated
       if (user?.id) {
         try {
-          await supabase
+          const { error } = await supabase
             .from('luffy_motivations')
             .insert({ user_id: user.id, date, message: fresh });
-        } catch {}
+          if (error) console.error("Supabase insert error:", error);
+        } catch (err) {
+          console.error("Supabase insert exception:", err);
+        }
       }
     }
 

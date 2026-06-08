@@ -17,12 +17,14 @@ import Universities from '@/pages/Universities';
 import Focus from '@/pages/Focus';
 import Review from '@/pages/Review';
 import Calendar from '@/pages/Calendar';
+import { FocusProvider } from '@/hooks/FocusContext';
 
 function App() {
   return (
     <AuthProvider>
       <QueryClientProvider client={queryClientInstance}>
-        <Router>
+        <FocusProvider>
+          <Router>
           <Routes>
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
@@ -41,6 +43,7 @@ function App() {
             <Route path="*" element={<PageNotFound />} />
           </Routes>
         </Router>
+        </FocusProvider>
         <Toaster />
       </QueryClientProvider>
     </AuthProvider>
