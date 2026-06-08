@@ -18,6 +18,7 @@ import Focus from '@/pages/Focus';
 import Review from '@/pages/Review';
 import Calendar from '@/pages/Calendar';
 import { FocusProvider } from '@/hooks/FocusContext';
+import { Analytics } from '@vercel/analytics/react';
 
 function App() {
   return (
@@ -45,6 +46,7 @@ function App() {
         </Router>
         </FocusProvider>
         <Toaster />
+        <Analytics />
       </QueryClientProvider>
     </AuthProvider>
   );
