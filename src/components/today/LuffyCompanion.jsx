@@ -124,7 +124,7 @@ export default function LuffyCompanion() {
             .eq('date', date)
             .maybeSingle();
           if (error) console.error("Supabase load error:", error);
-          if (!cancelled && data?.message) {
+          if (!cancelled && data?.message && data.message !== "THIS IS THE FALLBACK MESSAGE123") {
             setMessage(data.message);
             return;
           }
@@ -136,9 +136,7 @@ export default function LuffyCompanion() {
       // 2. Check localStorage as a secondary quick cache to prevent API spam
       try {
         const localSaved = localStorage.getItem(`luffy_msg_${date}`);
-        if (localSaved === "THIS IS THE FALLBACK MESSAGE123") {
-          localStorage.removeItem(`luffy_msg_${date}`);
-        } else if (localSaved && !cancelled) {
+        if (localSaved && localSaved !== "THIS IS THE FALLBACK MESSAGE123" && !cancelled) {
           setMessage(localSaved);
           return;
         }
