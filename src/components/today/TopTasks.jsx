@@ -77,7 +77,7 @@ export default function TopTasks() {
     <div className="mb-6">
       <div className="flex items-center justify-between mb-3">
         <div className="text-[11px] font-mono font-bold tracking-widest" style={{ color: '#00FF87' }}>
-          ▶ TODAY'S FOCUS
+          ▶ {"TODAY'S FOCUS"}
         </div>
         <button
           onClick={() => setAdding(!adding)}
@@ -146,7 +146,7 @@ export default function TopTasks() {
         )}
         {tasks.length === 0 && !adding && (
           <div className="px-3 py-4 text-[11px] font-mono" style={{ color: '#333', border: '1px solid #111' }}>
-            // NO TASKS LOADED
+            {"// NO TASKS LOADED"}
           </div>
         )}
       </div>

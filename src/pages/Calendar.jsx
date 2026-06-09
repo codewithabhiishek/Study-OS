@@ -249,7 +249,7 @@ export default function Calendar() {
         <div className="space-y-0">
           {upcomingDeadlines.length === 0 ? (
             <div className="px-3 py-6 text-center text-[11px] font-mono" style={{ color: '#333', border: '1px solid #111' }}>
-              // NO UPCOMING DEADLINES
+              {"// NO UPCOMING DEADLINES"}
             </div>
           ) : (
             upcomingDeadlines.map((d) => (
@@ -270,7 +270,7 @@ export default function Calendar() {
         {/* Past deadlines */}
         {deadlines.filter(d => new Date(d.date) < new Date()).length > 0 && (
           <div className="mt-4">
-            <div className="text-[10px] font-mono tracking-widest mb-2" style={{ color: '#333' }}>// ELAPSED</div>
+            <div className="text-[10px] font-mono tracking-widest mb-2" style={{ color: '#333' }}>{"// ELAPSED"}</div>
             {deadlines.filter(d => new Date(d.date) < new Date()).map(d => (
               <div key={d.id} className="flex items-center justify-between px-3 py-2 mb-1 group"
                 style={{ border: '1px solid #1a1a1a' }}>

@@ -1,6 +1,7 @@
 import React from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
+import { calculateStreak } from '@/utils/habitUtils';
 
 export default function Review() {
   const { data: sessions = [] } = useQuery({
@@ -85,7 +86,7 @@ export default function Review() {
             </div>
           ))}
           {Object.keys(todayHoursByProject).length === 0 && (
-            <div className="text-xs font-mono py-2" style={{ color: '#333' }}>// NO DATA TODAY</div>
+            <div className="text-xs font-mono py-2" style={{ color: '#333' }}>{"// NO DATA TODAY"}</div>
           )}
         </div>
       </section>
@@ -112,7 +113,7 @@ export default function Review() {
             </div>
           ))}
           {Object.keys(hoursByProject).length === 0 && (
-            <div className="text-xs font-mono py-2" style={{ color: '#333' }}>// NO DATA THIS WEEK</div>
+            <div className="text-xs font-mono py-2" style={{ color: '#333' }}>{"// NO DATA THIS WEEK"}</div>
           )}
         </div>
       </section>
@@ -135,14 +136,17 @@ export default function Review() {
       <section className="mb-8">
         <div className="text-[10px] font-mono tracking-widest mb-3" style={{ color: '#00FF87', opacity: 0.7 }}>▶ STREAKS</div>
         <div className="grid grid-cols-2 gap-2">
-          {habits.map(h => (
-            <div key={h.id} className="p-3" style={{ border: '1px solid #1a1a1a', background: '#030303' }}>
-              <div className="text-xs font-mono mb-1" style={{ color: '#555' }}>{h.title.toUpperCase()}</div>
-              <div className="text-2xl font-mono font-bold" style={{ color: '#00FF87', textShadow: '0 0 10px rgba(0,255,135,0.5)' }}>
-                {h.streak || 0}<span className="text-base">🔥</span>
+          {habits.map(h => {
+            const currentStreak = calculateStreak(h.completed_dates || []);
+            return (
+              <div key={h.id} className="p-3" style={{ border: '1px solid #1a1a1a', background: '#030303' }}>
+                <div className="text-xs font-mono mb-1" style={{ color: '#555' }}>{h.title.toUpperCase()}</div>
+                <div className="text-2xl font-mono font-bold" style={{ color: '#00FF87', textShadow: '0 0 10px rgba(0,255,135,0.5)' }}>
+                  {currentStreak}<span className="text-base">🔥</span>
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </section>
 

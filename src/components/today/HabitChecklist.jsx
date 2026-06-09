@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Check, Plus, Trash2 } from 'lucide-react';
+import { calculateStreak } from '@/utils/habitUtils';
 
 function InlineHabitEdit({ value, onSave }) {
   const [editing, setEditing] = useState(false);
@@ -48,7 +49,7 @@ export default function HabitChecklist() {
       const dates = habit.completed_dates || [];
       const done = dates.includes(today);
       const newDates = done ? dates.filter(d => d !== today) : [...dates, today];
-      const newStreak = done ? Math.max(0, (habit.streak || 0) - 1) : (habit.streak || 0) + 1;
+      const newStreak = calculateStreak(newDates);
       return base44.entities.Habit.update(habit.id, { completed_dates: newDates, streak: newStreak });
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['habits'] }),
@@ -86,6 +87,7 @@ export default function HabitChecklist() {
       <div className="grid grid-cols-2 gap-2">
         {habits.map((habit) => {
           const done = (habit.completed_dates || []).includes(today);
+          const currentStreak = calculateStreak(habit.completed_dates || []);
           return (
             <div
               key={habit.id}
@@ -112,7 +114,7 @@ export default function HabitChecklist() {
                 onSave={(title) => renameMutation.mutate({ id: habit.id, title })}
               />
               <span className="text-[10px] font-mono font-bold" style={{ color: done ? '#FF006E' : '#444' }}>
-                {(habit.streak || 0) > 0 ? `${habit.streak}🔥` : ''}
+                {currentStreak > 0 ? `${currentStreak}🔥` : ''}
               </span>
               <button
                 onClick={() => deleteMutation.mutate(habit.id)}

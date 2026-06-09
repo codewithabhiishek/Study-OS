@@ -9,12 +9,6 @@ module.exports = {
   			md: 'calc(var(--radius) - 2px)',
   			sm: 'calc(var(--radius) - 4px)'
   		},
-      fontFamily: {
-        heading: ['Space Grotesk', 'ui-sans-serif', 'system-ui', 'sans-serif'],
-        body: ['Space Grotesk', 'ui-sans-serif', 'system-ui', 'sans-serif'],
-        display: ['Space Mono', 'ui-monospace', 'monospace'],
-        mono: ['Space Mono', 'ui-monospace', 'monospace'],
-      },
   		colors: {
   			background: 'hsl(var(--background))',
   			foreground: 'hsl(var(--foreground))',
