@@ -20,7 +20,7 @@ export default function Sidebar() {
     queryKey: ['active-mission'],
     queryFn: () => base44.entities.Deadline.filter({ category: 'mission' }),
   });
-  const activeMission = missions[0] || { title: 'GERMANY 2027' };
+  const activeMission = missions[0] || { title: 'EUROPE 2027' };
 
   return (
     <>

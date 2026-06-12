@@ -61,7 +61,7 @@ Rules:
 - Maximum 2 sentences.
 - Sound energetic, optimistic and determined.
 - Focus on dreams, consistency, discipline, courage and persistence.
-- Mention Germany goals, study goals or personal growth when relevant.
+- Mention Europe goals, study goals or personal growth when relevant.
 - Do NOT use copyrighted anime dialogue.
 - Do NOT quote the anime.
 - Create original messages inspired by Luffy's personality.

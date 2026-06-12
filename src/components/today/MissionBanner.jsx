@@ -3,7 +3,7 @@ import { Pencil, Check, X } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 
-const DEFAULT_MISSION = { title: 'GERMANY 2027', date: '2027-06-01' };
+const DEFAULT_MISSION = { title: 'EUROPE 2027', date: '2027-06-01' };
 
 function useLiveCountdown(targetDate) {
   const [timeLeft, setTimeLeft] = useState({});
