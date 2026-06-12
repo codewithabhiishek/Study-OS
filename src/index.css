@@ -138,6 +138,19 @@
   animation: electric-pulse 2s ease-in-out infinite;
 }
 
+@keyframes complete-pulse-glow {
+  0%, 100% {
+    box-shadow: 0 0 40px #00FF87, 0 0 80px rgba(0, 255, 135, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 60px #00FF87, 0 0 120px rgba(0, 255, 135, 0.8);
+  }
+}
+
+.complete-glow {
+  animation: complete-pulse-glow 1.5s ease-in-out infinite;
+}
+
 @keyframes electric-pulse-magenta {
   0%, 100% { box-shadow: 0 0 5px #FF006E, 0 0 10px #FF006E; }
   50% { box-shadow: 0 0 15px #FF006E, 0 0 30px #FF006E, 0 0 60px #FF006E; }

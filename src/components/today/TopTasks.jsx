@@ -44,6 +44,11 @@ export default function TopTasks() {
     queryFn: () => base44.entities.Task.filter({ is_top_three: true }, 'order', 10),
   });
 
+  const { data: projects = [] } = useQuery({
+    queryKey: ['projects'],
+    queryFn: () => base44.entities.Project.list(),
+  });
+
   const toggleMutation = useMutation({
     mutationFn: ({ id, completed }) => base44.entities.Task.update(id, { completed: !completed }),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['top-tasks'] }),
@@ -88,49 +93,63 @@ export default function TopTasks() {
         </button>
       </div>
       <div className="space-y-2">
-        {tasks.map((task, i) => (
-          <div
-            key={task.id}
-            className="flex items-center gap-3 w-full px-3 py-3 text-left transition-all group relative overflow-hidden"
-            style={{
-              border: task.completed ? '1px solid rgba(0,255,135,0.3)' : '1px solid #00FF87',
-              boxShadow: task.completed ? 'none' : '3px 3px 0 rgba(255,0,110,0.5)',
-              background: task.completed ? 'rgba(0,255,135,0.05)' : 'black',
-            }}
-          >
-            <button
-              onClick={() => toggleMutation.mutate({ id: task.id, completed: task.completed })}
-              className="flex-shrink-0 w-5 h-5 border-2 flex items-center justify-center transition-all"
+        {tasks.map((task, i) => {
+          const project = projects.find(p => p.id === task.project_id);
+          return (
+            <div
+              key={task.id}
+              className="flex items-center gap-3 w-full px-3 py-3 text-left transition-all group relative overflow-hidden"
               style={{
-                borderColor: '#00FF87',
-                background: task.completed ? '#00FF87' : 'transparent',
-                boxShadow: task.completed ? '0 0 8px #00FF87' : '0 0 4px rgba(0,255,135,0.3)',
+                border: task.completed ? '1px solid rgba(0,255,135,0.3)' : '1px solid #00FF87',
+                boxShadow: task.completed ? 'none' : '3px 3px 0 rgba(255,0,110,0.5)',
+                background: task.completed ? 'rgba(0,255,135,0.05)' : 'black',
               }}
             >
-              {task.completed && <Check className="w-3 h-3 text-black" strokeWidth={3} />}
-            </button>
-            <InlineEdit
-              value={task.title}
-              onSave={(title) => renameMutation.mutate({ id: task.id, title })}
-              className={cn("text-sm font-medium font-mono", task.completed ? "line-through" : "")}
-              style={{ color: task.completed ? '#444' : '#fff' }}
-            />
-            {task.priority === 'high' && !task.completed && (
-              <span className="text-[10px] font-mono font-bold px-1.5 py-0.5"
-                style={{ color: '#FF006E', border: '1px solid #FF006E' }}>HOT</span>
-            )}
-            <button
-              onClick={() => deleteMutation.mutate(task.id)}
-              className="opacity-0 group-hover:opacity-40 hover:!opacity-100 transition-opacity p-0.5"
-              style={{ color: '#FF006E' }}
-            >
-              <Trash2 className="w-3 h-3" />
-            </button>
-            <span className="text-[10px] font-mono" style={{ color: '#00FF87', opacity: 0.4 }}>
-              {String(i + 1).padStart(2, '0')}
-            </span>
-          </div>
-        ))}
+              <button
+                onClick={() => toggleMutation.mutate({ id: task.id, completed: task.completed })}
+                className="flex-shrink-0 w-5 h-5 border-2 flex items-center justify-center transition-all"
+                style={{
+                  borderColor: '#00FF87',
+                  background: task.completed ? '#00FF87' : 'transparent',
+                  boxShadow: task.completed ? '0 0 8px #00FF87' : '0 0 4px rgba(0,255,135,0.3)',
+                }}
+              >
+                {task.completed && <Check className="w-3 h-3 text-black" strokeWidth={3} />}
+              </button>
+              <InlineEdit
+                value={task.title}
+                onSave={(title) => renameMutation.mutate({ id: task.id, title })}
+                className={cn("text-sm font-medium font-mono", task.completed ? "line-through" : "")}
+                style={{ color: task.completed ? '#444' : '#fff' }}
+              />
+              {project && (
+                <span className="text-[10px] font-mono font-bold px-1.5 py-0.5 whitespace-nowrap"
+                  style={{
+                    color: task.completed ? 'rgba(0,255,135,0.4)' : '#00FF87',
+                    border: task.completed ? '1px solid rgba(0,255,135,0.2)' : '1px solid rgba(0,255,135,0.5)',
+                    background: task.completed ? 'transparent' : 'rgba(0,255,135,0.05)',
+                    textShadow: task.completed ? 'none' : '0 0 4px rgba(0,255,135,0.3)',
+                  }}>
+                  {project.emoji || '📁'} {project.title.toUpperCase()}
+                </span>
+              )}
+              {task.priority === 'high' && !task.completed && (
+                <span className="text-[10px] font-mono font-bold px-1.5 py-0.5"
+                  style={{ color: '#FF006E', border: '1px solid #FF006E' }}>HOT</span>
+              )}
+              <button
+                onClick={() => deleteMutation.mutate(task.id)}
+                className="opacity-0 group-hover:opacity-40 hover:!opacity-100 transition-opacity p-0.5"
+                style={{ color: '#FF006E' }}
+              >
+                <Trash2 className="w-3 h-3" />
+              </button>
+              <span className="text-[10px] font-mono" style={{ color: '#00FF87', opacity: 0.4 }}>
+                {String(i + 1).padStart(2, '0')}
+              </span>
+            </div>
+          );
+        })}
         {adding && (
           <form onSubmit={handleAdd}>
             <input

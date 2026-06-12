@@ -49,6 +49,7 @@ function notify(title, body) {
 }
 
 const SETTINGS_KEY = 'studyos.focus.settings.v1';
+const TIMER_STATE_KEY = 'studyos.focus.timer.v1';
 
 function loadSettings() {
   try {
@@ -60,19 +61,54 @@ function loadSettings() {
   }
 }
 
+function loadTimerState() {
+  try {
+    const raw = localStorage.getItem(TIMER_STATE_KEY);
+    if (!raw) return null;
+    const data = JSON.parse(raw);
+    
+    // If it was running when tab closed, subtract elapsed time
+    if (data.running && data.targetEndTime) {
+      const remaining = Math.round((data.targetEndTime - Date.now()) / 1000);
+      if (remaining > 0) {
+        return { ...data, seconds: remaining };
+      } else {
+        return { ...data, seconds: 0, running: false, completedWhileAway: data.phase === 'work' };
+      }
+    }
+    return data;
+  } catch {
+    return null;
+  }
+}
+
 export function FocusProvider({ children }) {
-  const initial = loadSettings();
-  const [preset, setPreset] = useState(PRESETS[0]);
-  const [customWork, setCustomWork] = useState(30);
-  const [isCustom, setIsCustom] = useState(false);
-  const [seconds, setSeconds] = useState(PRESETS[0].work * 60);
-  const [running, setRunning] = useState(false);
-  const [selectedProject, setSelectedProject] = useState(null);
-  const [phase, setPhase] = useState('work'); // 'work' | 'break'
-  const [pomodoroEnabled, setPomodoroEnabled] = useState(initial?.pomodoroEnabled ?? false);
-  const [soundEnabled, setSoundEnabled] = useState(initial?.soundEnabled ?? true);
-  const [notificationsEnabled, setNotificationsEnabled] = useState(initial?.notificationsEnabled ?? false);
+  const initialSettings = loadSettings();
+  const initialTimer = loadTimerState();
+
+  const [preset, setPreset] = useState(() => {
+    if (initialTimer?.presetLabel) {
+      const match = PRESETS.find(p => p.label === initialTimer.presetLabel);
+      if (match) return match;
+    }
+    return PRESETS[0];
+  });
+  const [customWork, setCustomWork] = useState(initialTimer?.customWork ?? 30);
+  const [isCustom, setIsCustom] = useState(initialTimer?.isCustom ?? false);
+  const [seconds, setSeconds] = useState(() => {
+    if (initialTimer) return initialTimer.seconds;
+    return PRESETS[0].work * 60;
+  });
+  const [running, setRunning] = useState(initialTimer?.running ?? false);
+  const [selectedProject, setSelectedProject] = useState(initialTimer?.selectedProject ?? null);
+  const [phase, setPhase] = useState(initialTimer?.phase ?? 'work');
+  
+  const [pomodoroEnabled, setPomodoroEnabled] = useState(initialSettings?.pomodoroEnabled ?? false);
+  const [soundEnabled, setSoundEnabled] = useState(initialSettings?.soundEnabled ?? true);
+  const [notificationsEnabled, setNotificationsEnabled] = useState(initialSettings?.notificationsEnabled ?? false);
+  
   const intervalRef = useRef(null);
+  const isFirstMount = useRef(true);
   const queryClient = useQueryClient();
 
   const workMinutes = isCustom ? customWork : preset.work;
@@ -91,7 +127,31 @@ export function FocusProvider({ children }) {
     }
   }, [pomodoroEnabled, soundEnabled, notificationsEnabled]);
 
-  const today = new Date().toISOString().split('T')[0];
+  // Persist current timer state
+  useEffect(() => {
+    try {
+      const targetEndTime = running ? Date.now() + seconds * 1000 : null;
+      localStorage.setItem(TIMER_STATE_KEY, JSON.stringify({
+        seconds,
+        running,
+        phase,
+        targetEndTime,
+        isCustom,
+        customWork,
+        presetLabel: preset.label,
+        selectedProject,
+      }));
+    } catch {
+      // ignore
+    }
+  }, [seconds, running, phase, isCustom, customWork, preset, selectedProject]);
+
+  const getLocalDateStr = () => {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  };
+
+  const today = getLocalDateStr();
 
   const logMutation = useMutation({
     mutationFn: (data) => base44.entities.FocusSession.create(data),
@@ -110,7 +170,7 @@ export function FocusProvider({ children }) {
           project_id: selectedProject?.id || null,
           project_name: selectedProject?.title || 'Unassigned',
           duration_minutes: elapsedMinutes,
-          session_date: new Date().toISOString().split('T')[0],
+          session_date: getLocalDateStr(),
           type: isCustom ? 'custom' : 'pomodoro',
         });
       }
@@ -121,8 +181,40 @@ export function FocusProvider({ children }) {
     if (intervalRef.current) clearInterval(intervalRef.current);
   }, [workMinutes, phase, seconds, selectedProject, isCustom, logMutation]);
 
+  // Handle logging for focus sessions completed while tab was closed
+  useEffect(() => {
+    if (initialTimer?.completedWhileAway) {
+      const duration = initialTimer.isCustom
+        ? initialTimer.customWork
+        : (PRESETS.find((p) => p.label === initialTimer.presetLabel)?.work || 25);
+      logMutation.mutate({
+        project_id: initialTimer.selectedProject?.id || null,
+        project_name: initialTimer.selectedProject?.title || 'Unassigned',
+        duration_minutes: duration,
+        session_date: getLocalDateStr(),
+        type: initialTimer.isCustom ? 'custom' : 'pomodoro',
+      });
+      // Clear flag to avoid double-triggering
+      try {
+        localStorage.setItem(
+          TIMER_STATE_KEY,
+          JSON.stringify({
+            ...initialTimer,
+            completedWhileAway: false,
+          })
+        );
+      } catch {
+        // ignore
+      }
+    }
+  }, [logMutation]);
+
   // When the phase or duration changes (e.g. preset change), reset the visible timer.
   useEffect(() => {
+    if (isFirstMount.current) {
+      isFirstMount.current = false;
+      return;
+    }
     setSeconds(phaseMinutes * 60);
   }, [phaseMinutes]);
 
@@ -145,7 +237,7 @@ export function FocusProvider({ children }) {
             project_id: selectedProject?.id || null,
             project_name: selectedProject?.title || 'Unassigned',
             duration_minutes: workMinutes,
-            session_date: new Date().toISOString().split('T')[0],
+            session_date: getLocalDateStr(),
             type: isCustom ? 'custom' : 'pomodoro',
           });
           if (pomodoroEnabled) {

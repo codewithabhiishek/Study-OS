@@ -21,8 +21,18 @@ export default function Review() {
     queryFn: () => base44.entities.Task.list(),
   });
 
-  const now = new Date();
-  const todayStr = now.toISOString().split('T')[0];
+  // Local timezone safe parsing of YYYY-MM-DD strings to local midnight
+  const parseLocalDate = (dateStr) => {
+    if (!dateStr) return new Date(0);
+    const [year, month, day] = dateStr.split('-').map(Number);
+    return new Date(year, month - 1, day);
+  };
+
+  const todayMidnight = new Date();
+  todayMidnight.setHours(0, 0, 0, 0);
+
+  // Parse today string based on current local date
+  const todayStr = `${todayMidnight.getFullYear()}-${String(todayMidnight.getMonth() + 1).padStart(2, '0')}-${String(todayMidnight.getDate()).padStart(2, '0')}`;
   const todaySessions = sessions.filter(s => s.session_date === todayStr);
   const totalTodayMinutes = todaySessions.reduce((sum, s) => sum + (s.duration_minutes || 0), 0);
 
@@ -32,8 +42,9 @@ export default function Review() {
     todayHoursByProject[name] = (todayHoursByProject[name] || 0) + (s.duration_minutes || 0);
   });
 
-  const weekAgo = new Date(now); weekAgo.setDate(weekAgo.getDate() - 7);
-  const weekSessions = sessions.filter(s => new Date(s.session_date) >= weekAgo);
+  const weekAgo = new Date(todayMidnight);
+  weekAgo.setDate(weekAgo.getDate() - 7);
+  const weekSessions = sessions.filter(s => parseLocalDate(s.session_date) >= weekAgo);
   const totalWeekMinutes = weekSessions.reduce((sum, s) => sum + (s.duration_minutes || 0), 0);
 
   const hoursByProject = {};
@@ -42,8 +53,11 @@ export default function Review() {
     hoursByProject[name] = (hoursByProject[name] || 0) + (s.duration_minutes || 0);
   });
 
-  const thirtyDaysAgo = new Date(now); thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-  const sessionDates = new Set(sessions.filter(s => new Date(s.session_date) >= thirtyDaysAgo).map(s => s.session_date));
+  const thirtyDaysAgo = new Date(todayMidnight);
+  thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+  const sessionDates = new Set(
+    sessions.filter(s => parseLocalDate(s.session_date) >= thirtyDaysAgo).map(s => s.session_date)
+  );
   const consistency = Math.round((sessionDates.size / 30) * 100);
 
   const projectProgress = projects.map(p => {

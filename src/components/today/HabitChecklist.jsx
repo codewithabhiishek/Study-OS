@@ -35,7 +35,8 @@ function InlineHabitEdit({ value, onSave }) {
 
 export default function HabitChecklist() {
   const queryClient = useQueryClient();
-  const today = new Date().toISOString().split('T')[0];
+  const localNow = new Date();
+  const today = `${localNow.getFullYear()}-${String(localNow.getMonth() + 1).padStart(2, '0')}-${String(localNow.getDate()).padStart(2, '0')}`;
   const [adding, setAdding] = useState(false);
   const [newHabit, setNewHabit] = useState('');
 

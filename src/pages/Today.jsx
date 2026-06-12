@@ -4,7 +4,6 @@ import { Zap } from 'lucide-react';
 import MissionBanner from '@/components/today/MissionBanner';
 import TopTasks from '@/components/today/TopTasks';
 import HabitChecklist from '@/components/today/HabitChecklist';
-import UpcomingDeadlines from '@/components/today/UpcomingDeadlines';
 import LuffyCompanion from '@/components/today/LuffyCompanion';
 
 export default function Today() {
@@ -38,7 +37,6 @@ export default function Today() {
       <MissionBanner />
       <TopTasks />
       <HabitChecklist />
-      <UpcomingDeadlines />
 
       <Link
         to="/focus"

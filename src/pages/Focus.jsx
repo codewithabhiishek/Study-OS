@@ -39,7 +39,8 @@ export default function Focus() {
     queryFn: () => base44.entities.Project.list(),
   });
 
-  const today = new Date().toISOString().split('T')[0];
+  const localNow = new Date();
+  const today = `${localNow.getFullYear()}-${String(localNow.getMonth() + 1).padStart(2, '0')}-${String(localNow.getDate()).padStart(2, '0')}`;
   const { data: todaySessions = [] } = useQuery({
     queryKey: ['focus_sessions', today],
     queryFn: () => base44.entities.FocusSession.filter({ session_date: today }),
@@ -107,7 +108,8 @@ export default function Focus() {
   const progress = 1 - seconds / (phaseMinutes * 60);
   const circumference = 2 * Math.PI * 45;
 
-  const accent = phase === 'break' ? '#FF006E' : '#00FF87';
+  const isCompleted = seconds === 0 && phase === 'work';
+  const accent = isCompleted ? '#00FF87' : (phase === 'break' ? '#FF006E' : '#00FF87');
 
   return (
     <div
@@ -154,7 +156,7 @@ export default function Focus() {
 
       {/* Phase label */}
       <div className="mb-3 font-mono text-[10px] tracking-[0.3em]" style={{ color: accent }}>
-        {phase === 'work' ? 'FOCUS' : 'BREAK'}
+        {isCompleted ? 'COMPLETE' : phase === 'work' ? 'FOCUS' : 'BREAK'}
       </div>
 
       {/* Timer ring */}
@@ -163,9 +165,13 @@ export default function Focus() {
         style={{ width: isFullscreen ? 360 : 220, height: isFullscreen ? 360 : 220 }}
       >
         <div
-          className="absolute inset-0 rounded-full"
+          className={`absolute inset-0 rounded-full ${isCompleted ? 'complete-glow' : ''}`}
           style={{
-            boxShadow: running ? `0 0 40px ${accent}55, 0 0 80px ${accent}33` : 'none',
+            boxShadow: isCompleted
+              ? '0 0 40px #00FF87, 0 0 80px rgba(0, 255, 135, 0.4)'
+              : running
+                ? `0 0 40px ${accent}55, 0 0 80px ${accent}33`
+                : 'none',
             transition: 'box-shadow 0.5s ease',
             borderRadius: '50%',
           }}
@@ -177,11 +183,11 @@ export default function Focus() {
             cy="50"
             r="45"
             fill="none"
-            stroke="#FF006E"
+            stroke={accent}
             strokeWidth="2"
             strokeLinecap="square"
             strokeDasharray={`${progress * circumference} ${circumference}`}
-            style={{ filter: 'drop-shadow(0 0 4px #FF006E)', transition: 'stroke-dasharray 1s linear' }}
+            style={{ filter: `drop-shadow(0 0 4px ${accent})`, transition: 'stroke-dasharray 1s linear' }}
           />
           {[...Array(12)].map((_, i) => {
             const angle = (i / 12) * 2 * Math.PI - Math.PI / 2;
@@ -196,7 +202,7 @@ export default function Focus() {
                 y1={y1}
                 x2={x2}
                 y2={y2}
-                stroke="#00FF87"
+                stroke={accent}
                 strokeWidth="1"
                 opacity="0.4"
               />
@@ -209,8 +215,12 @@ export default function Focus() {
             style={{
               fontSize: isFullscreen ? '5.5rem' : '3rem',
               lineHeight: 1,
-              color: running ? accent : '#fff',
-              textShadow: running ? `0 0 20px ${accent}, 0 0 40px ${accent}` : 'none',
+              color: isCompleted ? '#00FF87' : running ? accent : '#fff',
+              textShadow: isCompleted 
+                ? '0 0 20px #00FF87, 0 0 40px #00FF87' 
+                : running 
+                  ? `0 0 20px ${accent}, 0 0 40px ${accent}` 
+                  : 'none',
               transition: 'all 0.3s',
             }}
           >
@@ -218,9 +228,9 @@ export default function Focus() {
           </span>
           <span
             className="text-[10px] font-mono tracking-widest mt-1"
-            style={{ color: '#333' }}
+            style={{ color: isCompleted ? '#00FF87' : '#333', textShadow: isCompleted ? '0 0 8px #00FF87' : 'none' }}
           >
-            {running ? 'RUNNING' : 'PAUSED'}
+            {isCompleted ? 'SUCCESS' : running ? 'RUNNING' : 'PAUSED'}
           </span>
         </div>
       </div>

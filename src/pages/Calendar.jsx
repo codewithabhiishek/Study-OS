@@ -25,6 +25,15 @@ function useCountdown(targetDate) {
   return t;
 }
 
+function toTitleCase(str) {
+  if (!str) return '';
+  return str
+    .toLowerCase()
+    .split(' ')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
+}
+
 function CountdownRow({ item }) {
   const t = useCountdown(item.date);
   const pad = n => String(n ?? 0).padStart(2, '0');
@@ -84,6 +93,11 @@ export default function Calendar() {
     queryFn: () => base44.entities.Task.list('due_date', 100),
   });
 
+  const { data: universities = [] } = useQuery({
+    queryKey: ['universities'],
+    queryFn: () => base44.entities.University.list(),
+  });
+
   const createMutation = useMutation({
     mutationFn: (data) => base44.entities.Deadline.create(data),
     onSuccess: () => {
@@ -101,7 +115,7 @@ export default function Calendar() {
   const days = eachDayOfInterval({ start: startOfMonth(currentMonth), end: endOfMonth(currentMonth) });
   const startPad = (startOfMonth(currentMonth).getDay() + 6) % 7; // Mon start
 
-  // Group deadlines/tasks by date
+  // Group deadlines/tasks/uni-deadlines by date
   const eventsByDate = {};
   deadlines.forEach(d => {
     const k = d.date;
@@ -114,7 +128,20 @@ export default function Calendar() {
     eventsByDate[k].push({ ...t, type: 'task' });
   });
 
-  const upcomingDeadlines = [...deadlines]
+  const realUniDeadlines = universities.filter(u => u.name !== '__GLOBAL_DOCUMENTS__' && u.deadline);
+  realUniDeadlines.forEach(u => {
+    const k = u.deadline;
+    if (!eventsByDate[k]) eventsByDate[k] = [];
+    eventsByDate[k].push({ id: u.id, title: `${toTitleCase(u.name)} DEADLINE`, date: u.deadline, type: 'uni-deadline' });
+  });
+
+  // Combine deadlines and uni-deadlines for countdown
+  const combinedDeadlines = [
+    ...deadlines.map(d => ({ ...d, type: 'deadline' })),
+    ...realUniDeadlines.map(u => ({ id: u.id, title: `${toTitleCase(u.name)} DEADLINE`, date: u.deadline, type: 'uni-deadline' }))
+  ];
+
+  const upcomingDeadlines = combinedDeadlines
     .filter(d => new Date(d.date) >= new Date())
     .sort((a, b) => new Date(a.date) - new Date(b.date));
 
@@ -127,12 +154,17 @@ export default function Calendar() {
             CALENDAR
           </h1>
           <div className="flex items-center gap-3">
+            <button onClick={() => setCurrentMonth(new Date())}
+              className="px-2.5 py-1 border border-[#00FF87] hover:bg-[#00FF87] hover:text-black transition-all font-mono text-[10px] font-bold tracking-widest"
+              style={{ color: '#00FF87' }}>
+              TODAY
+            </button>
             <button onClick={() => setCurrentMonth(subMonths(currentMonth, 1))}
               className="p-1.5 border border-[#00FF87] hover:bg-[#00FF87] hover:text-black transition-all"
               style={{ color: '#00FF87' }}>
               <ChevronLeft className="w-4 h-4" />
             </button>
-            <span className="font-mono font-bold text-sm tracking-widest" style={{ color: '#fff' }}>
+            <span className="font-mono font-bold text-sm tracking-widest min-w-[85px] text-center" style={{ color: '#fff' }}>
               {format(currentMonth, 'MMM yyyy').toUpperCase()}
             </span>
             <button onClick={() => setCurrentMonth(addMonths(currentMonth, 1))}
@@ -172,15 +204,24 @@ export default function Calendar() {
                   {format(day, 'd')}
                 </div>
                 <div className="space-y-px">
-                  {events.slice(0, 2).map((e, i) => (
-                    <div key={i} className="truncate text-[8px] font-mono px-0.5"
-                      style={{
-                        background: e.type === 'deadline' ? 'rgba(255,0,110,0.3)' : 'rgba(0,255,135,0.15)',
-                        color: e.type === 'deadline' ? '#FF006E' : '#00FF87',
-                      }}>
-                      {e.title}
-                    </div>
-                  ))}
+                  {events.slice(0, 2).map((e, i) => {
+                    const isUni = e.type === 'uni-deadline';
+                    const isTask = e.type === 'task';
+                    return (
+                      <div key={i} className="truncate text-[8px] font-mono px-0.5"
+                        style={{
+                          background: isTask 
+                            ? 'rgba(0,255,135,0.15)' 
+                            : isUni 
+                              ? 'rgba(255,0,110,0.45)' 
+                              : 'rgba(255,0,110,0.25)',
+                          color: isTask ? '#00FF87' : '#FF006E',
+                          borderLeft: isUni ? '1.5px solid #FF006E' : 'none',
+                        }}>
+                        {e.title}
+                      </div>
+                    );
+                  })}
                   {events.length > 2 && (
                     <div className="text-[8px] font-mono" style={{ color: '#444' }}>+{events.length - 2}</div>
                   )}
@@ -193,8 +234,12 @@ export default function Calendar() {
         {/* Legend */}
         <div className="flex items-center gap-4 mt-3">
           <div className="flex items-center gap-1.5">
-            <div className="w-2 h-2" style={{ background: 'rgba(255,0,110,0.5)' }} />
+            <div className="w-2 h-2" style={{ background: 'rgba(255,0,110,0.25)' }} />
             <span className="text-[10px] font-mono" style={{ color: '#555' }}>DEADLINE</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <div className="w-2 h-2" style={{ background: 'rgba(255,0,110,0.45)', borderLeft: '1.5px solid #FF006E' }} />
+            <span className="text-[10px] font-mono" style={{ color: '#555' }}>UNI DEADLINE</span>
           </div>
           <div className="flex items-center gap-1.5">
             <div className="w-2 h-2" style={{ background: 'rgba(0,255,135,0.3)' }} />
@@ -253,15 +298,18 @@ export default function Calendar() {
             </div>
           ) : (
             upcomingDeadlines.map((d) => (
-              <div key={d.id} className="group relative">
+              <div key={`${d.type}-${d.id}`} className="group relative">
                 <CountdownRow item={d} />
-                <button
-                  onClick={() => deleteMutation.mutate(d.id)}
-                  className="absolute top-2 right-2 opacity-0 group-hover:opacity-40 hover:!opacity-100 transition-opacity"
-                  style={{ color: '#FF006E' }}
-                >
-                  <Trash2 className="w-3 h-3" />
-                </button>
+                {d.type !== 'uni-deadline' && (
+                  <button
+                    onClick={() => deleteMutation.mutate(d.id)}
+                    className="absolute top-2 right-2 opacity-0 group-hover:opacity-40 hover:!opacity-100 transition-opacity"
+                    style={{ color: '#FF006E' }}
+                    title="Delete Deadline"
+                  >
+                    <Trash2 className="w-3 h-3" />
+                  </button>
+                )}
               </div>
             ))
           )}

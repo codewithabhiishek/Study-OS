@@ -1,8 +1,11 @@
 import React from 'react';
-import { Outlet } from 'react-router-dom';
+import { Outlet, useLocation } from 'react-router-dom';
 import Sidebar from './Sidebar';
 
 export default function AppLayout() {
+  const location = useLocation();
+  const isWidePage = location.pathname.includes('universities') || location.pathname.includes('calendar');
+
   return (
     <div className="min-h-screen bg-black">
       {/* Global scanline overlay */}
@@ -11,7 +14,7 @@ export default function AppLayout() {
       }} />
       <Sidebar />
       <main className="md:ml-52 min-h-screen pb-20 md:pb-0 relative z-10">
-        <div className="max-w-2xl mx-auto px-5 py-8">
+        <div className={`mx-auto px-5 py-8 ${isWidePage ? 'max-w-6xl' : 'max-w-2xl'} transition-all duration-300`}>
           <Outlet />
         </div>
       </main>
