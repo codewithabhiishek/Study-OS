@@ -11,7 +11,15 @@ function useLiveCountdown(targetDate) {
   useEffect(() => {
     const calc = () => {
       if (!targetDate) return;
-      const diff = new Date(targetDate) - new Date();
+      let target;
+      if (typeof targetDate === 'string' && targetDate.includes('-') && !targetDate.includes('T')) {
+        const [year, month, day] = targetDate.split('-').map(Number);
+        target = new Date(year, month - 1, day);
+      } else {
+        target = new Date(targetDate);
+      }
+
+      const diff = target - new Date();
       if (diff <= 0) return setTimeLeft({ days: 0, hours: 0, minutes: 0, seconds: 0 });
       setTimeLeft({
         days: Math.floor(diff / 86400000),

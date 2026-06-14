@@ -63,8 +63,14 @@ export default function UpcomingDeadlines() {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['deadlines'] }),
   });
 
+  const parseLocalDate = (dateStr) => {
+    if (!dateStr) return new Date(0);
+    const [year, month, day] = dateStr.split('-').map(Number);
+    return new Date(year, month - 1, day);
+  };
+
   const getDaysRemaining = (dateStr) =>
-    Math.ceil((new Date(dateStr) - new Date()) / (1000 * 60 * 60 * 24));
+    Math.ceil((parseLocalDate(dateStr) - new Date()) / (1000 * 60 * 60 * 24));
 
   const realUniDeadlines = universities.filter(u => u.name !== '__GLOBAL_DOCUMENTS__' && u.deadline);
 
@@ -79,7 +85,7 @@ export default function UpcomingDeadlines() {
   ];
 
   const sortedDeadlines = combined
-    .sort((a, b) => new Date(a.date) - new Date(b.date))
+    .sort((a, b) => parseLocalDate(a.date) - parseLocalDate(b.date))
     .slice(0, 10);
 
   if (sortedDeadlines.length === 0) return null;
