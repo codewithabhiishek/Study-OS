@@ -1,13 +1,19 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { calculateStreak } from '@/utils/habitUtils';
+import { useFocus } from '@/hooks/FocusContext';
 
 export default function Review() {
+  const { offlineQueue = [] } = useFocus();
   const { data: sessions = [] } = useQuery({
     queryKey: ['focus-sessions'],
     queryFn: () => base44.entities.FocusSession.list('-session_date', 200),
   });
+
+  const mergedSessions = useMemo(() => {
+    return [...sessions, ...offlineQueue];
+  }, [sessions, offlineQueue]);
   const { data: habits = [] } = useQuery({
     queryKey: ['habits'],
     queryFn: () => base44.entities.Habit.list(),
@@ -33,7 +39,7 @@ export default function Review() {
 
   // Parse today string based on current local date
   const todayStr = `${todayMidnight.getFullYear()}-${String(todayMidnight.getMonth() + 1).padStart(2, '0')}-${String(todayMidnight.getDate()).padStart(2, '0')}`;
-  const todaySessions = sessions.filter(s => s.session_date === todayStr);
+  const todaySessions = mergedSessions.filter(s => s.session_date === todayStr);
   const totalTodayMinutes = todaySessions.reduce((sum, s) => sum + (s.duration_minutes || 0), 0);
 
   const todayHoursByProject = {};
@@ -44,7 +50,7 @@ export default function Review() {
 
   const weekAgo = new Date(todayMidnight);
   weekAgo.setDate(weekAgo.getDate() - 7);
-  const weekSessions = sessions.filter(s => parseLocalDate(s.session_date) >= weekAgo);
+  const weekSessions = mergedSessions.filter(s => parseLocalDate(s.session_date) >= weekAgo);
   const totalWeekMinutes = weekSessions.reduce((sum, s) => sum + (s.duration_minutes || 0), 0);
 
   const hoursByProject = {};
@@ -56,7 +62,7 @@ export default function Review() {
   const thirtyDaysAgo = new Date(todayMidnight);
   thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
   const sessionDates = new Set(
-    sessions.filter(s => parseLocalDate(s.session_date) >= thirtyDaysAgo).map(s => s.session_date)
+    mergedSessions.filter(s => parseLocalDate(s.session_date) >= thirtyDaysAgo).map(s => s.session_date)
   );
   const consistency = Math.round((sessionDates.size / 30) * 100);
 

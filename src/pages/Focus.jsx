@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
+import { createPortal } from 'react-dom';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Play, Pause, RotateCcw, Maximize2, Minimize2, Bell, BellOff } from 'lucide-react';
@@ -29,6 +30,7 @@ export default function Focus() {
     workMinutes,
     phaseMinutes,
     logMutation,
+    offlineQueue,
   } = useFocus();
 
   const [isFullscreen, setIsFullscreen] = useState(false);
@@ -47,10 +49,12 @@ export default function Focus() {
   });
 
   const stats = useMemo(() => {
-    const count = todaySessions.length;
-    const minutes = todaySessions.reduce((sum, s) => sum + (s.duration_minutes || 0), 0);
+    const offlineToday = offlineQueue.filter(s => s.session_date === today);
+    const merged = [...todaySessions, ...offlineToday];
+    const count = merged.length;
+    const minutes = merged.reduce((sum, s) => sum + (s.duration_minutes || 0), 0);
     return { count, minutes };
-  }, [todaySessions]);
+  }, [todaySessions, offlineQueue, today]);
 
   // Fullscreen change listener
   useEffect(() => {
@@ -59,19 +63,45 @@ export default function Focus() {
     return () => document.removeEventListener('fullscreenchange', onChange);
   }, []);
 
-  const enterFullscreen = useCallback(async () => {
-    try {
-      const el = containerRef.current;
-      if (!el) return;
-      if (document.fullscreenElement) {
-        await document.exitFullscreen();
-      } else if (el.requestFullscreen) {
-        await el.requestFullscreen();
-      }
-    } catch {
-      // ignore
+  // Prevent background scrolling when simulated fullscreen is active
+  useEffect(() => {
+    if (isFullscreen && !document.fullscreenElement) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
     }
-  }, []);
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [isFullscreen]);
+
+  const enterFullscreen = useCallback(async () => {
+    const el = containerRef.current;
+    if (!el) return;
+
+    // If we are currently in simulated fullscreen (isFullscreen is true but no native fullscreen element exists),
+    // toggle it off directly.
+    if (isFullscreen && !document.fullscreenElement) {
+      setIsFullscreen(false);
+      return;
+    }
+
+    if (el.requestFullscreen) {
+      try {
+        if (document.fullscreenElement) {
+          await document.exitFullscreen();
+        } else {
+          await el.requestFullscreen();
+        }
+        return;
+      } catch (err) {
+        console.warn("Native fullscreen failed, falling back to simulated fullscreen:", err);
+      }
+    }
+
+    // Fallback: toggle simulated fullscreen state
+    setIsFullscreen((prev) => !prev);
+  }, [isFullscreen]);
 
   const requestNotificationPermission = useCallback(async () => {
     if (typeof Notification === 'undefined') return;
@@ -97,11 +127,15 @@ export default function Focus() {
         reset();
       } else if (e.key === 'f' || e.key === 'F') {
         enterFullscreen();
+      } else if (e.key === 'Escape') {
+        if (isFullscreen && !document.fullscreenElement) {
+          setIsFullscreen(false);
+        }
       }
     };
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
-  }, [reset, enterFullscreen, setRunning]);
+  }, [reset, enterFullscreen, setRunning, isFullscreen]);
 
   const mins = Math.floor(seconds / 60);
   const secs = seconds % 60;
@@ -111,12 +145,12 @@ export default function Focus() {
   const isCompleted = seconds === 0 && phase === 'work';
   const accent = isCompleted ? '#00FF87' : (phase === 'break' ? '#FF006E' : '#00FF87');
 
-  return (
+  const timerContent = (
     <div
       ref={containerRef}
       className={
         isFullscreen
-          ? 'flex flex-col items-center justify-center min-h-screen bg-black px-6'
+          ? 'fixed inset-0 z-50 flex flex-col items-center justify-center min-h-screen bg-black px-6'
           : 'flex flex-col items-center min-h-[70vh] pt-4'
       }
     >
@@ -408,4 +442,10 @@ export default function Focus() {
       )}
     </div>
   );
+
+  if (isFullscreen && !document.fullscreenElement) {
+    return createPortal(timerContent, document.body);
+  }
+
+  return timerContent;
 }

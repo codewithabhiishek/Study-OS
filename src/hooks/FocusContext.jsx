@@ -9,11 +9,46 @@ export const PRESETS = [
   { label: '50/10', work: 50, rest: 10 },
 ];
 
+let sharedAudioContext = null;
+
+const OFFLINE_QUEUE_KEY = 'studyos.focus.offline_queue.v1';
+
+function getOfflineQueue() {
+  try {
+    const raw = localStorage.getItem(OFFLINE_QUEUE_KEY);
+    if (!raw) return [];
+    return JSON.parse(raw);
+  } catch {
+    return [];
+  }
+}
+
+function unlockAudioContext() {
+  try {
+    const AC = window.AudioContext || window.webkitAudioContext;
+    if (!AC) return;
+    if (!sharedAudioContext) {
+      sharedAudioContext = new AC();
+    }
+    if (sharedAudioContext.state === 'suspended') {
+      sharedAudioContext.resume().catch(() => {});
+    }
+  } catch (e) {
+    console.warn("Failed to unlock AudioContext:", e);
+  }
+}
+
 function playAlarm() {
   try {
     const AC = window.AudioContext || window.webkitAudioContext;
     if (!AC) return;
-    const ctx = new AC();
+    if (!sharedAudioContext) {
+      sharedAudioContext = new AC();
+    }
+    const ctx = sharedAudioContext;
+    if (ctx.state === 'suspended') {
+      ctx.resume().catch(() => {});
+    }
     const beep = (freq, start, dur) => {
       const o = ctx.createOscillator();
       const g = ctx.createGain();
@@ -30,7 +65,6 @@ function playAlarm() {
     beep(880, 0, 0.18);
     beep(1175, 0.22, 0.18);
     beep(1568, 0.44, 0.32);
-    setTimeout(() => ctx.close().catch(() => {}), 1200);
   } catch {
     // ignore
   }
@@ -107,9 +141,75 @@ export function FocusProvider({ children }) {
   const [soundEnabled, setSoundEnabled] = useState(initialSettings?.soundEnabled ?? true);
   const [notificationsEnabled, setNotificationsEnabled] = useState(initialSettings?.notificationsEnabled ?? false);
   
+  const [offlineQueue, setOfflineQueue] = useState([]);
+
+  useEffect(() => {
+    setOfflineQueue(getOfflineQueue());
+  }, []);
+
   const intervalRef = useRef(null);
+  const targetEndTimeRef = useRef(null);
   const isFirstMount = useRef(true);
   const queryClient = useQueryClient();
+
+  const addToOfflineQueue = useCallback((sessionData) => {
+    const session = {
+      id: `temp-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+      ...sessionData,
+    };
+    const queue = getOfflineQueue();
+    queue.push(session);
+    try {
+      localStorage.setItem(OFFLINE_QUEUE_KEY, JSON.stringify(queue));
+    } catch (e) {
+      console.warn("Failed to save offline queue to localStorage:", e);
+    }
+    setOfflineQueue(queue);
+  }, []);
+
+  const removeFromOfflineQueue = useCallback((tempId) => {
+    const queue = getOfflineQueue();
+    const updated = queue.filter(s => s.id !== tempId);
+    try {
+      localStorage.setItem(OFFLINE_QUEUE_KEY, JSON.stringify(updated));
+    } catch (e) {
+      console.warn("Failed to remove from offline queue:", e);
+    }
+    setOfflineQueue(updated);
+  }, []);
+
+  const syncOfflineQueue = useCallback(async () => {
+    const queue = getOfflineQueue();
+    if (queue.length === 0) return;
+
+    console.log(`Attempting to sync ${queue.length} offline focus sessions...`);
+    for (const session of queue) {
+      try {
+        const { id, ...dataToSync } = session;
+        await base44.entities.FocusSession.create(dataToSync);
+        removeFromOfflineQueue(session.id);
+        queryClient.invalidateQueries({ queryKey: ['focus_sessions'] });
+        queryClient.invalidateQueries({ queryKey: ['focus-sessions'] });
+      } catch (err) {
+        console.error("Failed to sync session, stopping offline queue sync:", err);
+        break;
+      }
+    }
+  }, [removeFromOfflineQueue, queryClient]);
+
+  // Sync on mount
+  useEffect(() => {
+    syncOfflineQueue();
+  }, [syncOfflineQueue]);
+
+  // Sync when online event triggers
+  useEffect(() => {
+    const handleOnline = () => {
+      syncOfflineQueue();
+    };
+    window.addEventListener('online', handleOnline);
+    return () => window.removeEventListener('online', handleOnline);
+  }, [syncOfflineQueue]);
 
   const workMinutes = isCustom ? customWork : preset.work;
   const breakMinutes = isCustom ? Math.max(1, Math.round(customWork / 5)) : preset.rest;
@@ -146,8 +246,8 @@ export function FocusProvider({ children }) {
     }
   }, [seconds, running, phase, isCustom, customWork, preset, selectedProject]);
 
-  const getLocalDateStr = () => {
-    const d = new Date();
+  const getLocalDateStr = (timestamp) => {
+    const d = timestamp ? new Date(timestamp) : new Date();
     return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
   };
 
@@ -161,12 +261,27 @@ export function FocusProvider({ children }) {
     },
   });
 
+  const logFocusSession = useCallback((sessionData) => {
+    if (typeof navigator !== 'undefined' && !navigator.onLine) {
+      addToOfflineQueue(sessionData);
+      return;
+    }
+
+    logMutation.mutate(sessionData, {
+      onError: (err) => {
+        console.warn("Server sync failed, queueing session offline:", err);
+        addToOfflineQueue(sessionData);
+      }
+    });
+  }, [logMutation, addToOfflineQueue]);
+
   const reset = useCallback(() => {
+    unlockAudioContext();
     if (phase === 'work') {
       const elapsedSeconds = workMinutes * 60 - seconds;
       const elapsedMinutes = Math.floor(elapsedSeconds / 60);
-      if (elapsedMinutes >= 1) {
-        logMutation.mutate({
+      if (seconds > 0 && elapsedMinutes >= 1) {
+        logFocusSession({
           project_id: selectedProject?.id || null,
           project_name: selectedProject?.title || 'Unassigned',
           duration_minutes: elapsedMinutes,
@@ -179,7 +294,7 @@ export function FocusProvider({ children }) {
     setPhase('work');
     setSeconds(workMinutes * 60);
     if (intervalRef.current) clearInterval(intervalRef.current);
-  }, [workMinutes, phase, seconds, selectedProject, isCustom, logMutation]);
+  }, [workMinutes, phase, seconds, selectedProject, isCustom, logFocusSession]);
 
   // Handle logging for focus sessions completed while tab was closed
   useEffect(() => {
@@ -187,11 +302,11 @@ export function FocusProvider({ children }) {
       const duration = initialTimer.isCustom
         ? initialTimer.customWork
         : (PRESETS.find((p) => p.label === initialTimer.presetLabel)?.work || 25);
-      logMutation.mutate({
+      logFocusSession({
         project_id: initialTimer.selectedProject?.id || null,
         project_name: initialTimer.selectedProject?.title || 'Unassigned',
         duration_minutes: duration,
-        session_date: getLocalDateStr(),
+        session_date: initialTimer.targetEndTime ? getLocalDateStr(initialTimer.targetEndTime) : getLocalDateStr(),
         type: initialTimer.isCustom ? 'custom' : 'pomodoro',
       });
       // Clear flag to avoid double-triggering
@@ -218,22 +333,47 @@ export function FocusProvider({ children }) {
     setSeconds(phaseMinutes * 60);
   }, [phaseMinutes]);
 
+  // Initialize targetEndTimeRef when running state changes
+  useEffect(() => {
+    if (running) {
+      targetEndTimeRef.current = Date.now() + seconds * 1000;
+    } else {
+      targetEndTimeRef.current = null;
+    }
+  }, [running]);
+
+  // Handle visibility changes to update seconds if the tab was suspended/throttled
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible' && running && targetEndTimeRef.current) {
+        const remaining = Math.max(0, Math.round((targetEndTimeRef.current - Date.now()) / 1000));
+        setSeconds(remaining);
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+  }, [running]);
+
   useEffect(() => {
     if (!running) {
       if (intervalRef.current) clearInterval(intervalRef.current);
       return undefined;
     }
+
     intervalRef.current = setInterval(() => {
-      setSeconds((s) => {
-        if (s > 1) return s - 1;
-        // Tick reached zero — handle phase completion.
+      if (!targetEndTimeRef.current) return;
+
+      const remaining = Math.max(0, Math.round((targetEndTimeRef.current - Date.now()) / 1000));
+      setSeconds(remaining);
+
+      if (remaining <= 0) {
         clearInterval(intervalRef.current);
         if (soundEnabled) playAlarm();
         if (phase === 'work') {
           if (notificationsEnabled) {
             notify('Focus session complete', 'Great job! Time for a break.');
           }
-          logMutation.mutate({
+          logFocusSession({
             project_id: selectedProject?.id || null,
             project_name: selectedProject?.title || 'Unassigned',
             duration_minutes: workMinutes,
@@ -243,37 +383,80 @@ export function FocusProvider({ children }) {
           if (pomodoroEnabled) {
             setPhase('break');
             setSeconds(breakMinutes * 60);
-            // keep running through the break
-            return breakMinutes * 60;
+            targetEndTimeRef.current = Date.now() + breakMinutes * 60 * 1000;
+            return;
           }
           setRunning(false);
-          return 0;
+          return;
         }
         // break finished
         if (notificationsEnabled) notify('Break over', 'Back to focus.');
         setPhase('work');
         setRunning(false);
-        return workMinutes * 60;
-      });
+      }
     }, 1000);
+
     return () => {
       if (intervalRef.current) clearInterval(intervalRef.current);
     };
   }, [running, phase, soundEnabled, notificationsEnabled, workMinutes, breakMinutes, pomodoroEnabled, selectedProject, isCustom, logMutation]);
 
+  // Update document title with remaining time
+  useEffect(() => {
+    if (running) {
+      const mins = Math.floor(seconds / 60);
+      const secs = seconds % 60;
+      const timeStr = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+      const phaseLabel = phase === 'work' ? 'FOCUS' : 'BREAK';
+      document.title = `(${timeStr}) ${phaseLabel} | StudyOS`;
+    } else {
+      document.title = 'StudyOS';
+    }
+  }, [seconds, running, phase]);
+
+  const toggleRunning = useCallback((valOrFunc) => {
+    unlockAudioContext();
+    setRunning((prev) => {
+      const next = typeof valOrFunc === 'function' ? valOrFunc(prev) : valOrFunc;
+      if (next && seconds <= 0) {
+        return false;
+      }
+      return next;
+    });
+  }, [seconds]);
+
+  const toggleSoundEnabled = useCallback((valOrFunc) => {
+    unlockAudioContext();
+    setSoundEnabled(valOrFunc);
+  }, []);
+
+  const handleSetPreset = useCallback((p) => {
+    setRunning(false);
+    setPhase('work');
+    setPreset(p);
+    setSeconds(p.work * 60);
+  }, []);
+
+  const handleSetIsCustom = useCallback((val) => {
+    setRunning(false);
+    setPhase('work');
+    setIsCustom(val);
+    setSeconds(val ? customWork * 60 : preset.work * 60);
+  }, [customWork, preset]);
+
   return (
     <FocusContext.Provider
       value={{
         preset,
-        setPreset,
+        setPreset: handleSetPreset,
         customWork,
         setCustomWork,
         isCustom,
-        setIsCustom,
+        setIsCustom: handleSetIsCustom,
         seconds,
         setSeconds,
         running,
-        setRunning,
+        setRunning: toggleRunning,
         selectedProject,
         setSelectedProject,
         phase,
@@ -281,7 +464,7 @@ export function FocusProvider({ children }) {
         pomodoroEnabled,
         setPomodoroEnabled,
         soundEnabled,
-        setSoundEnabled,
+        setSoundEnabled: toggleSoundEnabled,
         notificationsEnabled,
         setNotificationsEnabled,
         reset,
@@ -289,6 +472,8 @@ export function FocusProvider({ children }) {
         breakMinutes,
         phaseMinutes,
         logMutation,
+        offlineQueue,
+        logFocusSession,
       }}
     >
       {children}
