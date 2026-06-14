@@ -150,6 +150,7 @@ export function FocusProvider({ children }) {
   const intervalRef = useRef(null);
   const targetEndTimeRef = useRef(null);
   const isFirstMount = useRef(true);
+  const isSyncingRef = useRef(false);
   const queryClient = useQueryClient();
 
   const addToOfflineQueue = useCallback((sessionData) => {
@@ -179,21 +180,27 @@ export function FocusProvider({ children }) {
   }, []);
 
   const syncOfflineQueue = useCallback(async () => {
-    const queue = getOfflineQueue();
-    if (queue.length === 0) return;
+    if (isSyncingRef.current) return;
+    isSyncingRef.current = true;
+    try {
+      const queue = getOfflineQueue();
+      if (queue.length === 0) return;
 
-    console.log(`Attempting to sync ${queue.length} offline focus sessions...`);
-    for (const session of queue) {
-      try {
-        const { id, ...dataToSync } = session;
-        await base44.entities.FocusSession.create(dataToSync);
-        removeFromOfflineQueue(session.id);
-        queryClient.invalidateQueries({ queryKey: ['focus_sessions'] });
-        queryClient.invalidateQueries({ queryKey: ['focus-sessions'] });
-      } catch (err) {
-        console.error("Failed to sync session, stopping offline queue sync:", err);
-        break;
+      console.log(`Attempting to sync ${queue.length} offline focus sessions...`);
+      for (const session of queue) {
+        try {
+          const { id, ...dataToSync } = session;
+          await base44.entities.FocusSession.create(dataToSync);
+          removeFromOfflineQueue(session.id);
+          queryClient.invalidateQueries({ queryKey: ['focus_sessions'] });
+          queryClient.invalidateQueries({ queryKey: ['focus-sessions'] });
+        } catch (err) {
+          console.error("Failed to sync session, stopping offline queue sync:", err);
+          break;
+        }
       }
+    } finally {
+      isSyncingRef.current = false;
     }
   }, [removeFromOfflineQueue, queryClient]);
 

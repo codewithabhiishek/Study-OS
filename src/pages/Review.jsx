@@ -64,7 +64,7 @@ export default function Review() {
   const sessionDates = new Set(
     mergedSessions.filter(s => parseLocalDate(s.session_date) >= thirtyDaysAgo).map(s => s.session_date)
   );
-  const consistency = Math.round((sessionDates.size / 30) * 100);
+  const consistency = Math.min(100, Math.round((sessionDates.size / 30) * 100));
 
   const projectProgress = projects.map(p => {
     const tasks = allTasks.filter(t => t.project_id === p.id);
