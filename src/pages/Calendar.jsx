@@ -9,7 +9,15 @@ function useCountdown(targetDate) {
   const [t, setT] = useState({});
   useEffect(() => {
     const calc = () => {
-      const diff = new Date(targetDate) - new Date();
+      let target;
+      if (typeof targetDate === 'string' && targetDate.includes('-') && !targetDate.includes('T')) {
+        const [year, month, day] = targetDate.split('-').map(Number);
+        target = new Date(year, month - 1, day);
+      } else {
+        target = new Date(targetDate);
+      }
+
+      const diff = target - new Date();
       if (diff <= 0) return setT({ expired: true });
       setT({
         days: Math.floor(diff / 86400000),
@@ -80,6 +88,12 @@ export default function Calendar() {
   const [adding, setAdding] = useState(false);
   const [newDeadline, setNewDeadline] = useState({ title: '', date: '' });
 
+  const parseLocalDate = (dateStr) => {
+    if (!dateStr) return new Date(0);
+    const [year, month, day] = dateStr.split('-').map(Number);
+    return new Date(year, month - 1, day);
+  };
+
   const { data: deadlines = [] } = useQuery({
     queryKey: ['deadlines'],
     queryFn: async () => {
@@ -142,8 +156,13 @@ export default function Calendar() {
   ];
 
   const upcomingDeadlines = combinedDeadlines
-    .filter(d => new Date(d.date) >= new Date())
-    .sort((a, b) => new Date(a.date) - new Date(b.date));
+    .filter(d => {
+      const target = parseLocalDate(d.date);
+      const endOfDay = new Date(target);
+      endOfDay.setHours(23, 59, 59, 999);
+      return endOfDay >= new Date();
+    })
+    .sort((a, b) => parseLocalDate(a.date) - parseLocalDate(b.date));
 
   return (
     <div className="flex flex-col lg:flex-row gap-6">
@@ -316,10 +335,18 @@ export default function Calendar() {
         </div>
 
         {/* Past deadlines */}
-        {deadlines.filter(d => new Date(d.date) < new Date()).length > 0 && (
+        {deadlines.filter(d => {
+          const endOfDay = parseLocalDate(d.date);
+          endOfDay.setHours(23, 59, 59, 999);
+          return endOfDay < new Date();
+        }).length > 0 && (
           <div className="mt-4">
             <div className="text-[10px] font-mono tracking-widest mb-2" style={{ color: '#333' }}>{"// ELAPSED"}</div>
-            {deadlines.filter(d => new Date(d.date) < new Date()).map(d => (
+            {deadlines.filter(d => {
+              const endOfDay = parseLocalDate(d.date);
+              endOfDay.setHours(23, 59, 59, 999);
+              return endOfDay < new Date();
+            }).map(d => (
               <div key={d.id} className="flex items-center justify-between px-3 py-2 mb-1 group"
                 style={{ border: '1px solid #1a1a1a' }}>
                 <span className="text-[11px] font-mono line-through" style={{ color: '#333' }}>{d.title}</span>

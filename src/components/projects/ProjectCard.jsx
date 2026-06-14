@@ -78,8 +78,14 @@ export default function ProjectCard({ project }) {
   const total = tasks.length;
   const progress = total > 0 ? Math.round((completed / total) * 100) : 0;
 
+  const parseLocalDate = (dateStr) => {
+    if (!dateStr) return new Date(0);
+    const [year, month, day] = dateStr.split('-').map(Number);
+    return new Date(year, month - 1, day);
+  };
+
   const daysLeft = project.deadline
-    ? Math.ceil((new Date(project.deadline) - new Date()) / (1000 * 60 * 60 * 24))
+    ? Math.ceil((parseLocalDate(project.deadline) - new Date()) / (1000 * 60 * 60 * 24))
     : null;
 
   const handleDeleteProject = (e) => {
