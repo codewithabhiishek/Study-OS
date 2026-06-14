@@ -11,8 +11,14 @@ const statusColors = {
 };
 
 export default function UniversityCard({ university, onEdit, onDelete }) {
+  const parseLocalDate = (dateStr) => {
+    if (!dateStr) return new Date(0);
+    const [year, month, day] = dateStr.split('-').map(Number);
+    return new Date(year, month - 1, day);
+  };
+
   const daysLeft = university.deadline
-    ? Math.ceil((new Date(university.deadline) - new Date()) / (1000 * 60 * 60 * 24))
+    ? Math.ceil((parseLocalDate(university.deadline) - new Date()) / (1000 * 60 * 60 * 24))
     : null;
 
   const statusColor = statusColors[university.status] || '#555';
