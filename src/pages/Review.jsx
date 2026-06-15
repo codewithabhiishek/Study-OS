@@ -1,10 +1,12 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { calculateStreak } from '@/utils/habitUtils';
 import { useFocus } from '@/hooks/FocusContext';
 
 export default function Review() {
+  const [timeframe, setTimeframe] = useState('daily'); // 'daily', 'weekly', or 'monthly'
+  const [weekView, setWeekView] = useState('current'); // 'current' or 'previous'
   const { offlineQueue = [] } = useFocus();
   const { data: sessions = [] } = useQuery({
     queryKey: ['focus-sessions'],
@@ -48,9 +50,24 @@ export default function Review() {
     todayHoursByProject[name] = (todayHoursByProject[name] || 0) + (s.duration_minutes || 0);
   });
 
-  const weekAgo = new Date(todayMidnight);
-  weekAgo.setDate(weekAgo.getDate() - 7);
-  const weekSessions = mergedSessions.filter(s => parseLocalDate(s.session_date) >= weekAgo);
+  // Calculate start of current week (Monday at 00:00:00)
+  const currentDay = todayMidnight.getDay();
+  const daysToSubtract = currentDay === 0 ? 6 : currentDay - 1;
+  const startOfThisWeek = new Date(todayMidnight);
+  startOfThisWeek.setDate(todayMidnight.getDate() - daysToSubtract);
+
+  // Calculate start of last week (Monday of last week at 00:00:00)
+  const startOfLastWeek = new Date(startOfThisWeek);
+  startOfLastWeek.setDate(startOfLastWeek.getDate() - 7);
+
+  const weekSessions = mergedSessions.filter(s => {
+    const sDate = parseLocalDate(s.session_date);
+    if (weekView === 'current') {
+      return sDate >= startOfThisWeek;
+    } else {
+      return sDate >= startOfLastWeek && sDate < startOfThisWeek;
+    }
+  });
   const totalWeekMinutes = weekSessions.reduce((sum, s) => sum + (s.duration_minutes || 0), 0);
 
   const hoursByProject = {};
@@ -60,11 +77,58 @@ export default function Review() {
   });
 
   const thirtyDaysAgo = new Date(todayMidnight);
-  thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+  thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 29); // Covers today + last 29 days (exactly 30 days)
   const sessionDates = new Set(
     mergedSessions.filter(s => parseLocalDate(s.session_date) >= thirtyDaysAgo).map(s => s.session_date)
   );
   const consistency = Math.min(100, Math.round((sessionDates.size / 30) * 100));
+
+  // Calculate study hours for the last 7 calendar days
+  const last7DaysData = [];
+  for (let i = 6; i >= 0; i--) {
+    const d = new Date(todayMidnight);
+    d.setDate(d.getDate() - i);
+    const dateStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    
+    const dayLabel = d.toLocaleDateString('en-US', { weekday: 'short' }).toUpperCase();
+    const dateLabel = d.getDate();
+    
+    const daySessions = mergedSessions.filter(s => s.session_date === dateStr);
+    const dayMins = daySessions.reduce((sum, s) => sum + (s.duration_minutes || 0), 0);
+    const dayHours = dayMins / 60;
+    
+    last7DaysData.push({
+      dateStr,
+      dayLabel,
+      dateLabel,
+      hours: dayHours,
+    });
+  }
+  const maxHoursInLast7Days = Math.max(...last7DaysData.map(d => d.hours), 1);
+
+  // Calculate monthly study hours for the last 6 months
+  const monthlyData = [];
+  const now = new Date();
+  for (let i = 5; i >= 0; i--) {
+    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    const monthYearStr = d.toLocaleDateString('en-US', { month: 'short', year: 'numeric' }).toUpperCase();
+    const monthName = d.toLocaleDateString('en-US', { month: 'long' }).toUpperCase();
+    
+    const monthSessions = mergedSessions.filter(s => {
+      const sDate = parseLocalDate(s.session_date);
+      return sDate.getFullYear() === d.getFullYear() && sDate.getMonth() === d.getMonth();
+    });
+    
+    const mins = monthSessions.reduce((sum, s) => sum + (s.duration_minutes || 0), 0);
+    const hours = mins / 60;
+    
+    monthlyData.push({
+      label: monthName,
+      shortLabel: monthYearStr,
+      hours: hours,
+    });
+  }
+  const maxMonthHours = Math.max(...monthlyData.map(m => m.hours), 1);
 
   const projectProgress = projects.map(p => {
     const tasks = allTasks.filter(t => t.project_id === p.id);
@@ -84,59 +148,215 @@ export default function Review() {
         <span style={{ color: '#fff' }}>.</span>
       </h1>
 
-      {/* Daily Hours */}
+      {/* Focus Hours Breakdown */}
       <section className="mb-8 p-4" style={{ border: '1px solid #00FF87', boxShadow: '4px 4px 0 #FF006E', background: 'rgba(0,255,135,0.03)' }}>
-        <div className="text-[10px] font-mono tracking-widest mb-3" style={{ color: '#00FF87', opacity: 0.7 }}>▶ DAILY FOCUS HOURS</div>
-        <div className="flex items-end gap-2 mb-4">
-          <span className="text-5xl font-mono font-bold tabular-nums" style={{ color: '#00FF87', textShadow: '0 0 20px rgba(0,255,135,0.5)' }}>
-            {(totalTodayMinutes / 60).toFixed(1)}
-          </span>
-          <span className="text-[11px] font-mono pb-2" style={{ color: '#444' }}>HRS TODAY</span>
+        <div className="flex justify-between items-center mb-3">
+          <div className="text-[10px] font-mono tracking-widest" style={{ color: '#00FF87', opacity: 0.7 }}>
+            ▶ {timeframe === 'daily' ? 'DAILY FOCUS HOURS' : timeframe === 'weekly' ? (weekView === 'current' ? 'WEEKLY FOCUS HOURS' : 'LAST WEEK FOCUS HOURS') : 'MONTHLY FOCUS HOURS'}
+          </div>
+          <div className="flex gap-1.5">
+            <button 
+              onClick={() => setTimeframe('daily')}
+              className="text-[9px] font-mono px-2 py-0.5 border transition-all"
+              style={{ 
+                borderColor: timeframe === 'daily' ? '#00FF87' : '#222', 
+                color: timeframe === 'daily' ? '#00FF87' : '#444',
+                background: timeframe === 'daily' ? 'rgba(0,255,135,0.1)' : 'transparent',
+                cursor: 'pointer'
+              }}
+            >
+              DAILY
+            </button>
+            <button 
+              onClick={() => setTimeframe('weekly')}
+              className="text-[9px] font-mono px-2 py-0.5 border transition-all"
+              style={{ 
+                borderColor: timeframe === 'weekly' ? '#00FF87' : '#222', 
+                color: timeframe === 'weekly' ? '#00FF87' : '#444',
+                background: timeframe === 'weekly' ? 'rgba(0,255,135,0.1)' : 'transparent',
+                cursor: 'pointer'
+              }}
+            >
+              WEEKLY
+            </button>
+            <button 
+              onClick={() => setTimeframe('monthly')}
+              className="text-[9px] font-mono px-2 py-0.5 border transition-all"
+              style={{ 
+                borderColor: timeframe === 'monthly' ? '#00FF87' : '#222', 
+                color: timeframe === 'monthly' ? '#00FF87' : '#444',
+                background: timeframe === 'monthly' ? 'rgba(0,255,135,0.1)' : 'transparent',
+                cursor: 'pointer'
+              }}
+            >
+              MONTHLY
+            </button>
+          </div>
         </div>
-        <div className="space-y-2">
-          {Object.entries(todayHoursByProject).map(([name, mins]) => (
-            <div key={name}>
-              <div className="flex items-center justify-between mb-1">
-                <span className="text-xs font-mono" style={{ color: '#888' }}>{name.toUpperCase()}</span>
-                <span className="text-xs font-mono font-bold tabular-nums" style={{ color: '#00FF87' }}>{(mins / 60).toFixed(1)}H</span>
-              </div>
-              <div className="w-full h-1.5 bg-[#0a0a0a]">
-                <div className="h-full transition-all" style={{ width: `${(mins / maxTodayHours) * 100}%`, background: '#00FF87', boxShadow: '0 0 6px #00FF87' }} />
-              </div>
+
+        <div className="flex items-end justify-between mb-4">
+          <div className="flex items-end gap-2">
+            <span className="text-5xl font-mono font-bold tabular-nums" style={{ color: '#00FF87', textShadow: '0 0 20px rgba(0,255,135,0.5)' }}>
+              {timeframe === 'daily' 
+                ? (totalTodayMinutes / 60).toFixed(1) 
+                : timeframe === 'weekly' 
+                  ? (totalWeekMinutes / 60).toFixed(1) 
+                  : (monthlyData[monthlyData.length - 1]?.hours || 0).toFixed(1)
+              }
+            </span>
+            <span className="text-[11px] font-mono pb-2" style={{ color: '#444' }}>
+              {timeframe === 'daily' 
+                ? 'HRS TODAY' 
+                : timeframe === 'weekly' 
+                  ? (weekView === 'current' ? 'HRS THIS WEEK' : 'HRS LAST WEEK') 
+                  : 'HRS THIS MONTH'
+              }
+            </span>
+          </div>
+
+          {/* Sub-toggle for Weekly view */}
+          {timeframe === 'weekly' && (
+            <div className="flex gap-1.5 mb-1">
+              <button 
+                onClick={() => setWeekView('current')}
+                className="text-[8px] font-mono px-1.5 py-0.5 border transition-all"
+                style={{ 
+                  borderColor: weekView === 'current' ? '#00FF87' : '#1a1a1a', 
+                  color: weekView === 'current' ? '#00FF87' : '#333',
+                  background: weekView === 'current' ? 'rgba(0,255,135,0.05)' : 'transparent',
+                  cursor: 'pointer'
+                }}
+              >
+                THIS WEEK
+              </button>
+              <button 
+                onClick={() => setWeekView('previous')}
+                className="text-[8px] font-mono px-1.5 py-0.5 border transition-all"
+                style={{ 
+                  borderColor: weekView === 'previous' ? '#00FF87' : '#1a1a1a', 
+                  color: weekView === 'previous' ? '#00FF87' : '#333',
+                  background: weekView === 'previous' ? 'rgba(0,255,135,0.05)' : 'transparent',
+                  cursor: 'pointer'
+                }}
+              >
+                LAST WEEK
+              </button>
             </div>
-          ))}
-          {Object.keys(todayHoursByProject).length === 0 && (
-            <div className="text-xs font-mono py-2" style={{ color: '#333' }}>{"// NO DATA TODAY"}</div>
+          )}
+        </div>
+
+        <div className="space-y-2">
+          {timeframe === 'daily' && (
+            <>
+              {Object.entries(todayHoursByProject).map(([name, mins]) => (
+                <div key={name}>
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-xs font-mono" style={{ color: '#888' }}>{name.toUpperCase()}</span>
+                    <span className="text-xs font-mono font-bold tabular-nums" style={{ color: '#00FF87' }}>{(mins / 60).toFixed(1)}H</span>
+                  </div>
+                  <div className="w-full h-1.5 bg-[#0a0a0a]">
+                    <div className="h-full transition-all" style={{ width: `${(mins / maxTodayHours) * 100}%`, background: '#00FF87', boxShadow: '0 0 6px #00FF87' }} />
+                  </div>
+                </div>
+              ))}
+              {Object.keys(todayHoursByProject).length === 0 && (
+                <div className="text-xs font-mono py-2" style={{ color: '#333' }}>{"// NO DATA TODAY"}</div>
+              )}
+            </>
+          )}
+
+          {timeframe === 'weekly' && (
+            <>
+              {Object.entries(hoursByProject).map(([name, mins]) => (
+                <div key={name}>
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-xs font-mono" style={{ color: '#888' }}>{name.toUpperCase()}</span>
+                    <span className="text-xs font-mono font-bold tabular-nums" style={{ color: '#00FF87' }}>{(mins / 60).toFixed(1)}H</span>
+                  </div>
+                  <div className="w-full h-1.5 bg-[#0a0a0a]">
+                    <div className="h-full transition-all" style={{ width: `${(mins / maxHours) * 100}%`, background: '#00FF87', boxShadow: '0 0 6px #00FF87' }} />
+                  </div>
+                </div>
+              ))}
+              {Object.keys(hoursByProject).length === 0 && (
+                <div className="text-xs font-mono py-2" style={{ color: '#333' }}>
+                  {weekView === 'current' ? "// NO DATA THIS WEEK" : "// NO DATA LAST WEEK"}
+                </div>
+              )}
+            </>
+          )}
+
+          {timeframe === 'monthly' && (
+            <>
+              {monthlyData.map((m) => (
+                <div key={m.shortLabel}>
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-xs font-mono" style={{ color: '#888' }}>{m.label}</span>
+                    <span className="text-xs font-mono font-bold tabular-nums" style={{ color: '#00FF87' }}>{m.hours.toFixed(1)}H</span>
+                  </div>
+                  <div className="w-full h-1.5 bg-[#0a0a0a]">
+                    <div className="h-full transition-all" style={{ 
+                      width: `${(m.hours / maxMonthHours) * 100}%`, 
+                      background: '#00FF87', 
+                      boxShadow: m.hours > 0 ? '0 0 6px #00FF87' : 'none' 
+                    }} />
+                  </div>
+                </div>
+              ))}
+            </>
           )}
         </div>
       </section>
 
-      {/* Weekly Hours */}
-      <section className="mb-8 p-4" style={{ border: '1px solid #00FF87', boxShadow: '4px 4px 0 #FF006E', background: 'rgba(0,255,135,0.03)' }}>
-        <div className="text-[10px] font-mono tracking-widest mb-3" style={{ color: '#00FF87', opacity: 0.7 }}>▶ WEEKLY FOCUS HOURS</div>
-        <div className="flex items-end gap-2 mb-4">
-          <span className="text-5xl font-mono font-bold tabular-nums" style={{ color: '#00FF87', textShadow: '0 0 20px rgba(0,255,135,0.5)' }}>
-            {(totalWeekMinutes / 60).toFixed(1)}
-          </span>
-          <span className="text-[11px] font-mono pb-2" style={{ color: '#444' }}>HRS THIS WEEK</span>
+      {/* 7-Day Density Chart */}
+      <section className="mb-8 p-4" style={{ border: '1px solid #FF006E', boxShadow: '4px 4px 0 #00FF87', background: 'rgba(255,0,110,0.03)' }}>
+        <div className="text-[10px] font-mono tracking-widest mb-6" style={{ color: '#FF006E', opacity: 0.7 }}>▶ 7-DAY STUDY DENSITY</div>
+        
+        <div className="relative h-28 flex items-end justify-between px-2 mb-2">
+          {/* Background Grid Lines */}
+          <div className="absolute inset-0 flex flex-col justify-between pointer-events-none" style={{ borderBottom: '1px dashed #1a1a1a' }}>
+            <div className="w-full border-t border-dashed border-[#151515]" />
+            <div className="w-full border-t border-dashed border-[#151515]" />
+            <div className="w-full border-t border-dashed border-[#151515]" />
+          </div>
+
+          {/* Bars */}
+          {last7DaysData.map((d) => {
+            const pct = (d.hours / maxHoursInLast7Days) * 100;
+            return (
+              <div key={d.dateStr} className="group flex flex-col items-center flex-1 relative z-10 h-full justify-end">
+                {/* Tooltip on Hover */}
+                <div className="absolute bottom-full mb-1.5 opacity-0 group-hover:opacity-100 transition-opacity bg-black border border-[#00FF87] px-1.5 py-0.5 text-[9px] font-mono text-[#00FF87] pointer-events-none whitespace-nowrap shadow-md z-20">
+                  {d.hours.toFixed(1)}H
+                </div>
+                
+                {/* Bar */}
+                <div 
+                  className="w-4 sm:w-6 transition-all duration-500 ease-out" 
+                  style={{ 
+                    height: `${pct > 0 ? Math.max(pct, 4) : 0}%`, 
+                    background: '#00FF87', 
+                    boxShadow: d.hours > 0 ? '0 0 10px rgba(0, 255, 135, 0.5)' : 'none',
+                    border: d.hours > 0 ? 'none' : '1px solid #1a1a1a'
+                  }} 
+                />
+              </div>
+            );
+          })}
         </div>
-        <div className="space-y-2">
-          {Object.entries(hoursByProject).map(([name, mins]) => (
-            <div key={name}>
-              <div className="flex items-center justify-between mb-1">
-                <span className="text-xs font-mono" style={{ color: '#888' }}>{name.toUpperCase()}</span>
-                <span className="text-xs font-mono font-bold tabular-nums" style={{ color: '#00FF87' }}>{(mins / 60).toFixed(1)}H</span>
-              </div>
-              <div className="w-full h-1.5 bg-[#0a0a0a]">
-                <div className="h-full transition-all" style={{ width: `${(mins / (maxHours)) * 100}%`, background: '#00FF87', boxShadow: '0 0 6px #00FF87' }} />
-              </div>
+
+        {/* Labels */}
+        <div className="flex justify-between px-2">
+          {last7DaysData.map((d) => (
+            <div key={d.dateStr} className="flex flex-col items-center flex-1">
+              <span className="text-[9px] font-mono font-bold" style={{ color: d.hours > 0 ? '#fff' : '#444' }}>{d.dayLabel}</span>
+              <span className="text-[8px] font-mono" style={{ color: d.hours > 0 ? '#00FF87' : '#222' }}>{d.dateLabel}</span>
             </div>
           ))}
-          {Object.keys(hoursByProject).length === 0 && (
-            <div className="text-xs font-mono py-2" style={{ color: '#333' }}>{"// NO DATA THIS WEEK"}</div>
-          )}
         </div>
       </section>
+
+
 
       {/* Consistency */}
       <section className="mb-8 p-4" style={{ border: '1px solid #FF006E', boxShadow: '4px 4px 0 rgba(0,255,135,0.3)', background: 'rgba(255,0,110,0.03)' }}>
