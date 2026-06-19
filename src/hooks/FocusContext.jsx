@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, useRef, useCallback } from 'react';
+import React, { createContext, useContext, useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 
@@ -101,14 +101,9 @@ function loadTimerState() {
     if (!raw) return null;
     const data = JSON.parse(raw);
     
-    // If it was running when tab closed, subtract elapsed time
-    if (data.running && data.targetEndTime) {
-      const remaining = Math.round((data.targetEndTime - Date.now()) / 1000);
-      if (remaining > 0) {
-        return { ...data, seconds: remaining };
-      } else {
-        return { ...data, seconds: 0, running: false, completedWhileAway: data.phase === 'work' };
-      }
+    // If it was running when tab closed, load it as paused
+    if (data.running) {
+      return { ...data, running: false };
     }
     return data;
   } catch {
@@ -117,8 +112,8 @@ function loadTimerState() {
 }
 
 export function FocusProvider({ children }) {
-  const initialSettings = loadSettings();
-  const initialTimer = loadTimerState();
+  const initialSettings = useMemo(() => loadSettings(), []);
+  const initialTimer = useMemo(() => loadTimerState(), []);
 
   const [preset, setPreset] = useState(() => {
     if (initialTimer?.presetLabel) {
@@ -303,33 +298,6 @@ export function FocusProvider({ children }) {
     if (intervalRef.current) clearInterval(intervalRef.current);
   }, [workMinutes, phase, seconds, selectedProject, isCustom, logFocusSession]);
 
-  // Handle logging for focus sessions completed while tab was closed
-  useEffect(() => {
-    if (initialTimer?.completedWhileAway) {
-      const duration = initialTimer.isCustom
-        ? initialTimer.customWork
-        : (PRESETS.find((p) => p.label === initialTimer.presetLabel)?.work || 25);
-      logFocusSession({
-        project_id: initialTimer.selectedProject?.id || null,
-        project_name: initialTimer.selectedProject?.title || 'Unassigned',
-        duration_minutes: duration,
-        session_date: initialTimer.targetEndTime ? getLocalDateStr(initialTimer.targetEndTime) : getLocalDateStr(),
-        type: initialTimer.isCustom ? 'custom' : 'pomodoro',
-      });
-      // Clear flag to avoid double-triggering
-      try {
-        localStorage.setItem(
-          TIMER_STATE_KEY,
-          JSON.stringify({
-            ...initialTimer,
-            completedWhileAway: false,
-          })
-        );
-      } catch {
-        // ignore
-      }
-    }
-  }, [logMutation]);
 
   // When the phase or duration changes (e.g. preset change), reset the visible timer.
   useEffect(() => {
