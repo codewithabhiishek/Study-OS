@@ -279,7 +279,7 @@ export function FocusProvider({ children }) {
 
   const reset = useCallback(() => {
     unlockAudioContext();
-    if (phase === 'work') {
+    if (phase === 'work' && seconds > 0) {
       const elapsedSeconds = workMinutes * 60 - seconds;
       const elapsedMinutes = Math.round(elapsedSeconds / 60);
       if (elapsedMinutes >= 1) {
