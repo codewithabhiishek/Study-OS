@@ -14,7 +14,9 @@ export default function Review() {
   });
 
   const mergedSessions = useMemo(() => {
-    return [...sessions, ...offlineQueue];
+    const serverIds = new Set(sessions.map(s => s.id));
+    const unseenOffline = offlineQueue.filter(s => !serverIds.has(s.id));
+    return [...sessions, ...unseenOffline];
   }, [sessions, offlineQueue]);
   const { data: habits = [] } = useQuery({
     queryKey: ['habits'],

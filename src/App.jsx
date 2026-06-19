@@ -1,4 +1,3 @@
-console.log("ENV TEST:", import.meta.env.VITE_GEMINI_API_KEY);
 import { Toaster } from '@/components/ui/toaster';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { queryClientInstance } from '@/lib/query-client';

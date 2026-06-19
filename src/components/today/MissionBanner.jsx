@@ -76,6 +76,7 @@ export default function MissionBanner() {
   };
 
   const save = () => {
+    if (!draft.title.trim() || !draft.date) return;
     saveMutation.mutate(draft);
   };
 

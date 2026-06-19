@@ -16,7 +16,7 @@ export default function PageNotFound() {
         <div className="space-y-3">
           <h2 className="text-2xl font-bold text-white">Page Not Found</h2>
           <p className="text-[#888] leading-relaxed">
-            The page <span className="font-mono text-white">"{pageName}"</span> could not be found.
+            The page <span className="font-mono text-white">&quot;{pageName}&quot;</span> could not be found.
           </p>
         </div>
         <div className="pt-6">

@@ -90,12 +90,9 @@ async function generateFromGemini(apiKey) {
 async function generateMessage() {
   const geminiKey = import.meta.env.VITE_GEMINI_API_KEY;
 
-  console.log("Gemini Key:", geminiKey);
-
   try {
     if (geminiKey) {
       const msg = await generateFromGemini(geminiKey);
-      console.log("Gemini Success:", msg);
       return msg;
     }
   } catch (err) {

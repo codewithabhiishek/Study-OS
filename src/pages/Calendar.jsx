@@ -42,6 +42,12 @@ function toTitleCase(str) {
     .join(' ');
 }
 
+function parseLocalDate(dateStr) {
+  if (!dateStr) return new Date(0);
+  const [year, month, day] = dateStr.split('-').map(Number);
+  return new Date(year, month - 1, day);
+}
+
 function CountdownRow({ item }) {
   const t = useCountdown(item.date);
   const pad = n => String(n ?? 0).padStart(2, '0');
@@ -58,7 +64,7 @@ function CountdownRow({ item }) {
           {item.title}
         </div>
         <div className="text-[10px] font-mono" style={{ color: '#444' }}>
-          {format(new Date(item.date), 'MMM d, yyyy')}
+          {format(parseLocalDate(item.date), 'MMM d, yyyy')}
         </div>
       </div>
       <div className="text-right">

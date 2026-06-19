@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Check, Plus, Trash2 } from 'lucide-react';
@@ -7,6 +7,11 @@ import { calculateStreak } from '@/utils/habitUtils';
 function InlineHabitEdit({ value, onSave }) {
   const [editing, setEditing] = useState(false);
   const [val, setVal] = useState(value);
+
+  // Sync local val when external value prop changes (e.g. after a server update)
+  useEffect(() => {
+    if (!editing) setVal(value);
+  }, [value, editing]);
 
   const commit = () => { if (val.trim() && val.trim() !== value) onSave(val.trim()); setEditing(false); };
 

@@ -50,7 +50,7 @@ export default function Projects() {
           <DialogContent className="sm:max-w-md bg-black border-[#00FF87] text-white font-mono"
             style={{ boxShadow: '6px 6px 0 #FF006E' }}>
             <DialogHeader>
-              <DialogTitle className="text-[#00FF87] font-mono tracking-widest">// NEW PROJECT</DialogTitle>
+              <DialogTitle className="text-[#00FF87] font-mono tracking-widest">{"// NEW PROJECT"}</DialogTitle>
             </DialogHeader>
             <form onSubmit={handleCreate} className="space-y-3 mt-2">
               <div className="flex gap-2">
@@ -78,7 +78,7 @@ export default function Projects() {
         ))}
         {projects.length === 0 && (
           <div className="py-10 text-center font-mono text-sm" style={{ color: '#333' }}>
-            // NO PROJECTS INITIALIZED
+            {"// NO PROJECTS INITIALIZED"}
           </div>
         )}
       </div>

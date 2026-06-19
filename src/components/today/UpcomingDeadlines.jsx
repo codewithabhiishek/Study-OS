@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Trash2, Pencil } from 'lucide-react';
@@ -15,6 +15,11 @@ function toTitleCase(str) {
 function InlineEdit({ value, onSave, style }) {
   const [editing, setEditing] = useState(false);
   const [val, setVal] = useState(value);
+
+  // Sync local val when external value prop changes (e.g. after a server update)
+  useEffect(() => {
+    if (!editing) setVal(value);
+  }, [value, editing]);
   const commit = () => { if (val.trim() && val.trim() !== value) onSave(val.trim()); setEditing(false); };
   if (editing) return (
     <input
@@ -85,6 +90,11 @@ export default function UpcomingDeadlines() {
   ];
 
   const sortedDeadlines = combined
+    .filter(d => {
+      const endOfDay = parseLocalDate(d.date);
+      endOfDay.setHours(23, 59, 59, 999);
+      return endOfDay >= new Date();
+    })
     .sort((a, b) => parseLocalDate(a.date) - parseLocalDate(b.date))
     .slice(0, 10);
 

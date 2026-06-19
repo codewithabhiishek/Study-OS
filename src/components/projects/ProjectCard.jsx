@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Check, Plus, ChevronDown, ChevronRight, Pencil, Trash2 } from 'lucide-react';
@@ -7,6 +7,11 @@ import { cn } from '@/lib/utils';
 function InlineEdit({ value, onSave, className, style }) {
   const [editing, setEditing] = useState(false);
   const [val, setVal] = useState(value);
+
+  // Sync local val when external value prop changes (e.g. after a server update)
+  useEffect(() => {
+    if (!editing) setVal(value);
+  }, [value, editing]);
   const commit = () => { if (val.trim() && val.trim() !== value) onSave(val.trim()); setEditing(false); };
   if (editing) return (
     <input
@@ -41,8 +46,19 @@ export default function ProjectCard({ project }) {
   });
 
   const deleteProjectMutation = useMutation({
-    mutationFn: () => base44.entities.Project.delete(project.id),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['projects'] }),
+    mutationFn: async () => {
+      // Fetch all tasks for this project to delete them first
+      const projectTasks = await base44.entities.Task.filter({ project_id: project.id });
+      for (const t of projectTasks) {
+        await base44.entities.Task.delete(t.id);
+      }
+      return base44.entities.Project.delete(project.id);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['projects'] });
+      queryClient.invalidateQueries({ queryKey: ['all-tasks'] });
+      queryClient.invalidateQueries({ queryKey: ['top-tasks'] });
+    },
   });
 
   const deleteTaskMutation = useMutation({

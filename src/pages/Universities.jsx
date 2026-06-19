@@ -90,7 +90,7 @@ export default function Universities() {
         requirements: DEFAULT_REQUIREMENTS
       });
     }
-  }, [universities, isSuccess, globalDocs]);
+  }, [isSuccess, globalDocs]);
 
   // Toggle global requirements mutation
   const toggleGlobalRequirement = useMutation({
@@ -200,7 +200,7 @@ export default function Universities() {
         <div className="lg:col-span-1 space-y-4">
           <div className="flex items-center justify-between border-b border-[#FF006E]/20 pb-3">
             <div className="flex items-center gap-3">
-              <span className="text-xs font-mono text-[#FF006E] uppercase tracking-wider">// TARGET UNIVERSITIES</span>
+              <span className="text-xs font-mono text-[#FF006E] uppercase tracking-wider">{"// TARGET UNIVERSITIES"}</span>
               <span className="text-[10px] font-mono text-gray-500 uppercase">{realUniversities.length} TRACKED</span>
             </div>
             
@@ -213,7 +213,7 @@ export default function Universities() {
               <DialogContent className="sm:max-w-md bg-black border-[#FF006E] text-white font-mono"
                 style={{ boxShadow: '6px 6px 0 #00FF87' }}>
                 <DialogHeader>
-                  <DialogTitle className="text-[#FF006E] font-mono tracking-widest">// ADD UNIVERSITY</DialogTitle>
+                  <DialogTitle className="text-[#FF006E] font-mono tracking-widest">{"// ADD UNIVERSITY"}</DialogTitle>
                 </DialogHeader>
                 <form onSubmit={handleCreate} className="space-y-3 mt-2">
                   <input value={name} onChange={(e) => setName(e.target.value)} placeholder="UNIVERSITY NAME"
@@ -281,7 +281,7 @@ export default function Universities() {
             ))}
             {realUniversities.length === 0 && (
               <div className="py-12 text-center font-mono text-xs border border-dashed border-[#222]" style={{ color: '#444' }}>
-                // NO UNIVERSITIES TRACKED
+                {"// NO UNIVERSITIES TRACKED"}
               </div>
             )}
           </div>
@@ -301,7 +301,7 @@ export default function Universities() {
             }}>
             <div className="flex items-center justify-between border-b border-[#00FF87]/20 pb-3 mb-4">
               <div>
-                <h2 className="text-sm font-bold font-mono tracking-wider text-[#00FF87]" style={{ textShadow: '0 0 8px rgba(0,255,135,0.3)' }}>// GLOBAL DOCUMENTS</h2>
+                <h2 className="text-sm font-bold font-mono tracking-wider text-[#00FF87]" style={{ textShadow: '0 0 8px rgba(0,255,135,0.3)' }}>{"// GLOBAL DOCUMENTS"}</h2>
                 <p className="text-[10px] font-mono text-gray-500 mt-0.5 uppercase">Track overall application files</p>
               </div>
               <div className="text-right">
@@ -346,7 +346,7 @@ export default function Universities() {
               ))}
               {localGlobalReqs.length === 0 && (
                 <div className="col-span-full text-center py-4 font-mono text-xs text-[#333]">
-                  // NO DOCUMENTS ADDED
+                  {"// NO DOCUMENTS ADDED"}
                 </div>
               )}
             </div>
@@ -354,7 +354,7 @@ export default function Universities() {
             {/* Add custom document input + suggestions */}
             <div className="border-t border-[#222] pt-4 space-y-4">
               <div>
-                <span className="text-[9px] font-mono text-[#888] block mb-1 uppercase">// ADD CUSTOM DOCUMENT</span>
+                <span className="text-[9px] font-mono text-[#888] block mb-1 uppercase">{"// ADD CUSTOM DOCUMENT"}</span>
                 <form
                   onSubmit={(e) => {
                     e.preventDefault();
@@ -380,7 +380,7 @@ export default function Universities() {
 
               {/* Quick suggestions panel */}
               <div>
-                <span className="text-[9px] font-mono text-[#888] block mb-1 uppercase">// QUICK SUGGESTIONS</span>
+                <span className="text-[9px] font-mono text-[#888] block mb-1 uppercase">{"// QUICK SUGGESTIONS"}</span>
                 <div className="flex flex-wrap gap-1">
                   {['CV/RESUME', 'LOR', 'BACHELORS', 'SYLLABUS', 'LANG CERT', 'UNI-ASSIST'].map(item => {
                     const exists = localGlobalReqs.some(r => r.name.toLowerCase() === item.toLowerCase());
@@ -408,7 +408,7 @@ export default function Universities() {
         <DialogContent className="sm:max-w-md bg-black border-[#FF006E] text-white font-mono"
           style={{ boxShadow: '6px 6px 0 #00FF87' }}>
           <DialogHeader>
-            <DialogTitle className="text-[#FF006E] font-mono tracking-widest">// EDIT UNIVERSITY</DialogTitle>
+            <DialogTitle className="text-[#FF006E] font-mono tracking-widest">{"// EDIT UNIVERSITY"}</DialogTitle>
           </DialogHeader>
           <form onSubmit={handleUpdate} className="space-y-3 mt-2">
             <input value={editName} onChange={(e) => setEditName(e.target.value)} placeholder="UNIVERSITY NAME"

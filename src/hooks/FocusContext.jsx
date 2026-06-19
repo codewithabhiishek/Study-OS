@@ -286,8 +286,8 @@ export function FocusProvider({ children }) {
     unlockAudioContext();
     if (phase === 'work') {
       const elapsedSeconds = workMinutes * 60 - seconds;
-      const elapsedMinutes = Math.floor(elapsedSeconds / 60);
-      if (seconds > 0 && elapsedMinutes >= 1) {
+      const elapsedMinutes = Math.round(elapsedSeconds / 60);
+      if (elapsedMinutes >= 1) {
         logFocusSession({
           project_id: selectedProject?.id || null,
           project_name: selectedProject?.title || 'Unassigned',
@@ -361,10 +361,17 @@ export function FocusProvider({ children }) {
     return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
   }, [running]);
 
+  const sessionLoggedRef = useRef(false);
+
   useEffect(() => {
     if (!running) {
       if (intervalRef.current) clearInterval(intervalRef.current);
       return undefined;
+    }
+
+    // Reset log guard when a new work session starts and we are running
+    if (phase === 'work' && seconds > 0) {
+      sessionLoggedRef.current = false;
     }
 
     intervalRef.current = setInterval(() => {
@@ -380,13 +387,16 @@ export function FocusProvider({ children }) {
           if (notificationsEnabled) {
             notify('Focus session complete', 'Great job! Time for a break.');
           }
-          logFocusSession({
-            project_id: selectedProject?.id || null,
-            project_name: selectedProject?.title || 'Unassigned',
-            duration_minutes: workMinutes,
-            session_date: getLocalDateStr(),
-            type: isCustom ? 'custom' : 'pomodoro',
-          });
+          if (!sessionLoggedRef.current) {
+            sessionLoggedRef.current = true;
+            logFocusSession({
+              project_id: selectedProject?.id || null,
+              project_name: selectedProject?.title || 'Unassigned',
+              duration_minutes: workMinutes,
+              session_date: getLocalDateStr(),
+              type: isCustom ? 'custom' : 'pomodoro',
+            });
+          }
           if (pomodoroEnabled) {
             setPhase('break');
             setSeconds(breakMinutes * 60);
@@ -438,18 +448,44 @@ export function FocusProvider({ children }) {
   }, []);
 
   const handleSetPreset = useCallback((p) => {
+    if (running && phase === 'work') {
+      const elapsedSeconds = workMinutes * 60 - seconds;
+      const elapsedMinutes = Math.round(elapsedSeconds / 60);
+      if (elapsedMinutes >= 1) {
+        logFocusSession({
+          project_id: selectedProject?.id || null,
+          project_name: selectedProject?.title || 'Unassigned',
+          duration_minutes: elapsedMinutes,
+          session_date: getLocalDateStr(),
+          type: isCustom ? 'custom' : 'pomodoro',
+        });
+      }
+    }
     setRunning(false);
     setPhase('work');
     setPreset(p);
     setSeconds(p.work * 60);
-  }, []);
+  }, [running, phase, workMinutes, seconds, selectedProject, isCustom, logFocusSession]);
 
   const handleSetIsCustom = useCallback((val) => {
+    if (running && phase === 'work') {
+      const elapsedSeconds = workMinutes * 60 - seconds;
+      const elapsedMinutes = Math.round(elapsedSeconds / 60);
+      if (elapsedMinutes >= 1) {
+        logFocusSession({
+          project_id: selectedProject?.id || null,
+          project_name: selectedProject?.title || 'Unassigned',
+          duration_minutes: elapsedMinutes,
+          session_date: getLocalDateStr(),
+          type: isCustom ? 'custom' : 'pomodoro',
+        });
+      }
+    }
     setRunning(false);
     setPhase('work');
     setIsCustom(val);
     setSeconds(val ? customWork * 60 : preset.work * 60);
-  }, [customWork, preset]);
+  }, [running, phase, workMinutes, seconds, selectedProject, isCustom, customWork, preset, logFocusSession]);
 
   return (
     <FocusContext.Provider
