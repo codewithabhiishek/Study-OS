@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { base44 } from '@/api/base44Client';
+import { supabaseClient } from '@/api/supabaseClient';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Check, Plus, ChevronDown, ChevronRight, Pencil, Trash2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -41,18 +41,18 @@ export default function ProjectCard({ project }) {
   const [adding, setAdding] = useState(false);
 
   const updateProjectMutation = useMutation({
-    mutationFn: (data) => base44.entities.Project.update(project.id, data),
+    mutationFn: (data) => supabaseClient.entities.Project.update(project.id, data),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['projects'] }),
   });
 
   const deleteProjectMutation = useMutation({
     mutationFn: async () => {
       // Fetch all tasks for this project to delete them first
-      const projectTasks = await base44.entities.Task.filter({ project_id: project.id });
+      const projectTasks = await supabaseClient.entities.Task.filter({ project_id: project.id });
       for (const t of projectTasks) {
-        await base44.entities.Task.delete(t.id);
+        await supabaseClient.entities.Task.delete(t.id);
       }
-      return base44.entities.Project.delete(project.id);
+      return supabaseClient.entities.Project.delete(project.id);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['projects'] });
@@ -62,27 +62,27 @@ export default function ProjectCard({ project }) {
   });
 
   const deleteTaskMutation = useMutation({
-    mutationFn: (id) => base44.entities.Task.delete(id),
+    mutationFn: (id) => supabaseClient.entities.Task.delete(id),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['project-tasks', project.id] }),
   });
 
   const renameTaskMutation = useMutation({
-    mutationFn: ({ id, title }) => base44.entities.Task.update(id, { title }),
+    mutationFn: ({ id, title }) => supabaseClient.entities.Task.update(id, { title }),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['project-tasks', project.id] }),
   });
 
   const { data: tasks = [] } = useQuery({
     queryKey: ['project-tasks', project.id],
-    queryFn: () => base44.entities.Task.filter({ project_id: project.id }, 'order'),
+    queryFn: () => supabaseClient.entities.Task.filter({ project_id: project.id }, 'order'),
   });
 
   const toggleMutation = useMutation({
-    mutationFn: ({ id, completed }) => base44.entities.Task.update(id, { completed: !completed }),
+    mutationFn: ({ id, completed }) => supabaseClient.entities.Task.update(id, { completed: !completed }),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['project-tasks', project.id] }),
   });
 
   const createMutation = useMutation({
-    mutationFn: (title) => base44.entities.Task.create({ title, project_id: project.id, order: tasks.length }),
+    mutationFn: (title) => supabaseClient.entities.Task.create({ title, project_id: project.id, order: tasks.length }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['project-tasks', project.id] });
       setNewTask('');

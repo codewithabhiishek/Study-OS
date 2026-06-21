@@ -1,8 +1,8 @@
 /**
  * Backwards-compatible facade that emulates the small subset of the
- * (now removed) Base44 SDK that this app actually used, on top of Supabase.
+ * (now removed) legacy SDK that this app actually used, on top of Supabase.
  *
- * Pages and components keep importing `base44` from `@/api/base44Client`,
+ * Pages and components keep importing `supabaseClient` from `@/api/supabaseClient`,
  * which is now backed entirely by Supabase Auth + Postgres + RLS.
  */
 import { supabase } from '@/lib/supabase';
@@ -14,7 +14,6 @@ const TABLE = {
   Habit: 'habits',
   Deadline: 'deadlines',
   FocusSession: 'focus_sessions',
-  University: 'universities',
 };
 
 // Sort string used by the legacy API:
@@ -33,7 +32,7 @@ async function getUserId() {
 
 function makeEntity(entityName) {
   const table = TABLE[entityName];
-  if (!table) throw new Error(`[base44 shim] Unknown entity: ${entityName}`);
+  if (!table) throw new Error(`[supabase client] Unknown entity: ${entityName}`);
 
   const baseQuery = () => supabase.from(table).select('*');
 
@@ -97,14 +96,13 @@ function makeEntity(entityName) {
   };
 }
 
-export const base44 = {
+export const supabaseClient = {
   entities: {
     Task: makeEntity('Task'),
     Project: makeEntity('Project'),
     Habit: makeEntity('Habit'),
     Deadline: makeEntity('Deadline'),
     FocusSession: makeEntity('FocusSession'),
-    University: makeEntity('University'),
   },
   auth: {
     async me() {

@@ -12,7 +12,7 @@ import ResetPassword from '@/pages/ResetPassword';
 import AppLayout from '@/components/layout/AppLayout';
 import Today from '@/pages/Today';
 import Projects from '@/pages/Projects';
-import Universities from '@/pages/Universities';
+
 import Focus from '@/pages/Focus';
 import Review from '@/pages/Review';
 import Calendar from '@/pages/Calendar';
@@ -34,7 +34,7 @@ function App() {
               <Route element={<AppLayout />}>
                 <Route path="/" element={<Today />} />
                 <Route path="/projects" element={<Projects />} />
-                <Route path="/universities" element={<Universities />} />
+
                 <Route path="/focus" element={<Focus />} />
                 <Route path="/review" element={<Review />} />
                 <Route path="/calendar" element={<Calendar />} />

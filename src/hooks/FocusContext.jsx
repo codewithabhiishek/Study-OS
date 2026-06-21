@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, useRef, useCallback, useMemo } from 'react';
-import { base44 } from '@/api/base44Client';
+import { supabaseClient } from '@/api/supabaseClient';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 
 const FocusContext = createContext(null);
@@ -185,7 +185,7 @@ export function FocusProvider({ children }) {
       for (const session of queue) {
         try {
           const { id, ...dataToSync } = session;
-          await base44.entities.FocusSession.create(dataToSync);
+          await supabaseClient.entities.FocusSession.create(dataToSync);
           removeFromOfflineQueue(session.id);
           queryClient.invalidateQueries({ queryKey: ['focus_sessions'] });
           queryClient.invalidateQueries({ queryKey: ['focus-sessions'] });
@@ -256,7 +256,7 @@ export function FocusProvider({ children }) {
   const today = getLocalDateStr();
 
   const logMutation = useMutation({
-    mutationFn: (data) => base44.entities.FocusSession.create(data),
+    mutationFn: (data) => supabaseClient.entities.FocusSession.create(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['focus_sessions', today] });
       queryClient.invalidateQueries({ queryKey: ['focus-sessions'] });

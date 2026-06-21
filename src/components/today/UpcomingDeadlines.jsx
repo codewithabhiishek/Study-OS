@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { base44 } from '@/api/base44Client';
+import { supabaseClient } from '@/api/supabaseClient';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Trash2, Pencil } from 'lucide-react';
 
@@ -48,23 +48,20 @@ export default function UpcomingDeadlines() {
   const { data: deadlines = [] } = useQuery({
     queryKey: ['deadlines'],
     queryFn: async () => {
-      const all = await base44.entities.Deadline.list('date', 10);
+      const all = await supabaseClient.entities.Deadline.list('date', 10);
       return all.filter(d => d.category !== 'mission');
     },
   });
 
-  const { data: universities = [] } = useQuery({
-    queryKey: ['universities'],
-    queryFn: () => base44.entities.University.list(),
-  });
+
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, data }) => base44.entities.Deadline.update(id, data),
+    mutationFn: ({ id, data }) => supabaseClient.entities.Deadline.update(id, data),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['deadlines'] }),
   });
 
   const deleteMutation = useMutation({
-    mutationFn: (id) => base44.entities.Deadline.delete(id),
+    mutationFn: (id) => supabaseClient.entities.Deadline.delete(id),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['deadlines'] }),
   });
 
@@ -77,19 +74,7 @@ export default function UpcomingDeadlines() {
   const getDaysRemaining = (dateStr) =>
     Math.ceil((parseLocalDate(dateStr) - new Date()) / (1000 * 60 * 60 * 24));
 
-  const realUniDeadlines = universities.filter(u => u.name !== '__GLOBAL_DOCUMENTS__' && u.deadline);
-
-  const combined = [
-    ...deadlines.map(d => ({ ...d, type: 'deadline' })),
-    ...realUniDeadlines.map(u => ({
-      id: u.id,
-      title: `${toTitleCase(u.name)} DEADLINE`,
-      date: u.deadline,
-      type: 'uni-deadline'
-    }))
-  ];
-
-  const sortedDeadlines = combined
+  const sortedDeadlines = deadlines.map(d => ({ ...d, type: 'deadline' }))
     .filter(d => {
       const endOfDay = parseLocalDate(d.date);
       endOfDay.setHours(23, 59, 59, 999);
@@ -109,43 +94,32 @@ export default function UpcomingDeadlines() {
         {sortedDeadlines.map((d) => {
           const days = getDaysRemaining(d.date);
           const urgent = days <= 90;
-          const isUni = d.type === 'uni-deadline';
-          const borderColor = isUni ? '#FF006E' : urgent ? '#FF006E' : '#1a1a1a';
-          const background = isUni 
-            ? 'rgba(255,0,110,0.1)' 
-            : urgent 
-              ? 'rgba(255,0,110,0.05)' 
-              : 'transparent';
+          const borderColor = urgent ? '#FF006E' : '#1a1a1a';
+          const background = urgent 
+            ? 'rgba(255,0,110,0.05)' 
+            : 'transparent';
 
           return (
             <div key={`${d.type}-${d.id}`} className="flex items-center justify-between px-3 py-2 group"
               style={{ border: `1px solid ${borderColor}`, background }}>
-              {isUni ? (
-                <span className="text-xs font-mono font-bold flex-1" style={{ color: '#FF006E', borderLeft: '1.5px solid #FF006E', paddingLeft: '6px' }}>
-                  {d.title}
-                </span>
-              ) : (
-                <InlineEdit
-                  value={d.title}
-                  onSave={(title) => updateMutation.mutate({ id: d.id, data: { title } })}
-                  style={{ color: urgent ? '#FF006E' : '#555' }}
-                />
-              )}
+              <InlineEdit
+                value={d.title}
+                onSave={(title) => updateMutation.mutate({ id: d.id, data: { title } })}
+                style={{ color: urgent ? '#FF006E' : '#555' }}
+              />
               <div className="flex items-center gap-2 ml-2 flex-shrink-0">
                 <span className="text-sm font-mono font-bold tabular-nums"
-                  style={{ color: urgent || isUni ? '#FF006E' : '#444', textShadow: urgent || isUni ? '0 0 8px #FF006E' : 'none' }}>
+                  style={{ color: urgent ? '#FF006E' : '#444', textShadow: urgent ? '0 0 8px #FF006E' : 'none' }}>
                   {days > 0 ? `${days}D` : 'PAST'}
                 </span>
-                {d.type !== 'uni-deadline' && (
-                  <button
-                    onClick={() => deleteMutation.mutate(d.id)}
-                    className="opacity-0 group-hover:opacity-40 hover:!opacity-100 transition-opacity"
-                    style={{ color: '#FF006E' }}
-                    title="Delete Deadline"
-                  >
-                    <Trash2 className="w-3 h-3" />
-                  </button>
-                )}
+                <button
+                  onClick={() => deleteMutation.mutate(d.id)}
+                  className="opacity-0 group-hover:opacity-40 hover:!opacity-100 transition-opacity"
+                  style={{ color: '#FF006E' }}
+                  title="Delete Deadline"
+                >
+                  <Trash2 className="w-3 h-3" />
+                </button>
               </div>
             </div>
           );

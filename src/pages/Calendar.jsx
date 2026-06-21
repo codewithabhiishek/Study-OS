@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { base44 } from '@/api/base44Client';
+import { supabaseClient } from '@/api/supabaseClient';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { ChevronLeft, ChevronRight, Plus, Trash2, Clock } from 'lucide-react';
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, isSameMonth, addMonths, subMonths, isToday } from 'date-fns';
@@ -103,23 +103,20 @@ export default function Calendar() {
   const { data: deadlines = [] } = useQuery({
     queryKey: ['deadlines'],
     queryFn: async () => {
-      const all = await base44.entities.Deadline.list('date', 50);
+      const all = await supabaseClient.entities.Deadline.list('date', 50);
       return all.filter(d => d.category !== 'mission');
     },
   });
 
   const { data: tasks = [] } = useQuery({
     queryKey: ['all-tasks'],
-    queryFn: () => base44.entities.Task.list('due_date', 100),
+    queryFn: () => supabaseClient.entities.Task.list('due_date', 100),
   });
 
-  const { data: universities = [] } = useQuery({
-    queryKey: ['universities'],
-    queryFn: () => base44.entities.University.list(),
-  });
+
 
   const createMutation = useMutation({
-    mutationFn: (data) => base44.entities.Deadline.create(data),
+    mutationFn: (data) => supabaseClient.entities.Deadline.create(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['deadlines'] });
       setNewDeadline({ title: '', date: '' });
@@ -128,7 +125,7 @@ export default function Calendar() {
   });
 
   const deleteMutation = useMutation({
-    mutationFn: (id) => base44.entities.Deadline.delete(id),
+    mutationFn: (id) => supabaseClient.entities.Deadline.delete(id),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['deadlines'] }),
   });
 
@@ -148,20 +145,7 @@ export default function Calendar() {
     eventsByDate[k].push({ ...t, type: 'task' });
   });
 
-  const realUniDeadlines = universities.filter(u => u.name !== '__GLOBAL_DOCUMENTS__' && u.deadline);
-  realUniDeadlines.forEach(u => {
-    const k = u.deadline;
-    if (!eventsByDate[k]) eventsByDate[k] = [];
-    eventsByDate[k].push({ id: u.id, title: `${toTitleCase(u.name)} DEADLINE`, date: u.deadline, type: 'uni-deadline' });
-  });
-
-  // Combine deadlines and uni-deadlines for countdown
-  const combinedDeadlines = [
-    ...deadlines.map(d => ({ ...d, type: 'deadline' })),
-    ...realUniDeadlines.map(u => ({ id: u.id, title: `${toTitleCase(u.name)} DEADLINE`, date: u.deadline, type: 'uni-deadline' }))
-  ];
-
-  const upcomingDeadlines = combinedDeadlines
+  const upcomingDeadlines = deadlines.map(d => ({ ...d, type: 'deadline' }))
     .filter(d => {
       const target = parseLocalDate(d.date);
       const endOfDay = new Date(target);
@@ -230,18 +214,14 @@ export default function Calendar() {
                 </div>
                 <div className="space-y-px">
                   {events.slice(0, 2).map((e, i) => {
-                    const isUni = e.type === 'uni-deadline';
                     const isTask = e.type === 'task';
                     return (
                       <div key={i} className="truncate text-[8px] font-mono px-0.5"
                         style={{
                           background: isTask 
                             ? 'rgba(0,255,135,0.15)' 
-                            : isUni 
-                              ? 'rgba(255,0,110,0.45)' 
-                              : 'rgba(255,0,110,0.25)',
+                            : 'rgba(255,0,110,0.25)',
                           color: isTask ? '#00FF87' : '#FF006E',
-                          borderLeft: isUni ? '1.5px solid #FF006E' : 'none',
                         }}>
                         {e.title}
                       </div>
@@ -262,10 +242,7 @@ export default function Calendar() {
             <div className="w-2 h-2" style={{ background: 'rgba(255,0,110,0.25)' }} />
             <span className="text-[10px] font-mono" style={{ color: '#555' }}>DEADLINE</span>
           </div>
-          <div className="flex items-center gap-1.5">
-            <div className="w-2 h-2" style={{ background: 'rgba(255,0,110,0.45)', borderLeft: '1.5px solid #FF006E' }} />
-            <span className="text-[10px] font-mono" style={{ color: '#555' }}>UNI DEADLINE</span>
-          </div>
+
           <div className="flex items-center gap-1.5">
             <div className="w-2 h-2" style={{ background: 'rgba(0,255,135,0.3)' }} />
             <span className="text-[10px] font-mono" style={{ color: '#555' }}>TASK</span>
@@ -325,16 +302,14 @@ export default function Calendar() {
             upcomingDeadlines.map((d) => (
               <div key={`${d.type}-${d.id}`} className="group relative">
                 <CountdownRow item={d} />
-                {d.type !== 'uni-deadline' && (
-                  <button
-                    onClick={() => deleteMutation.mutate(d.id)}
-                    className="absolute top-2 right-2 opacity-0 group-hover:opacity-40 hover:!opacity-100 transition-opacity"
-                    style={{ color: '#FF006E' }}
-                    title="Delete Deadline"
-                  >
-                    <Trash2 className="w-3 h-3" />
-                  </button>
-                )}
+                <button
+                  onClick={() => deleteMutation.mutate(d.id)}
+                  className="absolute top-2 right-2 opacity-0 group-hover:opacity-40 hover:!opacity-100 transition-opacity"
+                  style={{ color: '#FF006E' }}
+                  title="Delete Deadline"
+                >
+                  <Trash2 className="w-3 h-3" />
+                </button>
               </div>
             ))
           )}

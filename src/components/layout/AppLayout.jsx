@@ -4,7 +4,7 @@ import Sidebar from './Sidebar';
 
 export default function AppLayout() {
   const location = useLocation();
-  const isWidePage = location.pathname.includes('universities') || location.pathname.includes('calendar');
+  const isWidePage = location.pathname.includes('calendar');
 
   return (
     <div className="min-h-screen bg-black">

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { base44 } from '@/api/base44Client';
+import { supabaseClient } from '@/api/supabaseClient';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Plus } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
@@ -14,11 +14,11 @@ export default function Projects() {
 
   const { data: projects = [] } = useQuery({
     queryKey: ['projects'],
-    queryFn: () => base44.entities.Project.list(),
+    queryFn: () => supabaseClient.entities.Project.list(),
   });
 
   const createMutation = useMutation({
-    mutationFn: (data) => base44.entities.Project.create(data),
+    mutationFn: (data) => supabaseClient.entities.Project.create(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['projects'] });
       setOpen(false);

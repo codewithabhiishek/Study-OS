@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { base44 } from '@/api/base44Client';
+import { supabaseClient } from '@/api/supabaseClient';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Check, Plus, Pencil, Trash2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -46,16 +46,16 @@ export default function TopTasks() {
 
   const { data: tasks = [] } = useQuery({
     queryKey: ['top-tasks'],
-    queryFn: () => base44.entities.Task.filter({ is_top_three: true }, 'order', 10),
+    queryFn: () => supabaseClient.entities.Task.filter({ is_top_three: true }, 'order', 10),
   });
 
   const { data: projects = [] } = useQuery({
     queryKey: ['projects'],
-    queryFn: () => base44.entities.Project.list(),
+    queryFn: () => supabaseClient.entities.Project.list(),
   });
 
   const toggleMutation = useMutation({
-    mutationFn: ({ id, completed }) => base44.entities.Task.update(id, { completed: !completed }),
+    mutationFn: ({ id, completed }) => supabaseClient.entities.Task.update(id, { completed: !completed }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['top-tasks'] });
       queryClient.invalidateQueries({ queryKey: ['all-tasks'] });
@@ -63,17 +63,17 @@ export default function TopTasks() {
   });
 
   const renameMutation = useMutation({
-    mutationFn: ({ id, title }) => base44.entities.Task.update(id, { title }),
+    mutationFn: ({ id, title }) => supabaseClient.entities.Task.update(id, { title }),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['top-tasks'] }),
   });
 
   const deleteMutation = useMutation({
-    mutationFn: (id) => base44.entities.Task.delete(id),
+    mutationFn: (id) => supabaseClient.entities.Task.delete(id),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['top-tasks'] }),
   });
 
   const createMutation = useMutation({
-    mutationFn: (title) => base44.entities.Task.create({ title, is_top_three: true, order: tasks.length }),
+    mutationFn: (title) => supabaseClient.entities.Task.create({ title, is_top_three: true, order: tasks.length }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['top-tasks'] });
       setNewTask('');

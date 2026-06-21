@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { base44 } from '@/api/base44Client';
+import { supabaseClient } from '@/api/supabaseClient';
 import { useQuery } from '@tanstack/react-query';
 import { calculateStreak } from '@/utils/habitUtils';
 import { useFocus } from '@/hooks/FocusContext';
@@ -10,7 +10,7 @@ export default function Review() {
   const { offlineQueue = [] } = useFocus();
   const { data: sessions = [] } = useQuery({
     queryKey: ['focus-sessions'],
-    queryFn: () => base44.entities.FocusSession.list('-session_date', 200),
+    queryFn: () => supabaseClient.entities.FocusSession.list('-session_date', 200),
   });
 
   const mergedSessions = useMemo(() => {
@@ -20,15 +20,15 @@ export default function Review() {
   }, [sessions, offlineQueue]);
   const { data: habits = [] } = useQuery({
     queryKey: ['habits'],
-    queryFn: () => base44.entities.Habit.list(),
+    queryFn: () => supabaseClient.entities.Habit.list(),
   });
   const { data: projects = [] } = useQuery({
     queryKey: ['projects'],
-    queryFn: () => base44.entities.Project.list(),
+    queryFn: () => supabaseClient.entities.Project.list(),
   });
   const { data: allTasks = [] } = useQuery({
     queryKey: ['all-tasks'],
-    queryFn: () => base44.entities.Task.list(),
+    queryFn: () => supabaseClient.entities.Task.list(),
   });
 
   // Local timezone safe parsing of YYYY-MM-DD strings to local midnight

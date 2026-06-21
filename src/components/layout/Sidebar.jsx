@@ -1,14 +1,14 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { CalendarDays, FolderOpen, GraduationCap, Timer, BarChart3, Calendar } from 'lucide-react';
+import { CalendarDays, FolderOpen, Timer, BarChart3, Calendar } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useQuery } from '@tanstack/react-query';
-import { base44 } from '@/api/base44Client';
+import { supabaseClient } from '@/api/supabaseClient';
 
 const navItems = [
   { path: '/', label: 'TODAY', icon: CalendarDays },
   { path: '/projects', label: 'PROJECTS', icon: FolderOpen },
-  { path: '/universities', label: 'UNIV', icon: GraduationCap },
+
   { path: '/calendar', label: 'CALENDAR', icon: Calendar },
   { path: '/focus', label: 'FOCUS', icon: Timer },
   { path: '/review', label: 'REVIEW', icon: BarChart3 },
@@ -18,7 +18,7 @@ export default function Sidebar() {
   const location = useLocation();
   const { data: missions = [] } = useQuery({
     queryKey: ['active-mission'],
-    queryFn: () => base44.entities.Deadline.filter({ category: 'mission' }),
+    queryFn: () => supabaseClient.entities.Deadline.filter({ category: 'mission' }),
   });
   const activeMission = missions[0] || { title: 'EUROPE 2027' };
 

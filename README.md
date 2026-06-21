@@ -3,7 +3,7 @@
 A personal study operating system: today view, projects, habits, focus
 timer, deadlines, university tracker, and weekly review.
 
-This codebase has been fully de-Base44'd and migrated to **Supabase**
+This codebase has been fully migrated to **Supabase**
 (auth + Postgres + RLS). The UI is unchanged.
 
 ## Tech stack
@@ -105,7 +105,7 @@ netlify deploy --prod --build
 
 ```
 src/
-  api/base44Client.js     ← thin Supabase-backed compatibility shim
+  api/supabaseClient.js     ← thin Supabase-backed compatibility shim
   lib/
     supabase.js           ← Supabase client
     AuthContext.jsx       ← Supabase Auth context
@@ -118,16 +118,4 @@ supabase/
   migrations/0001_init.sql
 ```
 
-## What changed vs. the original Base44 export
 
-- Removed `@base44/sdk`, `@base44/vite-plugin`, and all Base44 imports.
-- Removed `entities/*` JSON entity descriptors (now real SQL tables).
-- Removed Base44 app-params / token bootstrapping.
-- Removed Stripe, Leaflet, Three.js, jspdf, html2canvas, framer-motion,
-  react-quill, recharts, lodash, moment, and other unused deps.
-- Added Supabase client, auth flows, RLS-scoped schema, and Register page.
-- Auth (`/login`, `/register`, `/forgot-password`, `/reset-password`)
-  now runs entirely on Supabase Auth.
-- All data reads/writes (`base44.entities.X.list/filter/create/update/delete`)
-  go to Supabase via a small compatibility shim — every existing page works
-  with the same call sites, no UI changes.

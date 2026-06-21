@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { base44 } from '@/api/base44Client';
+import { supabaseClient } from '@/api/supabaseClient';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Check, Plus, Trash2 } from 'lucide-react';
 import { calculateStreak } from '@/utils/habitUtils';
@@ -47,7 +47,7 @@ export default function HabitChecklist() {
 
   const { data: habits = [] } = useQuery({
     queryKey: ['habits'],
-    queryFn: () => base44.entities.Habit.list(),
+    queryFn: () => supabaseClient.entities.Habit.list(),
   });
 
   const toggleMutation = useMutation({
@@ -56,23 +56,23 @@ export default function HabitChecklist() {
       const done = dates.includes(today);
       const newDates = done ? dates.filter(d => d !== today) : [...dates, today];
       const newStreak = calculateStreak(newDates);
-      return base44.entities.Habit.update(habit.id, { completed_dates: newDates, streak: newStreak });
+      return supabaseClient.entities.Habit.update(habit.id, { completed_dates: newDates, streak: newStreak });
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['habits'] }),
   });
 
   const renameMutation = useMutation({
-    mutationFn: ({ id, title }) => base44.entities.Habit.update(id, { title }),
+    mutationFn: ({ id, title }) => supabaseClient.entities.Habit.update(id, { title }),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['habits'] }),
   });
 
   const deleteMutation = useMutation({
-    mutationFn: (id) => base44.entities.Habit.delete(id),
+    mutationFn: (id) => supabaseClient.entities.Habit.delete(id),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['habits'] }),
   });
 
   const createMutation = useMutation({
-    mutationFn: (title) => base44.entities.Habit.create({ title, streak: 0, completed_dates: [] }),
+    mutationFn: (title) => supabaseClient.entities.Habit.create({ title, streak: 0, completed_dates: [] }),
     onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['habits'] }); setNewHabit(''); setAdding(false); },
   });
 

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { createPortal } from 'react-dom';
-import { base44 } from '@/api/base44Client';
+import { supabaseClient } from '@/api/supabaseClient';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Play, Pause, RotateCcw, Maximize2, Minimize2, Bell, BellOff } from 'lucide-react';
 
@@ -38,14 +38,14 @@ export default function Focus() {
 
   const { data: projects = [] } = useQuery({
     queryKey: ['projects'],
-    queryFn: () => base44.entities.Project.list(),
+    queryFn: () => supabaseClient.entities.Project.list(),
   });
 
   const localNow = new Date();
   const today = `${localNow.getFullYear()}-${String(localNow.getMonth() + 1).padStart(2, '0')}-${String(localNow.getDate()).padStart(2, '0')}`;
   const { data: todaySessions = [] } = useQuery({
     queryKey: ['focus_sessions', today],
-    queryFn: () => base44.entities.FocusSession.filter({ session_date: today }),
+    queryFn: () => supabaseClient.entities.FocusSession.filter({ session_date: today }),
   });
 
   const stats = useMemo(() => {

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Pencil, Check, X } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { base44 } from '@/api/base44Client';
+import { supabaseClient } from '@/api/supabaseClient';
 
 const DEFAULT_MISSION = { title: 'EUROPE 2027', date: '2027-06-01' };
 
@@ -43,7 +43,7 @@ export default function MissionBanner() {
 
   const { data: missions = [], isLoading } = useQuery({
     queryKey: ['active-mission'],
-    queryFn: () => base44.entities.Deadline.filter({ category: 'mission' }),
+    queryFn: () => supabaseClient.entities.Deadline.filter({ category: 'mission' }),
   });
 
   const activeMission = missions[0] || DEFAULT_MISSION;
@@ -52,12 +52,12 @@ export default function MissionBanner() {
   const saveMutation = useMutation({
     mutationFn: async (newMission) => {
       if (missions[0]?.id) {
-        return base44.entities.Deadline.update(missions[0].id, {
+        return supabaseClient.entities.Deadline.update(missions[0].id, {
           title: newMission.title,
           date: newMission.date,
         });
       } else {
-        return base44.entities.Deadline.create({
+        return supabaseClient.entities.Deadline.create({
           title: newMission.title,
           date: newMission.date,
           category: 'mission',
