@@ -122,7 +122,12 @@ export function FocusProvider({ children }) {
     }
     return PRESETS[0];
   });
-  const [customWork, setCustomWork] = useState(initialTimer?.customWork ?? 30);
+  const [customWork, setCustomWork] = useState(() => {
+    const saved = initialTimer?.customWork;
+    if (saved === undefined || saved === null || saved === '') return 30;
+    const parsed = parseInt(saved, 10);
+    return isNaN(parsed) || parsed < 1 ? 30 : parsed;
+  });
   const [isCustom, setIsCustom] = useState(initialTimer?.isCustom ?? false);
   const [seconds, setSeconds] = useState(() => {
     if (initialTimer) return initialTimer.seconds;
@@ -213,8 +218,8 @@ export function FocusProvider({ children }) {
     return () => window.removeEventListener('online', handleOnline);
   }, [syncOfflineQueue]);
 
-  const workMinutes = isCustom ? customWork : preset.work;
-  const breakMinutes = isCustom ? Math.max(1, Math.round(customWork / 5)) : preset.rest;
+  const workMinutes = isCustom ? (parseInt(customWork, 10) || 1) : preset.work;
+  const breakMinutes = isCustom ? Math.max(1, Math.round(workMinutes / 5)) : preset.rest;
   const phaseMinutes = phase === 'work' ? workMinutes : breakMinutes;
 
   // Persist user settings
@@ -401,14 +406,21 @@ export function FocusProvider({ children }) {
 
   const toggleRunning = useCallback((valOrFunc) => {
     unlockAudioContext();
+    const next = typeof valOrFunc === 'function' ? valOrFunc(running) : valOrFunc;
+    if (next) {
+      const parsed = parseInt(customWork, 10);
+      if (isNaN(parsed) || parsed < 1) {
+        setCustomWork(1);
+      }
+    }
     setRunning((prev) => {
-      const next = typeof valOrFunc === 'function' ? valOrFunc(prev) : valOrFunc;
-      if (next && seconds <= 0) {
+      const n = typeof valOrFunc === 'function' ? valOrFunc(prev) : valOrFunc;
+      if (n && seconds <= 0) {
         return false;
       }
-      return next;
+      return n;
     });
-  }, [seconds]);
+  }, [running, customWork, seconds]);
 
   const toggleSoundEnabled = useCallback((valOrFunc) => {
     unlockAudioContext();
@@ -449,10 +461,22 @@ export function FocusProvider({ children }) {
         });
       }
     }
+    
+    let resolvedCustomWork = 30;
+    if (val) {
+      const parsed = parseInt(customWork, 10);
+      if (isNaN(parsed) || parsed < 1) {
+        setCustomWork(1);
+        resolvedCustomWork = 1;
+      } else {
+        resolvedCustomWork = parsed;
+      }
+    }
+
     setRunning(false);
     setPhase('work');
     setIsCustom(val);
-    setSeconds(val ? customWork * 60 : preset.work * 60);
+    setSeconds(val ? resolvedCustomWork * 60 : preset.work * 60);
   }, [running, phase, workMinutes, seconds, selectedProject, isCustom, customWork, preset, logFocusSession]);
 
   return (

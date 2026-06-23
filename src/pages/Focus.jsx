@@ -360,7 +360,21 @@ export default function Focus() {
               <input
                 type="number"
                 value={customWork}
-                onChange={(e) => setCustomWork(Math.max(1, parseInt(e.target.value, 10) || 1))}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  if (val === '') {
+                    setCustomWork('');
+                  } else {
+                    const parsed = parseInt(val, 10);
+                    setCustomWork(isNaN(parsed) ? '' : parsed);
+                  }
+                }}
+                onBlur={() => {
+                  const parsed = parseInt(customWork, 10);
+                  if (isNaN(parsed) || parsed < 1) {
+                    setCustomWork(1);
+                  }
+                }}
                 className="w-16 text-center text-sm font-mono bg-black py-2 outline-none"
                 style={{ border: '1px solid #00FF87', color: '#00FF87', caretColor: '#00FF87' }}
                 min="1"
