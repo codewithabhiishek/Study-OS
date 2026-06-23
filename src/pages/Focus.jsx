@@ -366,18 +366,21 @@ export default function Focus() {
                     setCustomWork('');
                   } else {
                     const parsed = parseInt(val, 10);
-                    setCustomWork(isNaN(parsed) ? '' : parsed);
+                    setCustomWork(isNaN(parsed) ? '' : Math.min(230, parsed));
                   }
                 }}
                 onBlur={() => {
                   const parsed = parseInt(customWork, 10);
                   if (isNaN(parsed) || parsed < 1) {
                     setCustomWork(1);
+                  } else if (parsed > 230) {
+                    setCustomWork(230);
                   }
                 }}
                 className="w-16 text-center text-sm font-mono bg-black py-2 outline-none"
                 style={{ border: '1px solid #00FF87', color: '#00FF87', caretColor: '#00FF87' }}
                 min="1"
+                max="230"
               />
               <span className="text-[11px] font-mono" style={{ color: '#444' }}>
                 MIN

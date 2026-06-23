@@ -126,7 +126,7 @@ export function FocusProvider({ children }) {
     const saved = initialTimer?.customWork;
     if (saved === undefined || saved === null || saved === '') return 30;
     const parsed = parseInt(saved, 10);
-    return isNaN(parsed) || parsed < 1 ? 30 : parsed;
+    return isNaN(parsed) || parsed < 1 ? 30 : Math.min(230, parsed);
   });
   const [isCustom, setIsCustom] = useState(initialTimer?.isCustom ?? false);
   const [seconds, setSeconds] = useState(() => {
@@ -218,7 +218,7 @@ export function FocusProvider({ children }) {
     return () => window.removeEventListener('online', handleOnline);
   }, [syncOfflineQueue]);
 
-  const workMinutes = isCustom ? (parseInt(customWork, 10) || 1) : preset.work;
+  const workMinutes = isCustom ? Math.min(230, parseInt(customWork, 10) || 1) : preset.work;
   const breakMinutes = isCustom ? Math.max(1, Math.round(workMinutes / 5)) : preset.rest;
   const phaseMinutes = phase === 'work' ? workMinutes : breakMinutes;
 
@@ -411,6 +411,8 @@ export function FocusProvider({ children }) {
       const parsed = parseInt(customWork, 10);
       if (isNaN(parsed) || parsed < 1) {
         setCustomWork(1);
+      } else if (parsed > 230) {
+        setCustomWork(230);
       }
     }
     setRunning((prev) => {
@@ -468,6 +470,9 @@ export function FocusProvider({ children }) {
       if (isNaN(parsed) || parsed < 1) {
         setCustomWork(1);
         resolvedCustomWork = 1;
+      } else if (parsed > 230) {
+        setCustomWork(230);
+        resolvedCustomWork = 230;
       } else {
         resolvedCustomWork = parsed;
       }
