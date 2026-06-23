@@ -3,14 +3,15 @@ import { supabaseClient } from '@/api/supabaseClient';
 import { useQuery } from '@tanstack/react-query';
 import { calculateStreak } from '@/utils/habitUtils';
 import { useFocus } from '@/hooks/FocusContext';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 export default function Review() {
   const [timeframe, setTimeframe] = useState('daily'); // 'daily', 'weekly', or 'monthly'
-  const [weekView, setWeekView] = useState('current'); // 'current' or 'previous'
+  const [weekOffset, setWeekOffset] = useState(0); // 0 = current week, 1 = last week, 2 = 2 weeks ago, etc.
   const { offlineQueue = [] } = useFocus();
   const { data: sessions = [] } = useQuery({
     queryKey: ['focus-sessions'],
-    queryFn: () => supabaseClient.entities.FocusSession.list('-session_date', 200),
+    queryFn: () => supabaseClient.entities.FocusSession.list('-session_date'),
   });
 
   const mergedSessions = useMemo(() => {
@@ -58,18 +59,27 @@ export default function Review() {
   const startOfThisWeek = new Date(todayMidnight);
   startOfThisWeek.setDate(todayMidnight.getDate() - daysToSubtract);
 
-  // Calculate start of last week (Monday of last week at 00:00:00)
-  const startOfLastWeek = new Date(startOfThisWeek);
-  startOfLastWeek.setDate(startOfLastWeek.getDate() - 7);
+  // Calculate start and end of active week based on offset
+  const startOfActiveWeek = new Date(startOfThisWeek);
+  startOfActiveWeek.setDate(startOfActiveWeek.getDate() - weekOffset * 7);
+
+  const endOfActiveWeek = new Date(startOfActiveWeek);
+  endOfActiveWeek.setDate(endOfActiveWeek.getDate() + 7);
 
   const weekSessions = mergedSessions.filter(s => {
     const sDate = parseLocalDate(s.session_date);
-    if (weekView === 'current') {
-      return sDate >= startOfThisWeek;
-    } else {
-      return sDate >= startOfLastWeek && sDate < startOfThisWeek;
-    }
+    return sDate >= startOfActiveWeek && sDate < endOfActiveWeek;
   });
+
+  const formatWeekRange = (start) => {
+    const end = new Date(start);
+    end.setDate(end.getDate() + 6);
+    const startStr = start.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }).toUpperCase();
+    const endStr = end.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }).toUpperCase();
+    if (weekOffset === 0) return `THIS WEEK (${startStr} - ${endStr})`;
+    if (weekOffset === 1) return `LAST WEEK (${startStr} - ${endStr})`;
+    return `${weekOffset} WEEKS AGO (${startStr} - ${endStr})`;
+  };
   const totalWeekMinutes = weekSessions.reduce((sum, s) => sum + (s.duration_minutes || 0), 0);
 
   const hoursByProject = {};
@@ -154,7 +164,7 @@ export default function Review() {
       <section className="mb-8 p-4" style={{ border: '1px solid #00FF87', boxShadow: '4px 4px 0 #FF006E', background: 'rgba(0,255,135,0.03)' }}>
         <div className="flex justify-between items-center mb-3">
           <div className="text-[10px] font-mono tracking-widest" style={{ color: '#00FF87', opacity: 0.7 }}>
-            ▶ {timeframe === 'daily' ? 'DAILY FOCUS HOURS' : timeframe === 'weekly' ? (weekView === 'current' ? 'WEEKLY FOCUS HOURS' : 'LAST WEEK FOCUS HOURS') : 'MONTHLY FOCUS HOURS'}
+            ▶ {timeframe === 'daily' ? 'DAILY FOCUS HOURS' : timeframe === 'weekly' ? (weekOffset === 0 ? 'WEEKLY FOCUS HOURS' : weekOffset === 1 ? 'LAST WEEK FOCUS HOURS' : 'FOCUS HOURS') : 'MONTHLY FOCUS HOURS'}
           </div>
           <div className="flex gap-1.5">
             <button 
@@ -210,7 +220,7 @@ export default function Review() {
               {timeframe === 'daily' 
                 ? 'HRS TODAY' 
                 : timeframe === 'weekly' 
-                  ? (weekView === 'current' ? 'HRS THIS WEEK' : 'HRS LAST WEEK') 
+                  ? (weekOffset === 0 ? 'HRS THIS WEEK' : weekOffset === 1 ? 'HRS LAST WEEK' : 'HRS THAT WEEK') 
                   : 'HRS THIS MONTH'
               }
             </span>
@@ -218,30 +228,36 @@ export default function Review() {
 
           {/* Sub-toggle for Weekly view */}
           {timeframe === 'weekly' && (
-            <div className="flex gap-1.5 mb-1">
+            <div className="flex items-center gap-2 mb-1">
               <button 
-                onClick={() => setWeekView('current')}
-                className="text-[8px] font-mono px-1.5 py-0.5 border transition-all"
+                onClick={() => setWeekOffset(prev => prev + 1)}
+                className="p-1 border transition-all"
                 style={{ 
-                  borderColor: weekView === 'current' ? '#00FF87' : '#1a1a1a', 
-                  color: weekView === 'current' ? '#00FF87' : '#333',
-                  background: weekView === 'current' ? 'rgba(0,255,135,0.05)' : 'transparent',
+                  borderColor: '#00FF87',
+                  color: '#00FF87', 
+                  background: 'transparent',
                   cursor: 'pointer'
                 }}
+                title="Go back a week"
               >
-                THIS WEEK
+                <ChevronLeft className="w-3.5 h-3.5" />
               </button>
+              <span className="text-[10px] font-mono font-bold tracking-wider text-center min-w-[180px]" style={{ color: '#fff' }}>
+                {formatWeekRange(startOfActiveWeek)}
+              </span>
               <button 
-                onClick={() => setWeekView('previous')}
-                className="text-[8px] font-mono px-1.5 py-0.5 border transition-all"
+                onClick={() => setWeekOffset(prev => Math.max(0, prev - 1))}
+                disabled={weekOffset === 0}
+                className="p-1 border transition-all"
                 style={{ 
-                  borderColor: weekView === 'previous' ? '#00FF87' : '#1a1a1a', 
-                  color: weekView === 'previous' ? '#00FF87' : '#333',
-                  background: weekView === 'previous' ? 'rgba(0,255,135,0.05)' : 'transparent',
-                  cursor: 'pointer'
+                  borderColor: weekOffset === 0 ? '#111' : '#00FF87',
+                  color: weekOffset === 0 ? '#222' : '#00FF87', 
+                  background: 'transparent',
+                  cursor: weekOffset === 0 ? 'not-allowed' : 'pointer' 
                 }}
+                title="Go forward a week"
               >
-                LAST WEEK
+                <ChevronRight className="w-3.5 h-3.5" />
               </button>
             </div>
           )}
@@ -282,7 +298,7 @@ export default function Review() {
               ))}
               {Object.keys(hoursByProject).length === 0 && (
                 <div className="text-xs font-mono py-2" style={{ color: '#333' }}>
-                  {weekView === 'current' ? "// NO DATA THIS WEEK" : "// NO DATA LAST WEEK"}
+                  {weekOffset === 0 ? "// NO DATA THIS WEEK" : weekOffset === 1 ? "// NO DATA LAST WEEK" : "// NO DATA FOR SELECTED WEEK"}
                 </div>
               )}
             </>
