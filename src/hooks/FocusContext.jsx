@@ -292,7 +292,7 @@ export function FocusProvider({ children }) {
           project_id: selectedProject?.id || null,
           project_name: selectedProject?.title || 'Unassigned',
           duration_minutes: elapsedMinutes,
-          session_date: getLocalDateStr(),
+          session_date: getLocalDateStr(Date.now() - elapsedSeconds * 1000),
           type: isCustom ? 'custom' : 'pomodoro',
         });
       }
@@ -366,7 +366,7 @@ export function FocusProvider({ children }) {
               project_id: selectedProject?.id || null,
               project_name: selectedProject?.title || 'Unassigned',
               duration_minutes: workMinutes,
-              session_date: getLocalDateStr(),
+              session_date: getLocalDateStr(Date.now() - workMinutes * 60 * 1000),
               type: isCustom ? 'custom' : 'pomodoro',
             });
           }
@@ -438,7 +438,7 @@ export function FocusProvider({ children }) {
           project_id: selectedProject?.id || null,
           project_name: selectedProject?.title || 'Unassigned',
           duration_minutes: elapsedMinutes,
-          session_date: getLocalDateStr(),
+          session_date: getLocalDateStr(Date.now() - elapsedSeconds * 1000),
           type: isCustom ? 'custom' : 'pomodoro',
         });
       }
@@ -458,7 +458,7 @@ export function FocusProvider({ children }) {
           project_id: selectedProject?.id || null,
           project_name: selectedProject?.title || 'Unassigned',
           duration_minutes: elapsedMinutes,
-          session_date: getLocalDateStr(),
+          session_date: getLocalDateStr(Date.now() - elapsedSeconds * 1000),
           type: isCustom ? 'custom' : 'pomodoro',
         });
       }
