@@ -3,6 +3,7 @@ import { supabaseClient } from '@/api/supabaseClient';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Check, Plus, Trash2 } from 'lucide-react';
 import { calculateStreak } from '@/utils/habitUtils';
+import { Skeleton } from '@/components/ui/skeleton';
 
 function InlineHabitEdit({ value, onSave }) {
   const [editing, setEditing] = useState(false);
@@ -45,7 +46,7 @@ export default function HabitChecklist() {
   const [adding, setAdding] = useState(false);
   const [newHabit, setNewHabit] = useState('');
 
-  const { data: habits = [] } = useQuery({
+  const { data: habits = [], isLoading } = useQuery({
     queryKey: ['habits'],
     queryFn: () => supabaseClient.entities.Habit.list(),
   });
@@ -75,6 +76,30 @@ export default function HabitChecklist() {
     mutationFn: (title) => supabaseClient.entities.Habit.create({ title, streak: 0, completed_dates: [] }),
     onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['habits'] }); setNewHabit(''); setAdding(false); },
   });
+
+  if (isLoading) {
+    return (
+      <div className="mb-6">
+        <div className="flex items-center justify-between mb-3">
+          <div className="text-[11px] font-mono font-bold tracking-widest" style={{ color: '#FF006E' }}>
+            ▶ HABITS
+          </div>
+        </div>
+        <div className="grid grid-cols-2 gap-2">
+          {[...Array(4)].map((_, i) => (
+            <div
+              key={i}
+              className="flex items-center gap-2 px-3 py-2.5 border border-[#FF006E]/20"
+              style={{ background: 'transparent' }}
+            >
+              <Skeleton className="w-4 h-4 bg-[#FF006E]/15 flex-shrink-0" />
+              <Skeleton className="h-3.5 bg-[#FF006E]/10 flex-1" />
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="mb-6">

@@ -4,6 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Plus } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import ProjectCard from '@/components/projects/ProjectCard';
+import { Skeleton } from '@/components/ui/skeleton';
 
 export default function Projects() {
   const queryClient = useQueryClient();
@@ -12,7 +13,7 @@ export default function Projects() {
   const [emoji, setEmoji] = useState('');
   const [deadline, setDeadline] = useState('');
 
-  const { data: projects = [] } = useQuery({
+  const { data: projects = [], isLoading } = useQuery({
     queryKey: ['projects'],
     queryFn: () => supabaseClient.entities.Project.list(),
   });
@@ -73,13 +74,33 @@ export default function Projects() {
       </div>
 
       <div className="space-y-3">
-        {projects.map((project) => (
-          <ProjectCard key={project.id} project={project} />
-        ))}
-        {projects.length === 0 && (
-          <div className="py-10 text-center font-mono text-sm" style={{ color: '#333' }}>
-            {"// NO PROJECTS INITIALIZED"}
-          </div>
+        {isLoading ? (
+          [...Array(3)].map((_, i) => (
+            <div key={i} className="flex items-center gap-3 w-full px-4 py-3.5 border border-[#00FF87]/20"
+              style={{ boxShadow: '4px 4px 0 rgba(0, 255, 135, 0.1)', background: 'black' }}>
+              <Skeleton className="w-4 h-4 bg-[#00FF87]/15 flex-shrink-0" />
+              <Skeleton className="w-6 h-6 bg-primary/10 flex-shrink-0" />
+              <Skeleton className="h-4.5 w-40 bg-[#00FF87]/10 flex-1" />
+              <div className="flex items-center gap-3 flex-shrink-0">
+                <Skeleton className="h-4.5 w-8 bg-[#00FF87]/10" />
+                <div className="flex items-center gap-2">
+                  <Skeleton className="w-20 h-1.5 bg-[#00FF87]/10" />
+                  <Skeleton className="h-4 w-7 bg-[#00FF87]/10" />
+                </div>
+              </div>
+            </div>
+          ))
+        ) : (
+          <>
+            {projects.map((project) => (
+              <ProjectCard key={project.id} project={project} />
+            ))}
+            {projects.length === 0 && (
+              <div className="py-10 text-center font-mono text-sm" style={{ color: '#333' }}>
+                {"// NO PROJECTS INITIALIZED"}
+              </div>
+            )}
+          </>
         )}
       </div>
     </div>

@@ -3,6 +3,7 @@ import { supabaseClient } from '@/api/supabaseClient';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Check, Plus, Pencil, Trash2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { Skeleton } from '@/components/ui/skeleton';
 
 function InlineEdit({ value, onSave, className, style }) {
   const [editing, setEditing] = useState(false);
@@ -44,12 +45,12 @@ export default function TopTasks() {
   const [newTask, setNewTask] = useState('');
   const [adding, setAdding] = useState(false);
 
-  const { data: tasks = [] } = useQuery({
+  const { data: tasks = [], isLoading: isLoadingTasks } = useQuery({
     queryKey: ['top-tasks'],
     queryFn: () => supabaseClient.entities.Task.filter({ is_top_three: true }, 'order', 10),
   });
 
-  const { data: projects = [] } = useQuery({
+  const { data: projects = [], isLoading: isLoadingProjects } = useQuery({
     queryKey: ['projects'],
     queryFn: () => supabaseClient.entities.Project.list(),
   });
@@ -85,6 +86,34 @@ export default function TopTasks() {
     e.preventDefault();
     if (newTask.trim()) createMutation.mutate(newTask.trim());
   };
+
+  if (isLoadingTasks || isLoadingProjects) {
+    return (
+      <div className="mb-6">
+        <div className="flex items-center justify-between mb-3">
+          <div className="text-[11px] font-mono font-bold tracking-widest" style={{ color: '#00FF87' }}>
+            ▶ {"TODAY'S FOCUS"}
+          </div>
+        </div>
+        <div className="space-y-2">
+          {[...Array(3)].map((_, i) => (
+            <div
+              key={i}
+              className="flex items-center gap-3 w-full px-3 py-3 text-left border border-[#00FF87]/20"
+              style={{ background: 'black' }}
+            >
+              <Skeleton className="w-5 h-5 bg-[#00FF87]/15 flex-shrink-0" />
+              <Skeleton className="h-4 w-44 bg-[#00FF87]/10 flex-1" />
+              <Skeleton className="h-4.5 w-20 bg-[#00FF87]/10 flex-shrink-0" />
+              <span className="text-[10px] font-mono text-[#00FF87]" style={{ opacity: 0.3 }}>
+                {String(i + 1).padStart(2, '0')}
+              </span>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="mb-6">

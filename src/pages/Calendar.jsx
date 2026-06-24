@@ -3,6 +3,7 @@ import { supabaseClient } from '@/api/supabaseClient';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { ChevronLeft, ChevronRight, Plus, Trash2, Clock } from 'lucide-react';
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, isSameMonth, addMonths, subMonths, isToday } from 'date-fns';
+import { Skeleton } from '@/components/ui/skeleton';
 
 // Live countdown hook
 function useCountdown(targetDate) {
@@ -100,7 +101,7 @@ export default function Calendar() {
     return new Date(year, month - 1, day);
   };
 
-  const { data: deadlines = [] } = useQuery({
+  const { data: deadlines = [], isLoading: isLoadingDeadlines } = useQuery({
     queryKey: ['deadlines'],
     queryFn: async () => {
       const all = await supabaseClient.entities.Deadline.list('date', 50);
@@ -108,7 +109,7 @@ export default function Calendar() {
     },
   });
 
-  const { data: tasks = [] } = useQuery({
+  const { data: tasks = [], isLoading: isLoadingTasks } = useQuery({
     queryKey: ['all-tasks'],
     queryFn: () => supabaseClient.entities.Task.list('due_date', 100),
   });
@@ -294,7 +295,25 @@ export default function Calendar() {
         )}
 
         <div className="space-y-0">
-          {upcomingDeadlines.length === 0 ? (
+          {isLoadingDeadlines ? (
+            [...Array(3)].map((_, i) => (
+              <div key={i} className="flex items-center justify-between px-3 py-2.5 mb-1.5 border border-[#1a1a1a]"
+                style={{ background: 'rgba(0,255,135,0.01)' }}>
+                <div className="space-y-1">
+                  <Skeleton className="h-3.5 w-24 bg-[#00FF87]/15" />
+                  <Skeleton className="h-2.5 w-16 bg-[#00FF87]/10" />
+                </div>
+                <div className="flex items-center gap-2">
+                  {[...Array(4)].map((_, j) => (
+                    <div key={j} className="text-center min-w-[28px]">
+                      <Skeleton className="h-5 w-7 bg-[#00FF87]/15 mb-0.5 mx-auto" />
+                      <Skeleton className="h-2 w-4 bg-[#00FF87]/10 mx-auto" />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))
+          ) : upcomingDeadlines.length === 0 ? (
             <div className="px-3 py-6 text-center text-[11px] font-mono" style={{ color: '#333', border: '1px solid #111' }}>
               {"// NO UPCOMING DEADLINES"}
             </div>

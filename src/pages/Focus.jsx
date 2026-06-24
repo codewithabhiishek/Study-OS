@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom';
 import { supabaseClient } from '@/api/supabaseClient';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Play, Pause, RotateCcw, Maximize2, Minimize2, Bell, BellOff } from 'lucide-react';
+import { Skeleton } from '@/components/ui/skeleton';
 
 import { useFocus, PRESETS } from '@/hooks/FocusContext';
 
@@ -36,7 +37,7 @@ export default function Focus() {
   const [isFullscreen, setIsFullscreen] = useState(false);
   const containerRef = useRef(null);
 
-  const { data: projects = [] } = useQuery({
+  const { data: projects = [], isLoading: isLoadingProjects } = useQuery({
     queryKey: ['projects'],
     queryFn: () => supabaseClient.entities.Project.list(),
   });
@@ -164,21 +165,27 @@ export default function Focus() {
       {/* Project selector */}
       {!isFullscreen && (
         <div className="flex flex-wrap gap-2 mb-10 self-start">
-          {projects.map((p) => (
-            <button
-              key={p.id}
-              onClick={() => setSelectedProject(selectedProject?.id === p.id ? null : p)}
-              className="px-3 py-1.5 text-[11px] font-mono font-bold tracking-wider transition-all"
-              style={{
-                border: selectedProject?.id === p.id ? '1px solid #FF006E' : '1px solid #222',
-                color: selectedProject?.id === p.id ? '#000' : '#555',
-                background: selectedProject?.id === p.id ? '#FF006E' : 'transparent',
-                boxShadow: selectedProject?.id === p.id ? '3px 3px 0 #00FF87' : 'none',
-              }}
-            >
-              {p.emoji} {p.title.toUpperCase()}
-            </button>
-          ))}
+          {isLoadingProjects ? (
+            [...Array(3)].map((_, i) => (
+              <Skeleton key={i} className="h-7 w-24 bg-primary/10 border border-[#222]" />
+            ))
+          ) : (
+            projects.map((p) => (
+              <button
+                key={p.id}
+                onClick={() => setSelectedProject(selectedProject?.id === p.id ? null : p)}
+                className="px-3 py-1.5 text-[11px] font-mono font-bold tracking-wider transition-all"
+                style={{
+                  border: selectedProject?.id === p.id ? '1px solid #FF006E' : '1px solid #222',
+                  color: selectedProject?.id === p.id ? '#000' : '#555',
+                  background: selectedProject?.id === p.id ? '#FF006E' : 'transparent',
+                  boxShadow: selectedProject?.id === p.id ? '3px 3px 0 #00FF87' : 'none',
+                }}
+              >
+                {p.emoji} {p.title.toUpperCase()}
+              </button>
+            ))
+          )}
         </div>
       )}
 

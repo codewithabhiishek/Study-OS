@@ -3,6 +3,7 @@ import { supabaseClient } from '@/api/supabaseClient';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Check, Plus, ChevronDown, ChevronRight, Pencil, Trash2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { Skeleton } from '@/components/ui/skeleton';
 
 function InlineEdit({ value, onSave, className, style }) {
   const [editing, setEditing] = useState(false);
@@ -71,7 +72,7 @@ export default function ProjectCard({ project }) {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['project-tasks', project.id] }),
   });
 
-  const { data: tasks = [] } = useQuery({
+  const { data: tasks = [], isLoading: isLoadingTasks } = useQuery({
     queryKey: ['project-tasks', project.id],
     queryFn: () => supabaseClient.entities.Task.filter({ project_id: project.id }, 'order'),
   });
@@ -153,35 +154,44 @@ export default function ProjectCard({ project }) {
       {expanded && (
         <div className="border-t px-4 pb-3" style={{ borderColor: '#00FF87', borderOpacity: 0.3 }}>
           <div className="space-y-1 pt-2">
-            {tasks.map((task) => (
-              <div
-                key={task.id}
-                className="flex items-center gap-3 w-full px-2 py-2 text-left transition-all hover:bg-[rgba(0,255,135,0.05)] group"
-              >
-                <button
-                  onClick={() => toggleMutation.mutate({ id: task.id, completed: task.completed })}
-                  className="w-4 h-4 border flex-shrink-0 flex items-center justify-center transition-all"
-                  style={{
-                    borderColor: task.completed ? '#00FF87' : '#333',
-                    background: task.completed ? '#00FF87' : 'transparent',
-                  }}>
-                  {task.completed && <Check className="w-2.5 h-2.5 text-black" strokeWidth={3} />}
-                </button>
-                <InlineEdit
-                  value={task.title}
-                  onSave={(title) => renameTaskMutation.mutate({ id: task.id, title })}
-                  className={cn("text-xs font-mono flex-1", task.completed ? "line-through" : "")}
-                  style={{ color: task.completed ? '#333' : '#888' }}
-                />
-                <button
-                  onClick={() => deleteTaskMutation.mutate(task.id)}
-                  className="opacity-0 group-hover:opacity-30 hover:!opacity-100 transition-opacity"
-                  style={{ color: '#FF006E' }}
+            {isLoadingTasks ? (
+              [...Array(2)].map((_, i) => (
+                <div key={i} className="flex items-center gap-3 w-full px-2 py-2 text-left">
+                  <Skeleton className="w-4 h-4 bg-[#00FF87]/15 flex-shrink-0" />
+                  <Skeleton className="h-3.5 w-32 bg-[#00FF87]/10 flex-1" />
+                </div>
+              ))
+            ) : (
+              tasks.map((task) => (
+                <div
+                  key={task.id}
+                  className="flex items-center gap-3 w-full px-2 py-2 text-left transition-all hover:bg-[rgba(0,255,135,0.05)] group"
                 >
-                  <Trash2 className="w-2.5 h-2.5" />
-                </button>
-              </div>
-            ))}
+                  <button
+                    onClick={() => toggleMutation.mutate({ id: task.id, completed: task.completed })}
+                    className="w-4 h-4 border flex-shrink-0 flex items-center justify-center transition-all"
+                    style={{
+                      borderColor: task.completed ? '#00FF87' : '#333',
+                      background: task.completed ? '#00FF87' : 'transparent',
+                    }}>
+                    {task.completed && <Check className="w-2.5 h-2.5 text-black" strokeWidth={3} />}
+                  </button>
+                  <InlineEdit
+                    value={task.title}
+                    onSave={(title) => renameTaskMutation.mutate({ id: task.id, title })}
+                    className={cn("text-xs font-mono flex-1", task.completed ? "line-through" : "")}
+                    style={{ color: task.completed ? '#333' : '#888' }}
+                  />
+                  <button
+                    onClick={() => deleteTaskMutation.mutate(task.id)}
+                    className="opacity-0 group-hover:opacity-30 hover:!opacity-100 transition-opacity"
+                    style={{ color: '#FF006E' }}
+                  >
+                    <Trash2 className="w-2.5 h-2.5" />
+                  </button>
+                </div>
+              ))
+            )}
             {adding ? (
               <form onSubmit={(e) => { e.preventDefault(); if (newTask.trim()) createMutation.mutate(newTask.trim()); }} className="pt-1">
                 <input

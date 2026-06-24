@@ -4,12 +4,13 @@ import { useQuery } from '@tanstack/react-query';
 import { calculateStreak } from '@/utils/habitUtils';
 import { useFocus } from '@/hooks/FocusContext';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { Skeleton } from '@/components/ui/skeleton';
 
 export default function Review() {
   const [timeframe, setTimeframe] = useState('daily'); // 'daily', 'weekly', or 'monthly'
   const [weekOffset, setWeekOffset] = useState(0); // 0 = current week, 1 = last week, 2 = 2 weeks ago, etc.
   const { offlineQueue = [] } = useFocus();
-  const { data: sessions = [] } = useQuery({
+  const { data: sessions = [], isLoading: isLoadingSessions } = useQuery({
     queryKey: ['focus-sessions'],
     queryFn: () => supabaseClient.entities.FocusSession.list('-session_date'),
   });
@@ -19,15 +20,15 @@ export default function Review() {
     const unseenOffline = offlineQueue.filter(s => !serverIds.has(s.id));
     return [...sessions, ...unseenOffline];
   }, [sessions, offlineQueue]);
-  const { data: habits = [] } = useQuery({
+  const { data: habits = [], isLoading: isLoadingHabits } = useQuery({
     queryKey: ['habits'],
     queryFn: () => supabaseClient.entities.Habit.list(),
   });
-  const { data: projects = [] } = useQuery({
+  const { data: projects = [], isLoading: isLoadingProjects } = useQuery({
     queryKey: ['projects'],
     queryFn: () => supabaseClient.entities.Project.list(),
   });
-  const { data: allTasks = [] } = useQuery({
+  const { data: allTasks = [], isLoading: isLoadingTasks } = useQuery({
     queryKey: ['all-tasks'],
     queryFn: () => supabaseClient.entities.Task.list(),
   });
@@ -148,6 +149,58 @@ export default function Review() {
     const total = tasks.length;
     return { ...p, completed, total, progress: total > 0 ? Math.round((completed / total) * 100) : 0 };
   });
+
+  const isAnyLoading = isLoadingSessions || isLoadingHabits || isLoadingProjects || isLoadingTasks;
+
+  if (isAnyLoading) {
+    return (
+      <div>
+        <h1 className="text-4xl font-black tracking-tighter mb-8">
+          <span style={{ color: '#fff' }}>RE</span>
+          <span style={{ color: '#FF006E', textShadow: '0 0 20px #FF006E' }}>VIEW</span>
+          <span style={{ color: '#fff' }}>.</span>
+        </h1>
+
+        {/* Focus Hours Breakdown */}
+        <section className="mb-8 p-4 border border-[#00FF87]/20" style={{ background: 'rgba(0,255,135,0.01)', boxShadow: '4px 4px 0 rgba(255,0,110,0.1)' }}>
+          <div className="flex justify-between items-center mb-3">
+            <Skeleton className="h-3.5 w-40 bg-[#00FF87]/15" />
+          </div>
+          <div className="flex items-end gap-2 mb-4">
+            <Skeleton className="h-12 w-24 bg-[#00FF87]/15" />
+            <Skeleton className="h-3.5 w-20 bg-[#00FF87]/10" />
+          </div>
+          <div className="space-y-3">
+            {[...Array(3)].map((_, i) => (
+              <div key={i} className="space-y-1.5">
+                <Skeleton className="h-3 w-28 bg-[#00FF87]/10" />
+                <Skeleton className="w-full h-1.5 bg-[#00FF87]/10" />
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* 7-Day Density Chart */}
+        <section className="mb-8 p-4 border border-[#FF006E]/20" style={{ background: 'rgba(255,0,110,0.01)', boxShadow: '4px 4px 0 rgba(0,255,135,0.1)' }}>
+          <Skeleton className="h-3.5 w-44 bg-[#FF006E]/15 mb-6" />
+          <div className="h-28 flex items-end justify-between px-2 mb-4">
+            {[...Array(7)].map((_, i) => (
+              <Skeleton key={i} className="w-4 sm:w-6 bg-[#00FF87]/10" style={{ height: `${20 + i * 10}%` }} />
+            ))}
+          </div>
+        </section>
+
+        {/* Consistency */}
+        <section className="mb-8 p-4 border border-[#FF006E]/20" style={{ background: 'rgba(255,0,110,0.01)', boxShadow: '4px 4px 0 rgba(0,255,135,0.1)' }}>
+          <Skeleton className="h-3.5 w-36 bg-[#FF006E]/15 mb-3" />
+          <div className="flex items-end gap-2">
+            <Skeleton className="h-12 w-16 bg-[#FF006E]/15" />
+            <Skeleton className="h-3.5 w-44 bg-[#FF006E]/10" />
+          </div>
+        </section>
+      </div>
+    );
+  }
 
   const maxHours = Math.max(...Object.values(hoursByProject), 1);
   const maxTodayHours = Math.max(...Object.values(todayHoursByProject), 1);

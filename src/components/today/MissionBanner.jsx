@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Pencil, Check, X } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabaseClient } from '@/api/supabaseClient';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const DEFAULT_MISSION = { title: 'EUROPE 2027', date: '2027-06-01' };
 
@@ -88,8 +89,22 @@ export default function MissionBanner() {
 
   if (isLoading) {
     return (
-      <div className="mb-8 p-4 border border-[#FF006E]/30 font-mono text-xs text-center" style={{ color: '#FF006E' }}>
-        LOADING ACTIVE MISSION...
+      <div className="mb-8 relative overflow-hidden p-4 border border-[#FF006E]/20"
+        style={{ background: 'rgba(255,0,110,0.02)' }}>
+        <div className="flex items-center justify-between mb-2">
+          <Skeleton className="h-3 w-28 bg-[#FF006E]/10" />
+        </div>
+        <div className="flex items-end justify-between flex-wrap gap-3">
+          <Skeleton className="h-7 w-48 bg-[#00FF87]/15" />
+          <div className="flex items-end gap-3">
+            {[...Array(4)].map((_, i) => (
+              <div key={i} className="text-center">
+                <Skeleton className="h-8 w-10 bg-[#FF006E]/15 mb-1" />
+                <Skeleton className="h-2.5 w-6 bg-[#FF006E]/10 mx-auto" />
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
     );
   }
