@@ -4,7 +4,12 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 
 const FocusContext = createContext(null);
 
-export const PRESETS = [
+export const DIRECT_PRESETS = [
+  { label: '30 MIN', work: 30, rest: 6 },
+  { label: '60 MIN', work: 60, rest: 12 },
+];
+
+export const POMODORO_PRESETS = [
   { label: '25/5', work: 25, rest: 5 },
   { label: '50/10', work: 50, rest: 10 },
 ];
@@ -116,11 +121,14 @@ export function FocusProvider({ children }) {
   const initialTimer = useMemo(() => loadTimerState(), []);
 
   const [preset, setPreset] = useState(() => {
+    const currentPresets = (initialSettings?.pomodoroEnabled ?? false) ? POMODORO_PRESETS : DIRECT_PRESETS;
     if (initialTimer?.presetLabel) {
-      const match = PRESETS.find(p => p.label === initialTimer.presetLabel);
+      const match = currentPresets.find(p => p.label === initialTimer.presetLabel) ||
+                    POMODORO_PRESETS.find(p => p.label === initialTimer.presetLabel) ||
+                    DIRECT_PRESETS.find(p => p.label === initialTimer.presetLabel);
       if (match) return match;
     }
-    return PRESETS[0];
+    return currentPresets[0];
   });
   const [customWork, setCustomWork] = useState(() => {
     const saved = initialTimer?.customWork;
@@ -131,13 +139,17 @@ export function FocusProvider({ children }) {
   const [isCustom, setIsCustom] = useState(initialTimer?.isCustom ?? false);
   const [seconds, setSeconds] = useState(() => {
     if (initialTimer) return initialTimer.seconds;
-    return PRESETS[0].work * 60;
+    const currentPresets = (initialSettings?.pomodoroEnabled ?? false) ? POMODORO_PRESETS : DIRECT_PRESETS;
+    return currentPresets[0].work * 60;
   });
   const [running, setRunning] = useState(initialTimer?.running ?? false);
   const [selectedProject, setSelectedProject] = useState(initialTimer?.selectedProject ?? null);
   const [phase, setPhase] = useState(initialTimer?.phase ?? 'work');
   
   const [pomodoroEnabled, setPomodoroEnabled] = useState(initialSettings?.pomodoroEnabled ?? false);
+  const presets = useMemo(() => {
+    return pomodoroEnabled ? POMODORO_PRESETS : DIRECT_PRESETS;
+  }, [pomodoroEnabled]);
   const [soundEnabled, setSoundEnabled] = useState(initialSettings?.soundEnabled ?? true);
   const [notificationsEnabled, setNotificationsEnabled] = useState(initialSettings?.notificationsEnabled ?? false);
   
@@ -233,6 +245,25 @@ export function FocusProvider({ children }) {
       // ignore
     }
   }, [pomodoroEnabled, soundEnabled, notificationsEnabled]);
+
+  // Update preset when pomodoroEnabled changes
+  const prevPomodoroEnabledRef = useRef(pomodoroEnabled);
+  useEffect(() => {
+    if (prevPomodoroEnabledRef.current !== pomodoroEnabled) {
+      const oldPresets = prevPomodoroEnabledRef.current ? POMODORO_PRESETS : DIRECT_PRESETS;
+      const currentPresets = pomodoroEnabled ? POMODORO_PRESETS : DIRECT_PRESETS;
+      
+      const index = oldPresets.findIndex(p => p.label === preset.label);
+      const targetIndex = index !== -1 ? index : 0;
+      const newPreset = currentPresets[targetIndex];
+      
+      setPreset(newPreset);
+      if (!running && !isCustom) {
+        setSeconds(newPreset.work * 60);
+      }
+      prevPomodoroEnabledRef.current = pomodoroEnabled;
+    }
+  }, [pomodoroEnabled, preset.label, running, isCustom]);
 
   // Persist current timer state
   useEffect(() => {
@@ -487,6 +518,7 @@ export function FocusProvider({ children }) {
   return (
     <FocusContext.Provider
       value={{
+        presets,
         preset,
         setPreset: handleSetPreset,
         customWork,

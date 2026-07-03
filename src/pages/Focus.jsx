@@ -5,10 +5,11 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Play, Pause, RotateCcw, Maximize2, Minimize2, Bell, BellOff } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 
-import { useFocus, PRESETS } from '@/hooks/FocusContext';
+import { useFocus } from '@/hooks/FocusContext';
 
 export default function Focus() {
   const {
+    presets,
     preset,
     setPreset,
     customWork,
@@ -322,7 +323,7 @@ export default function Focus() {
       {!isFullscreen && (
         <>
           <div className="flex gap-2 mb-4">
-            {PRESETS.map((p) => (
+            {presets.map((p) => (
               <button
                 key={p.label}
                 onClick={() => {
