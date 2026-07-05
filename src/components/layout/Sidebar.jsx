@@ -49,10 +49,10 @@ export default function Sidebar() {
                 key={path}
                 to={path}
                 className={cn(
-                  "flex items-center gap-3 px-3 py-2.5 text-[12px] font-mono font-bold tracking-widest transition-all duration-150 relative group",
+                  "flex items-center gap-3 px-3 py-2.5 text-[12px] font-mono font-bold tracking-widest transition-all duration-150 relative group cursor-pointer",
                   active
                     ? "text-black"
-                    : "text-[#00FF87] hover:text-black"
+                    : "text-[#00FF87] hover:text-[#00FF87] md:hover:text-black"
                 )}
                 style={active ? {
                   background: '#00FF87',
@@ -60,7 +60,7 @@ export default function Sidebar() {
                 } : {}}
               >
                 {!active && (
-                  <span className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                  <span className="absolute inset-0 opacity-0 md:group-hover:opacity-100 transition-opacity"
                     style={{ background: '#00FF87', boxShadow: '3px 3px 0 #FF006E' }} />
                 )}
                 <Icon className="w-3.5 h-3.5 relative z-10 flex-shrink-0" />
@@ -79,7 +79,7 @@ export default function Sidebar() {
       </aside>
 
       {/* Mobile bottom nav */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-black border-t border-[#00FF87]"
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-black border-t border-[#00FF87] pb-[env(safe-area-inset-bottom)]"
         style={{ boxShadow: '0 -4px 20px rgba(0,255,135,0.2)' }}>
         <div className="flex items-center justify-around">
           {navItems.map(({ path, label, icon: Icon }) => {
