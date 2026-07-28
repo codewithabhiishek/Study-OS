@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { CalendarDays, FolderOpen, Timer, BarChart3, Calendar } from 'lucide-react';
+import { CalendarDays, FolderOpen, Timer, BarChart3, Calendar, LogOut, User } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useQuery } from '@tanstack/react-query';
 import { supabaseClient } from '@/api/supabaseClient';
+import { useAuth } from '@/lib/AuthContext';
 
 const navItems = [
   { path: '/', label: 'TODAY', icon: CalendarDays },
@@ -16,6 +17,7 @@ const navItems = [
 
 export default function Sidebar() {
   const location = useLocation();
+  const { user, logout } = useAuth();
   const { data: missions = [] } = useQuery({
     queryKey: ['active-mission'],
     queryFn: () => supabaseClient.entities.Deadline.filter({ category: 'mission' }),
@@ -71,8 +73,25 @@ export default function Sidebar() {
           })}
         </nav>
 
-        <div className="px-5 py-4 border-t border-[#00FF87]/30 relative z-10">
-          <div className="text-[10px] font-mono uppercase" style={{ color: '#FF006E' }}>
+        <div className="px-5 py-4 border-t border-[#00FF87]/30 relative z-10 space-y-3">
+          {user?.email && (
+            <div className="flex items-center gap-2 text-[11px] font-mono text-[#00FF87]/80 truncate" title={user.email}>
+              <User className="w-3.5 h-3.5 flex-shrink-0 text-[#00FF87]" />
+              <span className="truncate">{user.email}</span>
+            </div>
+          )}
+
+          <button
+            onClick={logout}
+            className="w-full flex items-center justify-center gap-2 px-3 py-2 text-[11px] font-mono font-bold tracking-widest text-[#FF006E] border border-[#FF006E]/40 hover:bg-[#FF006E] hover:text-black transition-all cursor-pointer group"
+            style={{ boxShadow: '0 0 10px rgba(255,0,110,0.15)' }}
+            title="Logout"
+          >
+            <LogOut className="w-3.5 h-3.5 group-hover:scale-110 transition-transform" />
+            <span>LOGOUT</span>
+          </button>
+
+          <div className="text-[10px] font-mono uppercase pt-1 border-t border-[#00FF87]/10" style={{ color: '#FF006E' }}>
             MISSION: {activeMission.title}
           </div>
         </div>
@@ -88,7 +107,7 @@ export default function Sidebar() {
               <Link
                 key={path}
                 to={path}
-                className="flex flex-col items-center gap-0.5 px-3 py-2.5 text-[9px] font-mono font-bold tracking-wider transition-all"
+                className="flex flex-col items-center gap-0.5 px-2 py-2.5 text-[9px] font-mono font-bold tracking-wider transition-all"
                 style={{ color: active ? '#00FF87' : '#666' }}
               >
                 <Icon className="w-4 h-4" style={active ? { filter: 'drop-shadow(0 0 4px #00FF87)' } : {}} />
@@ -96,6 +115,14 @@ export default function Sidebar() {
               </Link>
             );
           })}
+          <button
+            onClick={logout}
+            className="flex flex-col items-center gap-0.5 px-2 py-2.5 text-[9px] font-mono font-bold tracking-wider text-[#FF006E] transition-all cursor-pointer"
+            title="Logout"
+          >
+            <LogOut className="w-4 h-4" style={{ filter: 'drop-shadow(0 0 4px #FF006E)' }} />
+            LOGOUT
+          </button>
         </div>
       </nav>
     </>
