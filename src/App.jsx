@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { Toaster } from '@/components/ui/toaster';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { queryClientInstance } from '@/lib/query-client';
@@ -20,6 +21,42 @@ import { FocusProvider } from '@/hooks/FocusContext';
 import { Analytics } from '@vercel/analytics/react';
 
 function App() {
+  // Auto-reload PWA on new deployments when running in standalone or browser mode
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    let initialETag = null;
+
+    const checkAppVersion = async () => {
+      try {
+        const res = await fetch(`/?_v=${Date.now()}`, { cache: 'no-store', method: 'HEAD' });
+        const etag = res.headers.get('etag') || res.headers.get('last-modified');
+        if (etag) {
+          if (initialETag && initialETag !== etag) {
+            console.log('[PWA Auto-Update] New version detected! Auto-reloading web app...');
+            window.location.reload();
+          } else {
+            initialETag = etag;
+          }
+        }
+      } catch (err) {}
+    };
+
+    checkAppVersion();
+    const interval = setInterval(() => {
+      if (!document.hidden) checkAppVersion();
+    }, 30000);
+
+    const handleVisibilityChange = () => {
+      if (!document.hidden) checkAppVersion();
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => {
+      clearInterval(interval);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, []);
+
   return (
     <AuthProvider>
       <QueryClientProvider client={queryClientInstance}>
