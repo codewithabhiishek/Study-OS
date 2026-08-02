@@ -50,11 +50,17 @@
 
 @layer base {
   * {
-    @apply border-border outline-ring/50;
+    @apply border-border outline-none;
+    -webkit-tap-highlight-color: transparent;
   }
   body {
-    @apply bg-black text-foreground font-body antialiased;
+    @apply bg-black text-foreground font-body antialiased select-none;
     background-color: #000000;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  input, textarea {
+    @apply select-text;
   }
 }
 
