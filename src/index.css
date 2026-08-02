@@ -59,9 +59,19 @@
     user-select: none !important;
     touch-action: manipulation !important;
   }
-  body {
+  
+  ::selection {
+    background: transparent !important;
+  }
+  ::-moz-selection {
+    background: transparent !important;
+  }
+
+  html, body {
     @apply bg-black text-foreground font-body antialiased;
     background-color: #000000;
+    -webkit-user-select: none !important;
+    user-select: none !important;
   }
 
   input, textarea {

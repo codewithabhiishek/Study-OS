@@ -124,9 +124,7 @@ export default function Focus() {
       if (tag === 'INPUT' || tag === 'TEXTAREA') return;
       if (e.code === 'Space') {
         e.preventDefault();
-        if (document.activeElement && document.activeElement.tagName !== 'INPUT') {
-          document.activeElement.blur();
-        }
+        e.stopPropagation();
         setRunning((r) => !r);
       } else if (e.key === 'r' || e.key === 'R') {
         reset();
@@ -138,8 +136,22 @@ export default function Focus() {
         }
       }
     };
-    window.addEventListener('keydown', handler);
-    return () => window.removeEventListener('keydown', handler);
+    
+    const keyUpHandler = (e) => {
+      const tag = (e.target && e.target.tagName) || '';
+      if (tag === 'INPUT' || tag === 'TEXTAREA') return;
+      if (e.code === 'Space') {
+        e.preventDefault();
+        e.stopPropagation();
+      }
+    };
+
+    window.addEventListener('keydown', handler, { capture: true });
+    window.addEventListener('keyup', keyUpHandler, { capture: true });
+    return () => {
+      window.removeEventListener('keydown', handler, { capture: true });
+      window.removeEventListener('keyup', keyUpHandler, { capture: true });
+    };
   }, [reset, enterFullscreen, setRunning, isFullscreen]);
 
   const mins = Math.floor(seconds / 60);
