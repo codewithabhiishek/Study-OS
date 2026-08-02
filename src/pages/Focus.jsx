@@ -124,6 +124,9 @@ export default function Focus() {
       if (tag === 'INPUT' || tag === 'TEXTAREA') return;
       if (e.code === 'Space') {
         e.preventDefault();
+        if (document.activeElement && document.activeElement.tagName !== 'INPUT') {
+          document.activeElement.blur();
+        }
         setRunning((r) => !r);
       } else if (e.key === 'r' || e.key === 'R') {
         reset();

@@ -50,17 +50,20 @@
 
 @layer base {
   * {
-    @apply border-border outline-none;
-    -webkit-tap-highlight-color: transparent;
+    @apply border-border;
+    outline: none !important;
+    -webkit-tap-highlight-color: transparent !important;
+    -webkit-user-select: none !important;
+    user-select: none !important;
   }
   body {
-    @apply bg-black text-foreground font-body antialiased select-none;
+    @apply bg-black text-foreground font-body antialiased;
     background-color: #000000;
-    -webkit-tap-highlight-color: transparent;
   }
 
   input, textarea {
-    @apply select-text;
+    -webkit-user-select: auto !important;
+    user-select: auto !important;
   }
 }
 
