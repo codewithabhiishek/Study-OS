@@ -259,9 +259,9 @@ export default function Review() {
           </div>
         </div>
 
-        <div className="flex items-end justify-between mb-4">
+        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3 mb-4">
           <div className="flex items-end gap-2">
-            <span className="text-5xl font-mono font-bold tabular-nums" style={{ color: '#00FF87', textShadow: '0 0 20px rgba(0,255,135,0.5)' }}>
+            <span className="text-4xl sm:text-5xl font-mono font-bold tabular-nums" style={{ color: '#00FF87', textShadow: '0 0 20px rgba(0,255,135,0.5)' }}>
               {timeframe === 'daily' 
                 ? (totalTodayMinutes / 60).toFixed(1) 
                 : timeframe === 'weekly' 
@@ -269,7 +269,7 @@ export default function Review() {
                   : (monthlyData[monthlyData.length - 1]?.hours || 0).toFixed(1)
               }
             </span>
-            <span className="text-[11px] font-mono pb-2" style={{ color: '#444' }}>
+            <span className="text-[10px] sm:text-[11px] font-mono pb-1.5" style={{ color: '#444' }}>
               {timeframe === 'daily' 
                 ? 'HRS TODAY' 
                 : timeframe === 'weekly' 
@@ -281,7 +281,7 @@ export default function Review() {
 
           {/* Sub-toggle for Weekly view */}
           {timeframe === 'weekly' && (
-            <div className="flex items-center gap-2 mb-1">
+            <div className="flex items-center gap-1.5 sm:gap-2 mb-1 self-end sm:self-auto">
               <button 
                 onClick={() => setWeekOffset(prev => prev + 1)}
                 className="p-1 border transition-all"
@@ -295,7 +295,7 @@ export default function Review() {
               >
                 <ChevronLeft className="w-3.5 h-3.5" />
               </button>
-              <span className="text-[10px] font-mono font-bold tracking-wider text-center min-w-[180px]" style={{ color: '#fff' }}>
+              <span className="text-[9px] sm:text-[10px] font-mono font-bold tracking-wider text-center min-w-[150px] sm:min-w-[180px]" style={{ color: '#fff' }}>
                 {formatWeekRange(startOfActiveWeek)}
               </span>
               <button 

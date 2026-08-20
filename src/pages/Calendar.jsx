@@ -205,33 +205,33 @@ export default function Calendar() {
           >
             CALENDAR
           </h1>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-1.5 sm:gap-3 flex-wrap">
             <button
               onClick={() => setCurrentMonth(new Date())}
-              className="px-2.5 py-1 border border-[#00FF87] hover:bg-[#00FF87] hover:text-black transition-all font-mono text-[10px] font-bold tracking-widest"
+              className="px-2 sm:px-2.5 py-1 border border-[#00FF87] hover:bg-[#00FF87] hover:text-black transition-all font-mono text-[9px] sm:text-[10px] font-bold tracking-widest"
               style={{ color: "#00FF87" }}
             >
               TODAY
             </button>
             <button
               onClick={() => setCurrentMonth(subMonths(currentMonth, 1))}
-              className="p-1.5 border border-[#00FF87] hover:bg-[#00FF87] hover:text-black transition-all"
+              className="p-1 sm:p-1.5 border border-[#00FF87] hover:bg-[#00FF87] hover:text-black transition-all"
               style={{ color: "#00FF87" }}
             >
-              <ChevronLeft className="w-4 h-4" />
+              <ChevronLeft className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             </button>
             <span
-              className="font-mono font-bold text-sm tracking-widest min-w-[85px] text-center"
+              className="font-mono font-bold text-xs sm:text-sm tracking-widest min-w-[75px] sm:min-w-[85px] text-center"
               style={{ color: "#fff" }}
             >
               {format(currentMonth, "MMM yyyy").toUpperCase()}
             </span>
             <button
               onClick={() => setCurrentMonth(addMonths(currentMonth, 1))}
-              className="p-1.5 border border-[#00FF87] hover:bg-[#00FF87] hover:text-black transition-all"
+              className="p-1 sm:p-1.5 border border-[#00FF87] hover:bg-[#00FF87] hover:text-black transition-all"
               style={{ color: "#00FF87" }}
             >
-              <ChevronRight className="w-4 h-4" />
+              <ChevronRight className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             </button>
           </div>
         </div>
@@ -241,7 +241,7 @@ export default function Calendar() {
           {["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"].map((d) => (
             <div
               key={d}
-              className="text-center text-[10px] font-mono py-1.5"
+              className="text-center text-[9px] sm:text-[10px] font-mono py-1"
               style={{ color: "#333" }}
             >
               {d}
@@ -254,7 +254,7 @@ export default function Calendar() {
           {Array(startPad)
             .fill(null)
             .map((_, i) => (
-              <div key={`pad-${i}`} className="h-16 bg-black" />
+              <div key={`pad-${i}`} className="min-h-[46px] xs:min-h-[54px] sm:h-16 bg-black" />
             ))}
           {days.map((day) => {
             const key = format(day, "yyyy-MM-dd");
@@ -265,7 +265,7 @@ export default function Calendar() {
             return (
               <div
                 key={key}
-                className="h-16 bg-black p-1 relative overflow-hidden transition-all hover:bg-[rgba(0,255,135,0.03)]"
+                className="min-h-[46px] xs:min-h-[54px] sm:h-16 bg-black p-0.5 sm:p-1 relative overflow-hidden transition-all hover:bg-[rgba(0,255,135,0.03)]"
                 style={{
                   border: today ? "1px solid #00FF87" : "1px solid transparent",
                   boxShadow: today ? "0 0 8px rgba(0,255,135,0.3)" : "none",

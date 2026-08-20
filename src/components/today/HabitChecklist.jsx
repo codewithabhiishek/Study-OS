@@ -115,7 +115,7 @@ export default function HabitChecklist() {
           <Plus className="w-3.5 h-3.5 transition-colors" />
         </button>
       </div>
-      <div className="grid grid-cols-2 gap-2">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
         {habits.map((habit) => {
           const done = (habit.completed_dates || []).includes(today);
           const currentStreak = calculateStreak(habit.completed_dates || []);

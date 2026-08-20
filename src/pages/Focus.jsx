@@ -218,8 +218,11 @@ export default function Focus() {
 
       {/* Timer ring */}
       <div
-        className="relative mb-8"
-        style={{ width: isFullscreen ? 360 : 220, height: isFullscreen ? 360 : 220 }}
+        className={`relative mb-6 sm:mb-8 transition-all ${
+          isFullscreen 
+            ? 'w-64 h-64 xs:w-72 xs:h-72 sm:w-96 sm:h-96 max-w-[85vw] max-h-[85vw]' 
+            : 'w-52 h-52 xs:w-60 xs:h-60 sm:w-64 sm:h-64'
+        }`}
       >
         <div
           className={`absolute inset-0 rounded-full ${isCompleted ? 'complete-glow' : ''}`}
@@ -268,9 +271,12 @@ export default function Focus() {
         </svg>
         <div className="absolute inset-0 flex flex-col items-center justify-center">
           <span
-            className="font-mono font-bold tabular-nums"
+            className={`font-mono font-bold tabular-nums ${
+              isFullscreen 
+                ? 'text-4xl xs:text-5xl sm:text-7xl' 
+                : 'text-3xl sm:text-4xl'
+            }`}
             style={{
-              fontSize: isFullscreen ? '5.5rem' : '3rem',
               lineHeight: 1,
               color: isCompleted ? '#00FF87' : running ? accent : '#fff',
               textShadow: isCompleted 

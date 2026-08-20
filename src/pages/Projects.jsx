@@ -38,8 +38,8 @@ export default function Projects() {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-8">
-        <h1 className="text-4xl font-black tracking-tighter" style={{ color: '#fff' }}>
+      <div className="flex items-center justify-between mb-6 sm:mb-8">
+        <h1 className="text-3xl sm:text-4xl font-black tracking-tighter" style={{ color: '#fff' }}>
           PROJ<span style={{ color: '#00FF87', textShadow: '0 0 20px #00FF87' }}>ECTS</span>
         </h1>
         <Dialog open={open} onOpenChange={setOpen}>
@@ -48,7 +48,7 @@ export default function Projects() {
               <Plus className="w-4 h-4" />
             </button>
           </DialogTrigger>
-          <DialogContent className="sm:max-w-md bg-black border-[#00FF87] text-white font-mono"
+          <DialogContent className="w-[calc(100vw-2rem)] max-w-md bg-black border-[#00FF87] text-white font-mono"
             style={{ boxShadow: '6px 6px 0 #FF006E' }}>
             <DialogHeader>
               <DialogTitle className="text-[#00FF87] font-mono tracking-widest">{"// NEW PROJECT"}</DialogTitle>

@@ -102,30 +102,30 @@ export default function Sidebar() {
       </aside>
 
       {/* Mobile bottom nav */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-black border-t border-[#00FF87] pb-[env(safe-area-inset-bottom)]"
-        style={{ boxShadow: '0 -4px 20px rgba(0,255,135,0.2)' }}>
-        <div className="flex items-center justify-around">
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-black/95 backdrop-blur-md border-t border-[#00FF87] pb-[calc(0.5rem+env(safe-area-inset-bottom))]"
+        style={{ boxShadow: '0 -4px 20px rgba(0,255,135,0.15)' }}>
+        <div className="grid grid-cols-6 items-center px-1">
           {navItems.map(({ path, label, icon: Icon }) => {
             const active = location.pathname === path;
             return (
               <Link
                 key={path}
                 to={path}
-                className="flex flex-col items-center gap-0.5 px-2 py-2.5 text-[9px] font-mono font-bold tracking-wider transition-all"
+                className="flex flex-col items-center justify-center py-2 text-[9px] font-mono font-bold tracking-tight transition-all active:scale-95"
                 style={{ color: active ? '#00FF87' : '#666' }}
               >
-                <Icon className="w-4 h-4" style={active ? { filter: 'drop-shadow(0 0 4px #00FF87)' } : {}} />
-                {label}
+                <Icon className="w-4 h-4 mb-0.5" style={active ? { filter: 'drop-shadow(0 0 5px #00FF87)' } : {}} />
+                <span className="truncate max-w-[50px]">{label}</span>
               </Link>
             );
           })}
           <button
             onClick={logout}
-            className="flex flex-col items-center gap-0.5 px-2 py-2.5 text-[9px] font-mono font-bold tracking-wider text-[#FF006E] transition-all cursor-pointer"
+            className="flex flex-col items-center justify-center py-2 text-[9px] font-mono font-bold tracking-tight text-[#FF006E] transition-all active:scale-95 cursor-pointer"
             title="Logout"
           >
-            <LogOut className="w-4 h-4" style={{ filter: 'drop-shadow(0 0 4px #FF006E)' }} />
-            LOGOUT
+            <LogOut className="w-4 h-4 mb-0.5" style={{ filter: 'drop-shadow(0 0 5px #FF006E)' }} />
+            <span className="truncate max-w-[50px]">EXIT</span>
           </button>
         </div>
       </nav>

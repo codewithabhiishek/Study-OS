@@ -153,22 +153,22 @@ export default function MissionBanner() {
           />
         </div>
       ) : (
-        <div className="flex items-end justify-between flex-wrap gap-3">
-          <div className="text-2xl font-black tracking-tight uppercase" style={{ color: '#00FF87', textShadow: '0 0 20px rgba(0,255,135,0.5)' }}>
+        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3">
+          <div className="text-xl sm:text-2xl font-black tracking-tight uppercase" style={{ color: '#00FF87', textShadow: '0 0 20px rgba(0,255,135,0.5)' }}>
             {activeMission.title}
           </div>
-          <div className="flex items-end gap-3">
+          <div className="flex items-end gap-2 sm:gap-3 self-end sm:self-auto">
             {[
               { val: timeLeft.days, label: 'DAYS' },
               { val: timeLeft.hours, label: 'HRS' },
               { val: timeLeft.minutes, label: 'MIN' },
               { val: timeLeft.seconds, label: 'SEC' },
             ].map(({ val, label }) => (
-              <div key={label} className="text-center">
-                <div className="text-2xl font-mono font-bold tabular-nums leading-none" style={{ color: '#FF006E', textShadow: '0 0 15px #FF006E' }}>
+              <div key={label} className="text-center min-w-[32px] sm:min-w-[40px]">
+                <div className="text-xl sm:text-2xl font-mono font-bold tabular-nums leading-none" style={{ color: '#FF006E', textShadow: '0 0 15px #FF006E' }}>
                   {pad(val)}
                 </div>
-                <div className="text-[9px] font-mono" style={{ color: '#FF006E', opacity: 0.6 }}>{label}</div>
+                <div className="text-[8px] sm:text-[9px] font-mono" style={{ color: '#FF006E', opacity: 0.6 }}>{label}</div>
               </div>
             ))}
           </div>
