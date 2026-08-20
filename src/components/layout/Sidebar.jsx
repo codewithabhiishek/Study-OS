@@ -95,7 +95,7 @@ export default function Sidebar() {
             <span>LOGOUT</span>
           </button>
 
-          <div className="text-[10px] font-mono uppercase pt-1 border-t border-[#00FF87]/10" style={{ color: '#FF006E' }}>
+          <div className="text-[10px] font-mono uppercase pt-2 border-t border-[#00FF87]/15 text-center tracking-wider truncate" style={{ color: '#FF006E' }}>
             {activeMission ? `MISSION: ${activeMission.title}` : 'MISSION: [NOT SET]'}
           </div>
         </div>
