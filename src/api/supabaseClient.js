@@ -141,7 +141,7 @@ export const supabaseClient = {
     },
     async logout() {
       await supabase.auth.signOut();
-      window.location.href = '/login';
+      window.location.href = '/';
     },
     async resetPasswordRequest(email) {
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
