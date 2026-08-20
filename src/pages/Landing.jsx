@@ -13,8 +13,7 @@ import {
   Github, 
   Lock, 
   UserPlus,
-  Sparkles,
-  Heart
+  Sparkles
 } from 'lucide-react';
 
 const SARCASTIC_LINES = [
@@ -50,6 +49,7 @@ export default function Landing() {
       title: 'TODAY HORIZON',
       desc: 'Lock in on daily top-3 priorities, active missions, and daily habit checklists.',
       color: '#00FF87',
+      hoverShadow: '#FF006E',
       tag: '01'
     },
     {
@@ -57,6 +57,7 @@ export default function Landing() {
       title: 'CYBER FOCUS TIMER',
       desc: 'Pomodoro and deep-work intervals with electric visual feedback and ambient sound.',
       color: '#FF006E',
+      hoverShadow: '#00FF87',
       tag: '02'
     },
     {
@@ -64,6 +65,7 @@ export default function Landing() {
       title: 'PROJECT MATRIX',
       desc: 'Track academic courses, research, and coding projects with subtask progress bars.',
       color: '#00FF87',
+      hoverShadow: '#FF006E',
       tag: '03'
     },
     {
@@ -71,6 +73,7 @@ export default function Landing() {
       title: 'HABIT STREAKS',
       desc: 'Build unbreakable daily consistency with visual streak counters and instant check-ins.',
       color: '#FF006E',
+      hoverShadow: '#00FF87',
       tag: '04'
     },
     {
@@ -78,6 +81,7 @@ export default function Landing() {
       title: 'TIMELINE & DEADLINES',
       desc: 'Countdown clocks for high-stakes exams, university admissions, and assignments.',
       color: '#00FF87',
+      hoverShadow: '#FF006E',
       tag: '05'
     },
     {
@@ -85,6 +89,7 @@ export default function Landing() {
       title: 'WEEKLY INTELLIGENCE',
       desc: 'Review weekly focus hour heatmaps, habit compliance rates, and debriefs.',
       color: '#FF006E',
+      hoverShadow: '#00FF87',
       tag: '06'
     }
   ];
@@ -112,10 +117,10 @@ export default function Landing() {
       <header className="relative z-20 border-b border-[#00FF87]/30 bg-black/90 backdrop-blur-sm">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-2 group">
-            <div className="w-7 h-7 bg-black border border-[#00FF87] flex items-center justify-center font-mono font-bold text-xs text-[#00FF87] shadow-[2px_2px_0px_#FF006E] group-hover:shadow-[3px_3px_0px_#00FF87] transition-all">
+            <div className="w-7 h-7 bg-black border border-[#00FF87] flex items-center justify-center font-mono font-bold text-xs text-[#00FF87] shadow-[2px_2px_0px_#FF006E] group-hover:shadow-[3px_3px_0px_#00FF87] group-hover:-translate-y-0.5 transition-all duration-200">
               ⚡
             </div>
-            <div className="font-mono font-black text-lg tracking-widest" style={{ color: '#00FF87', textShadow: '0 0 10px rgba(0,255,135,0.5)' }}>
+            <div className="font-mono font-black text-lg tracking-widest group-hover:opacity-90 transition-opacity" style={{ color: '#00FF87', textShadow: '0 0 10px rgba(0,255,135,0.5)' }}>
               STUDY<span style={{ color: '#FF006E', textShadow: '0 0 10px rgba(255,0,110,0.5)' }}>OS</span>
             </div>
           </Link>
@@ -124,7 +129,7 @@ export default function Landing() {
             {user ? (
               <Link
                 to="/today"
-                className="px-4 py-2 text-xs font-mono font-bold tracking-widest btn-neon-green flex items-center gap-1.5"
+                className="px-4 py-2 text-xs font-mono font-bold tracking-widest btn-neon-green flex items-center gap-1.5 hover:-translate-y-0.5 transition-all"
               >
                 <Zap className="w-3.5 h-3.5" />
                 <span>OPEN OS</span>
@@ -133,14 +138,14 @@ export default function Landing() {
               <>
                 <Link
                   to="/login"
-                  className="px-3.5 py-1.5 text-xs font-mono font-bold tracking-widest text-[#00FF87] border border-[#00FF87]/40 hover:bg-[#00FF87]/10 hover:border-[#00FF87] transition-all flex items-center gap-1.5"
+                  className="px-3.5 py-1.5 text-xs font-mono font-bold tracking-widest text-[#00FF87] border border-[#00FF87]/40 hover:bg-[#00FF87]/15 hover:border-[#00FF87] hover:shadow-[3px_3px_0px_#00FF87] hover:-translate-y-0.5 transition-all duration-200 flex items-center gap-1.5"
                 >
                   <Lock className="w-3 h-3" />
                   <span>SIGN IN</span>
                 </Link>
                 <Link
                   to="/register"
-                  className="px-3.5 py-1.5 text-xs font-mono font-bold tracking-widest btn-neon-green flex items-center gap-1.5"
+                  className="px-3.5 py-1.5 text-xs font-mono font-bold tracking-widest btn-neon-green flex items-center gap-1.5 hover:-translate-y-0.5 transition-all"
                 >
                   <UserPlus className="w-3 h-3" />
                   <span>REGISTER</span>
@@ -156,7 +161,7 @@ export default function Landing() {
         
         {/* HERO SECTION */}
         <section className="text-center max-w-3xl mx-auto space-y-6">
-          <div className="inline-flex items-center gap-2 px-3 py-1 border border-[#00FF87] bg-black shadow-[2px_2px_0px_#00FF87]">
+          <div className="inline-flex items-center gap-2 px-3 py-1 border border-[#00FF87] bg-black shadow-[2px_2px_0px_#00FF87] hover:shadow-[4px_4px_0px_#FF006E] hover:-translate-y-0.5 transition-all duration-200 cursor-default">
             <span className="w-2 h-2 rounded-full bg-[#00FF87] animate-pulse" />
             <span className="font-mono text-[11px] font-bold tracking-widest text-[#00FF87]">
               {'100% FREE & OPEN SOURCE // ZERO PAYWALLS'}
@@ -165,7 +170,7 @@ export default function Landing() {
 
           <h1 className="text-4xl sm:text-6xl font-black uppercase tracking-tight leading-none font-sans">
             THE CYBERPUNK <br />
-            <span className="text-[#00FF87]" style={{ textShadow: '0 0 25px rgba(0,255,135,0.5)' }}>
+            <span className="text-[#00FF87] glitch hover:text-white transition-colors" style={{ textShadow: '0 0 25px rgba(0,255,135,0.5)' }}>
               STUDY OPERATING SYSTEM
             </span>
           </h1>
@@ -180,28 +185,28 @@ export default function Landing() {
             {user ? (
               <Link
                 to="/today"
-                className="w-full sm:w-auto px-8 py-3.5 text-xs font-mono font-bold tracking-widest btn-neon-green flex items-center justify-center gap-2"
+                className="group w-full sm:w-auto px-8 py-3.5 text-xs font-mono font-bold tracking-widest btn-neon-green flex items-center justify-center gap-2 hover:-translate-y-1 hover:shadow-[5px_5px_0px_#FF006E] transition-all duration-200"
               >
-                <Zap className="w-4 h-4 fill-black" />
+                <Zap className="w-4 h-4 fill-black group-hover:scale-110 transition-transform" />
                 <span>LAUNCH YOUR COCKPIT</span>
-                <ArrowRight className="w-4 h-4" />
+                <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
               </Link>
             ) : (
               <>
                 <Link
                   to="/register"
-                  className="w-full sm:w-auto px-7 py-3.5 text-xs font-mono font-bold tracking-widest btn-neon-green flex items-center justify-center gap-2"
+                  className="group w-full sm:w-auto px-7 py-3.5 text-xs font-mono font-bold tracking-widest btn-neon-green flex items-center justify-center gap-2 hover:-translate-y-1 hover:shadow-[5px_5px_0px_#FF006E] transition-all duration-200"
                 >
-                  <Zap className="w-4 h-4 fill-black" />
+                  <Zap className="w-4 h-4 fill-black group-hover:scale-110 transition-transform" />
                   <span>GET STARTED [100% FREE]</span>
-                  <ArrowRight className="w-4 h-4" />
+                  <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                 </Link>
                 
                 <Link
                   to="/login"
-                  className="w-full sm:w-auto px-7 py-3.5 text-xs font-mono font-bold tracking-widest text-[#FF006E] border border-[#FF006E] bg-black hover:bg-[#FF006E] hover:text-black transition-all flex items-center justify-center gap-2 shadow-[3px_3px_0px_#00FF87]"
+                  className="group w-full sm:w-auto px-7 py-3.5 text-xs font-mono font-bold tracking-widest text-[#FF006E] border border-[#FF006E] bg-black hover:bg-[#FF006E] hover:text-black transition-all duration-200 flex items-center justify-center gap-2 shadow-[3px_3px_0px_#00FF87] hover:shadow-[5px_5px_0px_#00FF87] hover:-translate-y-1"
                 >
-                  <Lock className="w-3.5 h-3.5" />
+                  <Lock className="w-3.5 h-3.5 group-hover:scale-110 transition-transform" />
                   <span>SIGN IN</span>
                 </Link>
               </>
@@ -209,26 +214,28 @@ export default function Landing() {
           </div>
 
           {/* Key Value Badges */}
-          <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-6 font-mono text-xs text-neutral-400 pt-2">
-            <span className="flex items-center gap-1.5 text-white">
-              <span className="text-[#00FF87]">✓</span> 100% Free Forever
-            </span>
-            <span className="flex items-center gap-1.5 text-white">
-              <span className="text-[#00FF87]">✓</span> Open Source (MIT)
-            </span>
-            <span className="flex items-center gap-1.5 text-white">
-              <span className="text-[#00FF87]">✓</span> Supabase Postgres RLS
-            </span>
-            <span className="flex items-center gap-1.5 text-white">
-              <span className="text-[#00FF87]">✓</span> Zero Ads or Tracking
-            </span>
+          <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-4 font-mono text-xs text-neutral-400 pt-2">
+            {[
+              '100% Free Forever',
+              'Open Source (MIT)',
+              'Supabase Postgres RLS',
+              'Zero Ads or Tracking'
+            ].map((badge, bIdx) => (
+              <span 
+                key={bIdx}
+                className="flex items-center gap-1.5 text-neutral-300 px-2.5 py-1 border border-neutral-800 bg-neutral-950/80 hover:border-[#00FF87] hover:text-white hover:shadow-[2px_2px_0px_#00FF87] hover:-translate-y-0.5 transition-all duration-200 cursor-default"
+              >
+                <span className="text-[#00FF87]">✓</span> {badge}
+              </span>
+            ))}
           </div>
         </section>
 
         {/* WHAT YOU CAN DO (CORE MODULES) */}
         <section className="space-y-6">
           <div className="flex items-center justify-between border-b border-neutral-800 pb-3">
-            <div className="font-mono text-xs font-bold text-[#00FF87] tracking-widest">
+            <div className="font-mono text-xs font-bold text-[#00FF87] tracking-widest flex items-center gap-2">
+              <span className="w-2 h-2 bg-[#00FF87] inline-block" />
               {'// WHAT YOU CAN DO IN STUDYOS'}
             </div>
             <div className="font-mono text-[10px] text-neutral-500 font-bold">
@@ -242,30 +249,57 @@ export default function Landing() {
               return (
                 <div 
                   key={idx}
-                  className="p-5 border bg-black transition-all group"
+                  className="p-5 border bg-black transition-all duration-200 group cursor-pointer hover:-translate-y-1.5 hover:translate-x-0.5 relative overflow-hidden"
                   style={{
                     borderColor: item.color,
                     boxShadow: `3px 3px 0px ${item.color}`
                   }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.boxShadow = `6px 6px 0px ${item.hoverShadow}`;
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.boxShadow = `3px 3px 0px ${item.color}`;
+                  }}
                 >
-                  <div className="flex items-center justify-between mb-3">
+                  {/* Subtle hover gradient flare */}
+                  <div 
+                    className="absolute -right-8 -top-8 w-24 h-24 rounded-full opacity-0 group-hover:opacity-10 transition-opacity duration-300 pointer-events-none blur-xl"
+                    style={{ background: item.color }}
+                  />
+
+                  <div className="flex items-center justify-between mb-3 relative z-10">
                     <div 
-                      className="w-9 h-9 border flex items-center justify-center"
-                      style={{ borderColor: item.color, color: item.color }}
+                      className="w-9 h-9 border flex items-center justify-center transition-all duration-200 group-hover:scale-110 group-hover:rotate-3 shadow-sm"
+                      style={{ 
+                        borderColor: item.color, 
+                        color: item.color,
+                      }}
                     >
-                      <Icon className="w-4 h-4" />
+                      <Icon className="w-4 h-4 transition-transform duration-200" />
                     </div>
-                    <span className="font-mono text-[10px] text-neutral-500 font-bold">
+                    <span 
+                      className="font-mono text-[10px] text-neutral-500 font-bold transition-colors group-hover:text-white"
+                    >
                       {item.tag}
                     </span>
                   </div>
 
-                  <h2 className="font-sans font-bold text-sm tracking-wide text-white uppercase mb-1.5">
+                  <h2 
+                    className="font-sans font-bold text-sm tracking-wide text-white uppercase mb-1.5 transition-colors duration-200 relative z-10"
+                    style={{ 
+                      textShadow: '0 0 1px rgba(255,255,255,0.1)' 
+                    }}
+                  >
                     {item.title}
                   </h2>
-                  <p className="font-mono text-xs text-neutral-400 leading-relaxed">
+                  <p className="font-mono text-xs text-neutral-400 group-hover:text-neutral-300 leading-relaxed transition-colors duration-200 relative z-10">
                     {item.desc}
                   </p>
+
+                  <div className="mt-3 pt-2 border-t border-neutral-900 flex items-center justify-between text-[10px] font-mono text-neutral-500 group-hover:text-[#00FF87] transition-colors relative z-10">
+                    <span>STATUS: OPERATIONAL</span>
+                    <span className="opacity-0 group-hover:opacity-100 transition-opacity">EXPLORE →</span>
+                  </div>
                 </div>
               );
             })}
@@ -273,12 +307,12 @@ export default function Landing() {
         </section>
 
         {/* FREE & OPEN SOURCE SUMMARY BOX */}
-        <section className="p-6 border border-[#00FF87] bg-black shadow-[4px_4px_0px_#FF006E] flex flex-col md:flex-row items-center justify-between gap-6">
+        <section className="p-6 border border-[#00FF87] bg-black shadow-[4px_4px_0px_#FF006E] hover:shadow-[6px_6px_0px_#00FF87] hover:-translate-y-1 transition-all duration-200 flex flex-col md:flex-row items-center justify-between gap-6 group">
           <div className="space-y-1 text-center md:text-left">
             <div className="font-mono text-[11px] font-bold text-[#FF006E]">
               {'// OPEN SOURCE PHILOSOPHY'}
             </div>
-            <h2 className="font-sans font-bold text-lg text-white">
+            <h2 className="font-sans font-bold text-lg text-white group-hover:text-[#00FF87] transition-colors">
               No Subscriptions. No Paywalls. Full Data Ownership.
             </h2>
             <p className="font-mono text-xs text-neutral-400 max-w-xl">
@@ -291,7 +325,7 @@ export default function Landing() {
               href="https://github.com/codewithabhiishek/Study-OS"
               target="_blank"
               rel="noreferrer"
-              className="px-4 py-2 text-xs font-mono font-bold tracking-wider text-neutral-300 border border-neutral-700 hover:border-[#00FF87] hover:text-[#00FF87] transition-all flex items-center gap-2"
+              className="px-4 py-2 text-xs font-mono font-bold tracking-wider text-neutral-300 border border-neutral-700 hover:border-[#00FF87] hover:text-[#00FF87] hover:shadow-[3px_3px_0px_#00FF87] hover:-translate-y-0.5 transition-all duration-200 flex items-center gap-2"
             >
               <Github className="w-4 h-4" />
               <span>GITHUB</span>
@@ -299,7 +333,7 @@ export default function Landing() {
             
             <Link
               to={user ? "/today" : "/register"}
-              className="px-4 py-2 text-xs font-mono font-bold tracking-wider btn-neon-green flex items-center gap-1.5"
+              className="px-4 py-2 text-xs font-mono font-bold tracking-wider btn-neon-green flex items-center gap-1.5 hover:-translate-y-0.5 transition-all"
             >
               <ShieldCheck className="w-4 h-4" />
               <span>{user ? "ENTER OS" : "START FREE"}</span>
@@ -308,11 +342,11 @@ export default function Landing() {
         </section>
 
         {/* ANIMATED SARCASTIC FOCUS BANNER */}
-        <section className="border border-[#FF006E]/60 bg-black p-4 sm:p-5 shadow-[4px_4px_0px_#00FF87] relative overflow-hidden group">
+        <section className="border border-[#FF006E]/60 bg-black p-4 sm:p-5 shadow-[4px_4px_0px_#00FF87] hover:shadow-[6px_6px_0px_#FF006E] hover:-translate-y-0.5 transition-all duration-200 relative overflow-hidden group">
           <div className="flex flex-col sm:flex-row items-center justify-between gap-3 text-center sm:text-left">
             <div className="flex items-center gap-2.5 flex-shrink-0">
               <span className="w-2.5 h-2.5 rounded-full bg-[#FF006E] animate-ping flex-shrink-0" />
-              <span className="font-mono text-xs font-bold tracking-widest text-[#FF006E] uppercase">
+              <span className="font-mono text-xs font-bold tracking-widest text-[#FF006E] uppercase group-hover:text-white transition-colors">
                 {'[FOCUS_DISCIPLINE_FEED]'}
               </span>
             </div>
