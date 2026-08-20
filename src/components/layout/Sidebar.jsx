@@ -22,7 +22,7 @@ export default function Sidebar() {
     queryKey: ['active-mission'],
     queryFn: () => supabaseClient.entities.Deadline.filter({ category: 'mission' }),
   });
-  const activeMission = missions[0] || { title: 'EUROPE 2027' };
+  const activeMission = missions[0] || null;
 
   return (
     <>
@@ -96,7 +96,7 @@ export default function Sidebar() {
           </button>
 
           <div className="text-[10px] font-mono uppercase pt-1 border-t border-[#00FF87]/10" style={{ color: '#FF006E' }}>
-            MISSION: {activeMission.title}
+            {activeMission ? `MISSION: ${activeMission.title}` : 'MISSION: [NOT SET]'}
           </div>
         </div>
       </aside>

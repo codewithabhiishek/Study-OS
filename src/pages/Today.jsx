@@ -21,7 +21,7 @@ export default function Today() {
   const name = user?.user_metadata?.full_name?.toUpperCase() 
     || user?.user_metadata?.name?.toUpperCase() 
     || user?.email?.split('@')[0]?.toUpperCase() 
-    || 'ABHISHEK';
+    || 'STUDENT';
 
   return (
     <div>
