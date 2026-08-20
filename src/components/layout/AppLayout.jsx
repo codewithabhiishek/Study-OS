@@ -23,8 +23,8 @@ export default function AppLayout() {
         </Link>
         {user?.email && (
           <div className="flex items-center gap-3">
-            <span className="text-[10px] font-mono text-[#00FF87]/80 truncate max-w-[150px]" title={user.email}>
-              {user.email}
+            <span className="text-[11px] font-mono font-bold text-[#00FF87]" title={user.email}>
+              {user.user_metadata?.full_name || `@${user.email.split('@')[0]}`}
             </span>
             <button
               onClick={logout}

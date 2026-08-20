@@ -77,9 +77,11 @@ export default function Sidebar() {
 
         <div className="px-5 py-4 border-t border-[#00FF87]/30 relative z-10 space-y-3">
           {user?.email && (
-            <div className="flex items-center gap-2 text-[11px] font-mono text-[#00FF87]/80 truncate" title={user.email}>
+            <div className="flex items-center gap-2 text-[11px] font-mono text-[#00FF87]" title={user.email}>
               <User className="w-3.5 h-3.5 flex-shrink-0 text-[#00FF87]" />
-              <span className="truncate">{user.email}</span>
+              <span className="font-bold tracking-wide break-all">
+                {user.user_metadata?.full_name || `@${user.email.split('@')[0]}`}
+              </span>
             </div>
           )}
 
