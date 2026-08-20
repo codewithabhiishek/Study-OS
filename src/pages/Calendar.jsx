@@ -349,10 +349,10 @@ export default function Calendar() {
           </div>
           <button
             onClick={() => setAdding(!adding)}
-            className="w-6 h-6 flex items-center justify-center border border-[#FF006E] transition-all hover:bg-[#FF006E] hover:text-black"
-            style={{ color: "#FF006E" }}
+            className="w-6 h-6 flex items-center justify-center border border-[#FF006E] text-[#FF006E] transition-all hover:bg-[#FF006E] hover:text-black hover:shadow-[0_0_8px_#FF006E]"
+            title={adding ? "Close" : "Add deadline"}
           >
-            <Plus className="w-3 h-3" />
+            <Plus className="w-3.5 h-3.5 transition-colors" />
           </button>
         </div>
 

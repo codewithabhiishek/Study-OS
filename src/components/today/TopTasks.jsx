@@ -123,10 +123,10 @@ export default function TopTasks() {
         </div>
         <button
           onClick={() => setAdding(!adding)}
-          className="w-6 h-6 flex items-center justify-center border border-[#00FF87] transition-all hover:bg-[#00FF87] hover:text-black"
-          style={{ color: '#00FF87' }}
+          className="w-6 h-6 flex items-center justify-center border border-[#00FF87] text-[#00FF87] transition-all hover:bg-[#00FF87] hover:text-black hover:shadow-[0_0_8px_#00FF87]"
+          title={adding ? "Close" : "Add focus task"}
         >
-          <Plus className="w-3 h-3" />
+          <Plus className="w-3.5 h-3.5 transition-colors" />
         </button>
       </div>
       <div className="space-y-2">
