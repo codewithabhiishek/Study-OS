@@ -19,6 +19,8 @@ export default function Sidebar() {
   const location = useLocation();
   const { user, logout } = useAuth();
   const [updateModalOpen, setUpdateModalOpen] = useState(false);
+  const isTauri = typeof window !== 'undefined' && Boolean(window.__TAURI_INTERNALS__);
+
   const { data: missions = [] } = useQuery({
     queryKey: ['active-mission'],
     queryFn: () => supabaseClient.entities.Deadline.filter({ category: 'mission' }),
@@ -27,7 +29,7 @@ export default function Sidebar() {
 
   return (
     <>
-      <UpdateModal open={updateModalOpen} onOpenChange={setUpdateModalOpen} />
+      {isTauri && <UpdateModal open={updateModalOpen} onOpenChange={setUpdateModalOpen} />}
 
       {/* Desktop sidebar */}
       <aside className="hidden md:flex flex-col w-52 h-screen fixed left-0 top-0 z-30 bg-black border-r border-[#00FF87] overflow-hidden"
@@ -44,12 +46,18 @@ export default function Sidebar() {
             </div>
           </Link>
           <div
-            onClick={() => setUpdateModalOpen(true)}
-            className="flex items-center justify-between text-[10px] font-mono mt-1 cursor-pointer group/ver"
-            title="Click to check for updates"
+            onClick={() => isTauri && setUpdateModalOpen(true)}
+            className={cn(
+              "flex items-center justify-between text-[10px] font-mono mt-1",
+              isTauri ? "cursor-pointer group/ver" : ""
+            )}
+            title={isTauri ? "Click to check for desktop updates" : "StudyOS"}
           >
             <span style={{ color: '#00FF87', opacity: 0.6 }}>GRINDING... <span className="blink">_</span></span>
-            <span className="text-[9px] px-1 border border-[#00FF87]/40 text-[#00FF87] group-hover/ver:bg-[#00FF87] group-hover/ver:text-black transition-all">
+            <span className={cn(
+              "text-[9px] px-1 border border-[#00FF87]/40 text-[#00FF87]",
+              isTauri ? "group-hover/ver:bg-[#00FF87] group-hover/ver:text-black transition-all" : ""
+            )}>
               v1.0.1
             </span>
           </div>
@@ -86,14 +94,16 @@ export default function Sidebar() {
         </nav>
 
         <div className="px-5 py-4 border-t border-[#00FF87]/30 relative z-10 space-y-2.5">
-          {/* Check for updates button */}
-          <button
-            onClick={() => setUpdateModalOpen(true)}
-            className="w-full flex items-center justify-center gap-1.5 px-3 py-1.5 text-[10px] font-mono font-bold tracking-wider text-[#00FF87] border border-[#00FF87]/30 hover:bg-[#00FF87] hover:text-black transition-all cursor-pointer group"
-          >
-            <Sparkles className="w-3 h-3 text-[#00FF87] group-hover:text-black animate-pulse" />
-            <span>UPDATES // v1.0.1</span>
-          </button>
+          {/* Check for updates button (Desktop App Only) */}
+          {isTauri && (
+            <button
+              onClick={() => setUpdateModalOpen(true)}
+              className="w-full flex items-center justify-center gap-1.5 px-3 py-1.5 text-[10px] font-mono font-bold tracking-wider text-[#00FF87] border border-[#00FF87]/30 hover:bg-[#00FF87] hover:text-black transition-all cursor-pointer group"
+            >
+              <Sparkles className="w-3 h-3 text-[#00FF87] group-hover:text-black animate-pulse" />
+              <span>UPDATES // v1.0.1</span>
+            </button>
+          )}
 
           {user?.email && (
             <div className="flex items-center gap-2 text-[11px] font-mono text-[#00FF87]" title={user.email}>
@@ -123,7 +133,7 @@ export default function Sidebar() {
       {/* Mobile bottom nav */}
       <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-black/95 backdrop-blur-md border-t border-[#00FF87] pb-[calc(0.5rem+env(safe-area-inset-bottom))]"
         style={{ boxShadow: '0 -4px 20px rgba(0,255,135,0.15)' }}>
-        <div className="grid grid-cols-7 items-center px-1">
+        <div className="grid grid-cols-6 items-center px-1">
           {navItems.map(({ path, label, icon: Icon }) => {
             const active = location.pathname === path;
             return (
@@ -138,14 +148,6 @@ export default function Sidebar() {
               </Link>
             );
           })}
-          <button
-            onClick={() => setUpdateModalOpen(true)}
-            className="flex flex-col items-center justify-center py-2 text-[9px] font-mono font-bold tracking-tight text-[#00FF87] transition-all active:scale-95 cursor-pointer"
-            title="Check for updates"
-          >
-            <Sparkles className="w-4 h-4 mb-0.5 animate-pulse" style={{ filter: 'drop-shadow(0 0 5px #00FF87)' }} />
-            <span className="truncate max-w-[50px]">UPDATE</span>
-          </button>
           <button
             onClick={logout}
             className="flex flex-col items-center justify-center py-2 text-[9px] font-mono font-bold tracking-tight text-[#FF006E] transition-all active:scale-95 cursor-pointer"
