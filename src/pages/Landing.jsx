@@ -50,7 +50,8 @@ export default function Landing() {
       desc: 'Lock in on daily top-3 priorities, active missions, and daily habit checklists.',
       color: '#00FF87',
       hoverShadow: '#FF006E',
-      tag: '01'
+      tag: '01',
+      route: '/today'
     },
     {
       icon: Zap,
@@ -58,7 +59,8 @@ export default function Landing() {
       desc: 'Pomodoro and deep-work intervals with electric visual feedback and ambient sound.',
       color: '#FF006E',
       hoverShadow: '#00FF87',
-      tag: '02'
+      tag: '02',
+      route: '/focus'
     },
     {
       icon: FolderOpen,
@@ -66,7 +68,8 @@ export default function Landing() {
       desc: 'Track academic courses, research, and coding projects with subtask progress bars.',
       color: '#00FF87',
       hoverShadow: '#FF006E',
-      tag: '03'
+      tag: '03',
+      route: '/projects'
     },
     {
       icon: Flame,
@@ -74,7 +77,8 @@ export default function Landing() {
       desc: 'Build unbreakable daily consistency with visual streak counters and instant check-ins.',
       color: '#FF006E',
       hoverShadow: '#00FF87',
-      tag: '04'
+      tag: '04',
+      route: '/today'
     },
     {
       icon: Calendar,
@@ -82,7 +86,8 @@ export default function Landing() {
       desc: 'Countdown clocks for high-stakes exams, university admissions, and assignments.',
       color: '#00FF87',
       hoverShadow: '#FF006E',
-      tag: '05'
+      tag: '05',
+      route: '/calendar'
     },
     {
       icon: BarChart3,
@@ -90,7 +95,8 @@ export default function Landing() {
       desc: 'Review weekly focus hour heatmaps, habit compliance rates, and debriefs.',
       color: '#FF006E',
       hoverShadow: '#00FF87',
-      tag: '06'
+      tag: '06',
+      route: '/review'
     }
   ];
 
@@ -247,9 +253,10 @@ export default function Landing() {
             {features.map((item, idx) => {
               const Icon = item.icon;
               return (
-                <div 
+                <Link 
                   key={idx}
-                  className="p-4 sm:p-5 border bg-black transition-all duration-200 group cursor-pointer hover:-translate-y-1.5 hover:translate-x-0.5 relative overflow-hidden"
+                  to={user ? item.route : "/register"}
+                  className="p-4 sm:p-5 border bg-black transition-all duration-200 group cursor-pointer hover:-translate-y-1.5 hover:translate-x-0.5 relative overflow-hidden block"
                   style={{
                     borderColor: item.color,
                     boxShadow: `3px 3px 0px ${item.color}`
@@ -300,7 +307,7 @@ export default function Landing() {
                     <span>STATUS: OPERATIONAL</span>
                     <span className="opacity-0 group-hover:opacity-100 transition-opacity">EXPLORE →</span>
                   </div>
-                </div>
+                </Link>
               );
             })}
           </div>
