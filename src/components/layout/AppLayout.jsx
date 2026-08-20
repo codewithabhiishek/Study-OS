@@ -1,5 +1,5 @@
 import React from 'react';
-import { Outlet, useLocation } from 'react-router-dom';
+import { Outlet, useLocation, Link } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import { useAuth } from '@/lib/AuthContext';
 import { LogOut } from 'lucide-react';
@@ -18,9 +18,9 @@ export default function AppLayout() {
 
       {/* Mobile top header */}
       <header className="md:hidden flex items-center justify-between px-4 py-3 bg-black border-b border-[#00FF87]/30 sticky top-0 z-30">
-        <div className="font-mono font-bold text-sm tracking-widest" style={{ color: '#00FF87', textShadow: '0 0 10px #00FF87' }}>
+        <Link to="/" className="font-mono font-bold text-sm tracking-widest" style={{ color: '#00FF87', textShadow: '0 0 10px #00FF87' }}>
           STUDY<span style={{ color: '#FF006E', textShadow: '0 0 10px #FF006E' }}>OS</span>
-        </div>
+        </Link>
         {user?.email && (
           <div className="flex items-center gap-3">
             <span className="text-[10px] font-mono text-[#00FF87]/80 truncate max-w-[150px]" title={user.email}>

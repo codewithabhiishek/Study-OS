@@ -40,7 +40,7 @@ export default function Register() {
       });
       if (err) throw err;
       if (data.session) {
-        navigate('/', { replace: true });
+        navigate('/today', { replace: true });
       } else {
         setInfo('Account created. Check your email to confirm your address, then log in.');
       }
@@ -54,7 +54,7 @@ export default function Register() {
   const handleGoogle = async () => {
     const { error: err } = await supabase.auth.signInWithOAuth({
       provider: 'google',
-      options: { redirectTo: window.location.origin },
+      options: { redirectTo: window.location.origin + '/today' },
     });
     if (err) setError(err.message);
   };

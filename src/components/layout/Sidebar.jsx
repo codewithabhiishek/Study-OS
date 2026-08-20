@@ -7,7 +7,7 @@ import { supabaseClient } from '@/api/supabaseClient';
 import { useAuth } from '@/lib/AuthContext';
 
 const navItems = [
-  { path: '/', label: 'TODAY', icon: CalendarDays },
+  { path: '/today', label: 'TODAY', icon: CalendarDays },
   { path: '/projects', label: 'PROJECTS', icon: FolderOpen },
 
   { path: '/calendar', label: 'CALENDAR', icon: Calendar },
@@ -35,9 +35,11 @@ export default function Sidebar() {
         }} />
 
         <div className="px-5 pt-7 pb-5 relative z-10">
-          <div className="font-mono font-bold text-lg tracking-widest" style={{ color: '#00FF87', textShadow: '0 0 15px #00FF87' }}>
-            STUDY<span style={{ color: '#FF006E', textShadow: '0 0 15px #FF006E' }}>OS</span>
-          </div>
+          <Link to="/" className="block group">
+            <div className="font-mono font-bold text-lg tracking-widest group-hover:opacity-90 transition-opacity" style={{ color: '#00FF87', textShadow: '0 0 15px #00FF87' }}>
+              STUDY<span style={{ color: '#FF006E', textShadow: '0 0 15px #FF006E' }}>OS</span>
+            </div>
+          </Link>
           <div className="text-[10px] font-mono mt-1" style={{ color: '#00FF87', opacity: 0.5 }}>
             GRINDING... <span className="blink">_</span>
           </div>

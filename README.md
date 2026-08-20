@@ -1,54 +1,68 @@
-# StudyOS
+# StudyOS ⚡
 
-A personal study operating system: today view, projects, habits, focus
-timer, deadlines, university tracker, and weekly review.
+> **A fast, cyberpunk-styled productivity operating system for students, developers, and autonomous learners.**
+> 100% Free & Open-Source under the MIT License.
 
-This codebase has been fully migrated to **Supabase**
-(auth + Postgres + RLS). The UI is unchanged.
+Repository: [https://github.com/codewithabhiishek/Study-OS](https://github.com/codewithabhiishek/Study-OS)
 
-## Tech stack
+---
 
-- React 18 + Vite 6
-- TanStack Query 5
-- React Router 6
-- Tailwind CSS 3 + shadcn/ui (Radix)
-- Supabase JS v2 (auth + database)
+## 🚀 Overview
 
-## 1. Install
+StudyOS replaces fragmented productivity tools, bloated Notion setups, and overpriced timer apps with a distraction-free cockpit:
+
+- **🏠 Landing Page**: Clean, high-impact cyberpunk entry point with quick authentication, feature breakdown, and open-source guarantees.
+- **🎯 Today Horizon**: Top-3 daily priorities, streak trackers, anime companions (Luffy), and active mission banners.
+- **⏱️ Cyber Focus Engine**: Pomodoro & deep-work timer with ambient soundscapes, electric pulses, and automatic database session logging.
+- **📁 Project Matrix**: Track coursework, research papers, and software projects with subtask progress bars.
+- **🔥 Atomic Habits**: Daily habit streaks with one-tap check-ins and multiplier fire badges.
+- **📅 Timeline & Deadlines**: Countdown clocks for exams, assignments, and university applications.
+- **📊 Weekly Intelligence**: Focus hour heatmaps, habit compliance analytics, and reflection journaling.
+
+---
+
+## 🛠️ Tech Stack
+
+- **Frontend**: React 18, Vite 6, Tailwind CSS 3, Lucide Icons, shadcn/ui (Radix)
+- **Routing & State**: React Router 6, TanStack Query 5
+- **Backend & Auth**: Supabase JS v2 (PostgreSQL + Row-Level Security)
+- **Deployment**: Vercel / Netlify / Docker ready (PWA support)
+
+---
+
+## 📦 Quick Start
+
+### 1. Clone & Install
 
 ```bash
+git clone https://github.com/codewithabhiishek/Study-OS.git
+cd Study-OS
 npm install
 ```
 
-## 2. Configure Supabase
+### 2. Configure Environment
 
-1. Create a project at <https://supabase.com>.
-2. In **Project Settings → API**, copy:
-   - `Project URL`
-   - `anon public` key
-3. Create `.env` at the project root:
+Create a `.env` file at the root:
 
 ```bash
 cp .env.example .env
 ```
 
-…and fill in:
+Fill in your Supabase credentials:
 
-```
+```env
 VITE_SUPABASE_URL=https://YOUR-PROJECT.supabase.co
-VITE_SUPABASE_ANON_KEY=eyJ...
+VITE_SUPABASE_ANON_KEY=your-anon-key-here
 ```
 
-## 3. Create the database schema
+### 3. Initialize Supabase Database
 
-Open the Supabase **SQL Editor** and run the migration:
-
-```
+Run the SQL migration in your Supabase **SQL Editor**:
+```sql
 supabase/migrations/0001_init.sql
 ```
 
-It creates these tables with per-user Row Level Security:
-
+Tables created with per-user Row Level Security (RLS):
 - `projects`
 - `tasks`
 - `habits`
@@ -56,66 +70,25 @@ It creates these tables with per-user Row Level Security:
 - `focus_sessions`
 - `universities`
 
-Authentication uses Supabase's built-in `auth.users`. No `profiles` table
-is needed because no extra user metadata is stored.
-
-### Optional: Google sign-in
-
-Enable **Authentication → Providers → Google** in the Supabase dashboard
-and add an OAuth client. The Login / Register pages already have a
-"Continue with Google" button wired up.
-
-## 4. Run locally
+### 4. Run Locally
 
 ```bash
 npm run dev
 ```
 
-Open <http://localhost:5173>. Create an account on `/register`, then
-log in.
+Open [http://localhost:5173](http://localhost:5173).
 
-## 5. Build for production
+---
+
+## 🚢 Production Build
 
 ```bash
 npm run build
 npm run preview
 ```
 
-Deploy `dist/` to any static host (Vercel, Netlify, Cloudflare Pages,
-GitHub Pages, S3+CloudFront…). Set the same two environment variables
-(`VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`) at build time.
+---
 
-### Vercel example
+## 📄 License
 
-```bash
-vercel --prod
-# then in the dashboard, add:
-#   VITE_SUPABASE_URL
-#   VITE_SUPABASE_ANON_KEY
-```
-
-### Netlify example
-
-```bash
-netlify deploy --prod --build
-# add the same two env vars in the Netlify UI
-```
-
-## Project layout
-
-```
-src/
-  api/supabaseClient.js     ← thin Supabase-backed compatibility shim
-  lib/
-    supabase.js           ← Supabase client
-    AuthContext.jsx       ← Supabase Auth context
-    query-client.js
-    PageNotFound.jsx
-    utils.js
-  components/             ← UI + feature components
-  pages/                  ← route pages
-supabase/
-  migrations/0001_init.sql
-```
-
-
+MIT License. 100% Free & Open-Source. Built by [Abhishek](https://github.com/codewithabhiishek).

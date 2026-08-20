@@ -20,6 +20,8 @@ import Calendar from '@/pages/Calendar';
 import { FocusProvider } from '@/hooks/FocusContext';
 import { Analytics } from '@vercel/analytics/react';
 
+import Landing from '@/pages/Landing';
+
 function App() {
   // Auto-reload PWA on new deployments when running in standalone or browser mode
   useEffect(() => {
@@ -38,7 +40,10 @@ function App() {
             initialETag = etag;
           }
         }
-      } catch (err) {}
+      } catch (err) {
+        // Ignore network check errors
+        void err;
+      }
     };
 
     checkAppVersion();
@@ -63,13 +68,15 @@ function App() {
         <FocusProvider>
           <Router>
           <Routes>
+            <Route path="/" element={<Landing />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="/reset-password" element={<ResetPassword />} />
             <Route element={<ProtectedRoute unauthenticatedElement={<Navigate to="/login" replace />} />}>
               <Route element={<AppLayout />}>
-                <Route path="/" element={<Today />} />
+                <Route path="/today" element={<Today />} />
+                <Route path="/app" element={<Navigate to="/today" replace />} />
                 <Route path="/projects" element={<Projects />} />
 
                 <Route path="/focus" element={<Focus />} />

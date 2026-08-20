@@ -20,7 +20,7 @@ export default function Login() {
     setLoading(true);
     try {
       await supabaseClient.auth.loginViaEmailPassword(email, password);
-      window.location.href = "/";
+      window.location.href = "/today";
     } catch (err) {
       setError(err.message || "Invalid email or password");
     } finally {
@@ -29,7 +29,7 @@ export default function Login() {
   };
 
   const handleGoogle = () => {
-    supabaseClient.auth.loginWithProvider("google", "/");
+    supabaseClient.auth.loginWithProvider("google", "/today");
   };
 
   return (
