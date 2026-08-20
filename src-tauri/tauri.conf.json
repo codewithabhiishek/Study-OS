@@ -2,7 +2,7 @@
   "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
   "productName": "StudyOS",
   "version": "0.1.0",
-  "identifier": "com.studyos.app",
+  "identifier": "com.studyos.desktop",
   "build": {
     "frontendDist": "../dist",
     "devUrl": "http://localhost:5173",
@@ -38,6 +38,14 @@
     ],
     "android": {
       "debugApplicationIdSuffix": ".debug"
+    }
+  },
+  "plugins": {
+    "updater": {
+      "endpoints": [
+        "https://github.com/codewithabhiishek/Study-OS/releases/latest/download/latest.json"
+      ],
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDFDMEMzNjYyMTM4OTNCNjgKUldSb080a1RZallNSEZGNk9CSks1cmtDQ2xvbXVBUDBjZUxtNVQxUzZVTTAvK0NkWllOeHp3eVYK"
     }
   }
 }

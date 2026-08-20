@@ -19,6 +19,7 @@ import Review from '@/pages/Review';
 import Calendar from '@/pages/Calendar';
 import { FocusProvider } from '@/hooks/FocusContext';
 import { Analytics } from '@vercel/analytics/react';
+import UpdateNotifier from '@/components/updater/UpdateNotifier';
 
 import Landing from '@/pages/Landing';
 
@@ -89,6 +90,7 @@ function App() {
         </Router>
         </FocusProvider>
         <Toaster />
+        <UpdateNotifier />
         <Analytics />
       </QueryClientProvider>
     </AuthProvider>
