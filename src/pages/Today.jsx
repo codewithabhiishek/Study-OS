@@ -1,12 +1,14 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Zap } from 'lucide-react';
+import { useAuth } from '@/lib/AuthContext';
 import MissionBanner from '@/components/today/MissionBanner';
 import TopTasks from '@/components/today/TopTasks';
 import HabitChecklist from '@/components/today/HabitChecklist';
 import LuffyCompanion from '@/components/today/LuffyCompanion';
 
 export default function Today() {
+  const { user } = useAuth();
   const greeting = () => {
     const h = new Date().getHours();
     if (h < 12) return 'GOOD MORNING';
@@ -16,7 +18,10 @@ export default function Today() {
 
   const now = new Date();
   const dateStr = now.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' }).toUpperCase();
-  const name = 'ABHISHEK';
+  const name = user?.user_metadata?.full_name?.toUpperCase() 
+    || user?.user_metadata?.name?.toUpperCase() 
+    || user?.email?.split('@')[0]?.toUpperCase() 
+    || 'ABHISHEK';
 
   return (
     <div>

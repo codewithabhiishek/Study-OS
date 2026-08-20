@@ -1,24 +1,51 @@
-import React, { useState } from "react";
-import { Link, useSearchParams } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { Link, useSearchParams, useNavigate } from "react-router-dom";
+import { supabase } from "@/lib/supabase";
 import { supabaseClient } from "@/api/supabaseClient";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Lock, Loader2, AlertTriangle } from "lucide-react";
+import { Lock, Loader2, AlertTriangle, CheckCircle2 } from "lucide-react";
 import AuthLayout from "@/components/AuthLayout";
 
 export default function ResetPassword() {
   const [searchParams] = useSearchParams();
-  const resetToken = searchParams.get("token");
+  const navigate = useNavigate();
+  const resetToken = searchParams.get("token") || searchParams.get("code");
+  const hasHashToken = typeof window !== 'undefined' && window.location.hash.includes("access_token");
 
+  const [hasValidSession, setHasValidSession] = useState(Boolean(resetToken || hasHashToken));
+  const [checkingAuth, setCheckingAuth] = useState(true);
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
+  const [success, setSuccess] = useState(false);
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data }) => {
+      if (data.session || resetToken || hasHashToken) {
+        setHasValidSession(true);
+      }
+      setCheckingAuth(false);
+    });
+
+    const { data: sub } = supabase.auth.onAuthStateChange((event) => {
+      if (event === "PASSWORD_RECOVERY" || event === "SIGNED_IN") {
+        setHasValidSession(true);
+      }
+    });
+
+    return () => sub.subscription.unsubscribe();
+  }, [resetToken, hasHashToken]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
+    if (newPassword.length < 8) {
+      setError("Password must be at least 8 characters");
+      return;
+    }
     if (newPassword !== confirmPassword) {
       setError("Passwords do not match");
       return;
@@ -26,7 +53,10 @@ export default function ResetPassword() {
     setLoading(true);
     try {
       await supabaseClient.auth.resetPassword({ resetToken, newPassword });
-      window.location.href = "/login";
+      setSuccess(true);
+      setTimeout(() => {
+        navigate("/login");
+      }, 2000);
     } catch (err) {
       setError(err.message || "Failed to reset password");
     } finally {
@@ -34,12 +64,20 @@ export default function ResetPassword() {
     }
   };
 
-  if (!resetToken) {
+  if (checkingAuth) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-black">
+        <div className="w-8 h-8 border-2 border-[#00FF87]/30 border-t-[#00FF87] rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  if (!hasValidSession) {
     return (
       <AuthLayout
         icon={AlertTriangle}
         title="Invalid reset link"
-        subtitle="This password reset link is missing or invalid"
+        subtitle="This password reset link is missing or expired"
         footer={
           <Link to="/forgot-password" className="text-primary font-medium hover:underline">
             Request a new link
@@ -47,7 +85,21 @@ export default function ResetPassword() {
         }
       >
         <p className="text-sm text-foreground text-center">
-          The link you used appears to be incomplete. Please request a new password reset email.
+          The link you used appears to be incomplete or expired. Please request a new password reset email.
+        </p>
+      </AuthLayout>
+    );
+  }
+
+  if (success) {
+    return (
+      <AuthLayout
+        icon={CheckCircle2}
+        title="Password updated"
+        subtitle="Your password has been successfully reset."
+      >
+        <p className="text-sm text-neutral-300 text-center">
+          Redirecting you to sign in...
         </p>
       </AuthLayout>
     );

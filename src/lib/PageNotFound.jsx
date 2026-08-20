@@ -1,4 +1,5 @@
-import { useLocation } from 'react-router-dom';
+import React from 'react';
+import { useLocation, Link } from 'react-router-dom';
 
 export default function PageNotFound() {
   const location = useLocation();
@@ -20,12 +21,12 @@ export default function PageNotFound() {
           </p>
         </div>
         <div className="pt-6">
-          <button
-            onClick={() => (window.location.href = '/')}
+          <Link
+            to="/"
             className="inline-flex items-center px-4 py-2 text-sm font-mono font-bold tracking-widest btn-neon-green"
           >
             GO HOME
-          </button>
+          </Link>
         </div>
       </div>
     </div>

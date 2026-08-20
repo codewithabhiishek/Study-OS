@@ -15,7 +15,7 @@ function useLiveCountdown(targetDate) {
       let target;
       if (typeof targetDate === 'string' && targetDate.includes('-') && !targetDate.includes('T')) {
         const [year, month, day] = targetDate.split('-').map(Number);
-        target = new Date(year, month - 1, day);
+        target = new Date(year, month - 1, day, 23, 59, 59);
       } else {
         target = new Date(targetDate);
       }
