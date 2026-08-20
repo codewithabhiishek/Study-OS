@@ -40,8 +40,9 @@ export default function Sidebar() {
               STUDY<span style={{ color: '#FF006E', textShadow: '0 0 15px #FF006E' }}>OS</span>
             </div>
           </Link>
-          <div className="text-[10px] font-mono mt-1" style={{ color: '#00FF87', opacity: 0.5 }}>
-            GRINDING... <span className="blink">_</span>
+          <div className="flex items-center justify-between text-[10px] font-mono mt-1" style={{ color: '#00FF87', opacity: 0.6 }}>
+            <span>GRINDING... <span className="blink">_</span></span>
+            <span className="text-[9px] px-1 border border-[#00FF87]/40 text-[#00FF87]">v1.0.1</span>
           </div>
         </div>
 
