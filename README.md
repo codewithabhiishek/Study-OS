@@ -7,6 +7,7 @@
 [![MIT License](https://img.shields.io/badge/License-MIT-00FF87.svg?style=for-the-badge&logo=opensourceinitiative&logoColor=black)](https://opensource.org/licenses/MIT)
 [![React 18](https://img.shields.io/badge/React_18-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)](https://reactjs.org/)
 [![Vite 6](https://img.shields.io/badge/Vite_6-646CFF?style=for-the-badge&logo=vite&logoColor=white)](https://vitejs.dev/)
+[![Tauri v2](https://img.shields.io/badge/Tauri_v2-FFC131?style=for-the-badge&logo=tauri&logoColor=black)](https://tauri.app/)
 [![Tailwind CSS 3](https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
 [![Supabase](https://img.shields.io/badge/Supabase_RLS-3ECF8E?style=for-the-badge&logo=supabase&logoColor=white)](https://supabase.com/)
 [![PRs Welcome](https://img.shields.io/badge/PRs-Welcome-FF006E.svg?style=for-the-badge)](https://github.com/codewithabhiishek/Study-OS/pulls)
@@ -15,7 +16,7 @@
   <b>100% Free & Open-Source</b> • <b>Zero Ads</b> • <b>Zero Subscriptions</b> • <b>Full Data Ownership</b>
 </p>
 
-[**🌐 Live Demo**](https://mystudy-os.vercel.app) • [**⚡ Getting Started**](#-quick-start) • [**🎯 Core Modules**](#-core-modules) • [**🗄️ Database Setup**](#-supabase-database-setup)
+[**🌐 Live Demo**](https://mystudy-os.vercel.app) • [**⚡ Getting Started**](#-quick-start) • [**🖥️ macOS Desktop App**](#-macos-desktop-app) • [**🎯 Core Modules**](#-core-modules) • [**🗄️ Database Setup**](#-supabase-database-setup)
 
 ---
 
@@ -117,11 +118,30 @@ VITE_SUPABASE_URL=https://your-project-id.supabase.co
 VITE_SUPABASE_ANON_KEY=your-supabase-anon-key
 ```
 
-### 4. Run Development Server
+### 4. Run Web Development Server
 ```bash
 npm run dev
 ```
 Open **[http://localhost:5173](http://localhost:5173)** in your browser.
+
+---
+
+## 🖥️ macOS Desktop App (Tauri v2)
+
+StudyOS can be run and compiled as a native, ultra-lightweight desktop app on macOS.
+
+### Run Desktop App in Dev Mode (Hot-Reload)
+```bash
+npm run tauri dev
+```
+
+### Build Native macOS App & DMG Installer
+```bash
+npm run tauri build
+```
+The compiled `.app` and `.dmg` bundles will be output to:
+- `src-tauri/target/release/bundle/macos/StudyOS.app`
+- `src-tauri/target/release/bundle/dmg/StudyOS_0.1.0_aarch64.dmg`
 
 ---
 
