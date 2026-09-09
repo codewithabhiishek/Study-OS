@@ -331,7 +331,7 @@ export default function Landing() {
             <a
               href="https://github.com/codewithabhiishek/Study-OS"
               target="_blank"
-              rel="noreferrer"
+              rel="noopener noreferrer"
               className="px-4 py-2 text-xs font-mono font-bold tracking-wider text-neutral-300 border border-neutral-700 hover:border-[#00FF87] hover:text-[#00FF87] hover:shadow-[2px_2px_0px_#00FF87] hover:-translate-y-0.5 transition-all duration-200 flex items-center justify-center gap-2"
             >
               <Github className="w-4 h-4" />
@@ -408,7 +408,7 @@ export default function Landing() {
             <span>{'//'}</span>
             <Link to="/register" className="hover:text-[#00FF87] transition-colors font-bold">REGISTER</Link>
             <span>{'//'}</span>
-            <a href="https://github.com/codewithabhiishek/Study-OS" target="_blank" rel="noreferrer" className="hover:text-[#00FF87] transition-colors flex items-center gap-1">
+            <a href="https://github.com/codewithabhiishek/Study-OS" target="_blank" rel="noopener noreferrer" className="hover:text-[#00FF87] transition-colors flex items-center gap-1">
               <Github className="w-3.5 h-3.5" />
             </a>
           </div>

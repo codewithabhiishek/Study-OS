@@ -22,3 +22,11 @@ create policy "luffy_select_own" on public.luffy_motivations
 drop policy if exists "luffy_insert_own" on public.luffy_motivations;
 create policy "luffy_insert_own" on public.luffy_motivations
   for insert with check (auth.uid() = user_id);
+
+drop policy if exists "luffy_update_own" on public.luffy_motivations;
+create policy "luffy_update_own" on public.luffy_motivations
+  for update using (auth.uid() = user_id) with check (auth.uid() = user_id);
+
+drop policy if exists "luffy_delete_own" on public.luffy_motivations;
+create policy "luffy_delete_own" on public.luffy_motivations
+  for delete using (auth.uid() = user_id);

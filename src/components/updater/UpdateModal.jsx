@@ -189,7 +189,7 @@ export default function UpdateModal({ open, onOpenChange }) {
                     <a
                       href={updateInfo.htmlUrl || `https://github.com/${GITHUB_REPO}/releases/latest`}
                       target="_blank"
-                      rel="noreferrer"
+                      rel="noopener noreferrer"
                       className="w-full py-2.5 px-3 text-xs font-bold tracking-widest bg-[#FF006E] text-white hover:bg-[#FF006E]/90 transition-all flex items-center justify-center gap-2 cursor-pointer text-center"
                       style={{ boxShadow: '2px 2px 0 #00FF87' }}
                     >
@@ -227,7 +227,7 @@ export default function UpdateModal({ open, onOpenChange }) {
             <a
               href={`https://github.com/${GITHUB_REPO}/releases`}
               target="_blank"
-              rel="noreferrer"
+              rel="noopener noreferrer"
               className="px-3 py-2 text-[11px] font-bold tracking-wider border border-zinc-700 text-zinc-400 hover:text-white hover:border-zinc-500 transition-all flex items-center gap-1"
             >
               <ExternalLink className="w-3 h-3" />
