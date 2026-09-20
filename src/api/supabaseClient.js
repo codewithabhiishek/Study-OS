@@ -20,7 +20,7 @@ const TABLE = {
 //   "field"   → ascending
 //   "-field"  → descending
 function applySort(query, sort) {
-  if (!sort) return query;
+  if (!sort || typeof sort !== 'string') return query;
   if (sort.startsWith('-')) return query.order(sort.slice(1), { ascending: false });
   return query.order(sort, { ascending: true });
 }

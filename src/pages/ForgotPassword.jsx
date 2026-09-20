@@ -9,11 +9,18 @@ import AuthLayout from "@/components/AuthLayout";
 
 export default function ForgotPassword() {
   const [email, setEmail] = useState("");
+  const [botcheck, setBotcheck] = useState(false);
+  const [gotcha, setGotcha] = useState("");
+  const [formLoadTime] = useState(() => Date.now());
   const [loading, setLoading] = useState(false);
   const [sent, setSent] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (botcheck || gotcha || Date.now() - formLoadTime < 1800) {
+      setSent(true);
+      return;
+    }
     setLoading(true);
     try {
       await supabaseClient.auth.resetPasswordRequest(email);
@@ -42,6 +49,27 @@ export default function ForgotPassword() {
         </p>
       ) : (
         <form onSubmit={handleSubmit} className="space-y-4">
+          {/* Dual Honeypot defense */}
+          <input
+            type="checkbox"
+            name="botcheck"
+            checked={botcheck}
+            onChange={(e) => setBotcheck(e.target.checked)}
+            style={{ display: "none" }}
+            tabIndex={-1}
+            autoComplete="off"
+            aria-hidden="true"
+          />
+          <input
+            type="text"
+            name="_gotcha"
+            value={gotcha}
+            onChange={(e) => setGotcha(e.target.value)}
+            tabIndex={-1}
+            autoComplete="off"
+            style={{ position: "absolute", left: "-9999px", opacity: 0 }}
+            aria-hidden="true"
+          />
           <div className="space-y-2">
             <Label htmlFor="email">Email address</Label>
             <div className="relative">
@@ -51,9 +79,10 @@ export default function ForgotPassword() {
                 type="email"
                 autoComplete="email"
                 autoFocus
+                maxLength={254}
                 placeholder="you@example.com"
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                onChange={(e) => setEmail(e.target.value.replace(/<[^>]*>?/gm, "").slice(0, 254))}
                 className="pl-10 h-12"
                 required
               />

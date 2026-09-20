@@ -1,7 +1,11 @@
 export function calculateStreak(completedDates) {
-  if (!completedDates || completedDates.length === 0) return 0;
+  if (!Array.isArray(completedDates) || completedDates.length === 0) return 0;
 
-  const uniqueDates = new Set(completedDates);
+  const uniqueDates = new Set(
+    completedDates
+      .filter((d) => Boolean(d))
+      .map((d) => String(d).slice(0, 10))
+  );
   
   // Helper to get date string for N days ago in local timezone (YYYY-MM-DD)
   const getLocalDateString = (daysAgo) => {

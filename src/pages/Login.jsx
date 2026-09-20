@@ -11,11 +11,17 @@ import GoogleIcon from "@/components/GoogleIcon";
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [botcheck, setBotcheck] = useState(false);
+  const [gotcha, setGotcha] = useState("");
+  const [formLoadTime] = useState(() => Date.now());
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (botcheck || gotcha || Date.now() - formLoadTime < 1800) {
+      return;
+    }
     setError("");
     setLoading(true);
     try {
@@ -71,6 +77,27 @@ export default function Login() {
       )}
 
       <form onSubmit={handleSubmit} className="space-y-4">
+        {/* Dual Honeypot defense */}
+        <input
+          type="checkbox"
+          name="botcheck"
+          checked={botcheck}
+          onChange={(e) => setBotcheck(e.target.checked)}
+          style={{ display: "none" }}
+          tabIndex={-1}
+          autoComplete="off"
+          aria-hidden="true"
+        />
+        <input
+          type="text"
+          name="_gotcha"
+          value={gotcha}
+          onChange={(e) => setGotcha(e.target.value)}
+          tabIndex={-1}
+          autoComplete="off"
+          style={{ position: "absolute", left: "-9999px", opacity: 0 }}
+          aria-hidden="true"
+        />
         <div className="space-y-2">
           <Label htmlFor="email">Email</Label>
           <div className="relative">
@@ -80,9 +107,10 @@ export default function Login() {
               type="email"
               autoComplete="email"
               autoFocus
+              maxLength={254}
               placeholder="you@example.com"
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={(e) => setEmail(e.target.value.replace(/<[^>]*>?/gm, "").slice(0, 254))}
               className="pl-10 h-12"
               required
             />
@@ -101,9 +129,10 @@ export default function Login() {
               id="password"
               type="password"
               autoComplete="current-password"
+              maxLength={128}
               placeholder="••••••••"
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              onChange={(e) => setPassword(e.target.value.slice(0, 128))}
               className="pl-10 h-12"
               required
             />

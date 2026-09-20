@@ -20,7 +20,7 @@ export const COUNTRIES = [
 ];
 
 export function getCountryFlag(countryName) {
-  if (!countryName) return '';
+  if (!countryName || typeof countryName !== 'string') return '';
   const cleanName = countryName.trim().toLowerCase();
   
   if (cleanName === 'uk') return '🇬🇧';
