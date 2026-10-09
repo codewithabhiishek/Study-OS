@@ -10,14 +10,18 @@ export default function AppLayout() {
   const isWidePage = location.pathname.includes('calendar');
 
   return (
-    <div className="min-h-screen bg-black text-white selection:bg-[#00FF87] selection:text-black">
+    <div className="min-h-screen bg-black text-white selection:bg-[#00FF87] selection:text-black relative overflow-x-hidden">
+      {/* Ambient background glow orbs for layered depth */}
+      <div className="fixed top-[-100px] left-[15%] w-[480px] h-[480px] rounded-full glow-orb-green pointer-events-none z-0" />
+      <div className="fixed bottom-[-100px] right-[10%] w-[520px] h-[520px] rounded-full glow-orb-magenta pointer-events-none z-0" />
+
       {/* Global scanline overlay */}
-      <div className="fixed inset-0 pointer-events-none z-50 opacity-40" style={{
+      <div className="fixed inset-0 pointer-events-none z-50 opacity-30" style={{
         background: 'repeating-linear-gradient(to bottom, transparent 0px, transparent 3px, rgba(0,0,0,0.1) 3px, rgba(0,0,0,0.1) 4px)'
       }} />
 
       {/* Mobile top header */}
-      <header className="md:hidden flex items-center justify-between px-4 py-3 bg-black/95 backdrop-blur-md border-b border-[#00FF87]/30 sticky top-0 z-30 pt-[calc(0.75rem+env(safe-area-inset-top))]">
+      <header className="md:hidden flex items-center justify-between px-4 py-3 bg-black/85 backdrop-blur-md border-b border-[#00FF87]/30 sticky top-0 z-30 pt-[calc(0.75rem+env(safe-area-inset-top))] shadow-[0_4px_20px_rgba(0,0,0,0.6)]">
         <Link to="/" className="font-mono font-black text-sm tracking-widest flex items-center gap-1.5 group">
           <span className="w-5 h-5 bg-black border border-[#00FF87] flex items-center justify-center text-[10px] text-[#00FF87] shadow-[2px_2px_0px_#FF006E]">
             ⚡
@@ -33,7 +37,7 @@ export default function AppLayout() {
             </span>
             <button
               onClick={logout}
-              className="text-[#FF006E] hover:text-[#FF006E]/80 transition-colors p-1 border border-[#FF006E]/40 active:scale-95"
+              className="text-[#FF006E] hover:text-[#FF006E]/80 transition-colors p-1.5 border border-[#FF006E]/40 active:scale-95"
               title="Logout"
             >
               <LogOut className="w-3.5 h-3.5" />

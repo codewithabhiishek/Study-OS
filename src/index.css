@@ -1,8 +1,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap');
 
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+@config "../tailwind.config.js";
 
 @layer base {
   :root {
@@ -216,4 +215,60 @@
   background: #00FF87;
   transform: translate(-2px, -2px);
   box-shadow: 6px 6px 0px #FF006E;
+}
+
+/* Glassmorphism & Cyber Depth */
+.glass-panel {
+  background: rgba(10, 16, 22, 0.75);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(0, 255, 135, 0.22);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.45);
+}
+
+.glass-panel-magenta {
+  background: rgba(22, 10, 18, 0.75);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 0, 110, 0.25);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.45);
+}
+
+.glass-card-interactive {
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.2s ease;
+}
+.glass-card-interactive:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 36px 0 rgba(0, 255, 135, 0.15), 4px 4px 0px #00FF87;
+  border-color: rgba(0, 255, 135, 0.6);
+}
+
+.glass-card-interactive-magenta:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 36px 0 rgba(255, 0, 110, 0.15), 4px 4px 0px #FF006E;
+  border-color: rgba(255, 0, 110, 0.6);
+}
+
+/* Ambient Radial Glow Orbs */
+.glow-orb-green {
+  background: radial-gradient(circle at center, rgba(0, 255, 135, 0.08) 0%, transparent 70%);
+}
+.glow-orb-magenta {
+  background: radial-gradient(circle at center, rgba(255, 0, 110, 0.08) 0%, transparent 70%);
+}
+
+/* Custom Cyber Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #030806;
+}
+::-webkit-scrollbar-thumb {
+  background: #0d2e1f;
+  border: 1px solid rgba(0, 255, 135, 0.4);
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #00FF87;
 }

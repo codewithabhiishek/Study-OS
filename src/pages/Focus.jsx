@@ -455,19 +455,20 @@ export default function Focus() {
             </button>
           </div>
 
-          {/* Today's stats */}
-          <div className="flex gap-8 font-mono text-[10px] tracking-widest mb-4" style={{ color: '#555' }}>
-            <div>
-              SESSIONS TODAY{' '}
-              <span style={{ color: '#00FF87' }}>{stats.count}</span>
+          {/* Today's stats HUD */}
+          <div className="flex items-center gap-3 sm:gap-5 font-mono text-[10px] tracking-widest mb-4 px-4 py-2 border border-[#00FF87]/30 glass-panel glass-card-interactive" style={{ color: '#888' }}>
+            <div className="flex items-center gap-1.5">
+              <span>SESSIONS TODAY</span>
+              <span className="text-[#00FF87] font-bold text-xs" style={{ textShadow: '0 0 8px rgba(0,255,135,0.6)' }}>{stats.count}</span>
             </div>
-            <div>
-              MINUTES{' '}
-              <span style={{ color: '#00FF87' }}>{stats.minutes}</span>
+            <span className="text-[#00FF87]/40 font-bold">•</span>
+            <div className="flex items-center gap-1.5">
+              <span>TOTAL FOCUS</span>
+              <span className="text-[#00FF87] font-bold text-xs" style={{ textShadow: '0 0 8px rgba(0,255,135,0.6)' }}>{stats.minutes}m</span>
             </div>
           </div>
 
-          <div className="font-mono text-[9px] tracking-widest text-center" style={{ color: '#2a2a2a' }}>
+          <div className="font-mono text-[9px] tracking-widest text-center" style={{ color: '#444' }}>
             SPACE PAUSE · R RESET · F FULLSCREEN · ESC EXIT
           </div>
         </>

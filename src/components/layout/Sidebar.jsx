@@ -105,6 +105,21 @@ export default function Sidebar() {
             </button>
           )}
 
+          {/* Author Portfolio Attribution */}
+          <a
+            href="https://abhiishek.is-a.dev/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="w-full flex items-center justify-between px-2.5 py-1.5 text-[10px] font-mono font-bold tracking-wider text-[#00FF87] border border-[#00FF87]/30 hover:bg-[#00FF87] hover:text-black transition-all cursor-pointer group"
+            title="Visit Abhishek's Portfolio (abhiishek.is-a.dev) ↗"
+          >
+            <span className="flex items-center gap-1.5">
+              <Sparkles className="w-3 h-3 text-[#00FF87] group-hover:text-black" />
+              <span>DEV: ABHISHEK</span>
+            </span>
+            <span className="text-[9px] opacity-75">↗</span>
+          </a>
+
           {user?.email && (
             <div className="flex items-center gap-2 text-[11px] font-mono text-[#00FF87]" title={user.email}>
               <User className="w-3.5 h-3.5 flex-shrink-0 text-[#00FF87]" />
@@ -131,8 +146,8 @@ export default function Sidebar() {
       </aside>
 
       {/* Mobile bottom nav */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-black/95 backdrop-blur-md border-t border-[#00FF87] pb-[calc(0.5rem+env(safe-area-inset-bottom))]"
-        style={{ boxShadow: '0 -4px 20px rgba(0,255,135,0.15)' }}>
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-black/90 backdrop-blur-lg border-t border-[#00FF87]/40 pb-[calc(0.5rem+env(safe-area-inset-bottom))]"
+        style={{ boxShadow: '0 -6px 24px rgba(0,255,135,0.18)' }}>
         <div className="grid grid-cols-6 items-center px-1">
           {navItems.map(({ path, label, icon: Icon }) => {
             const active = location.pathname === path;
@@ -140,20 +155,20 @@ export default function Sidebar() {
               <Link
                 key={path}
                 to={path}
-                className="flex flex-col items-center justify-center py-2 text-[9px] font-mono font-bold tracking-tight transition-all active:scale-95"
-                style={{ color: active ? '#00FF87' : '#666' }}
+                className="flex flex-col items-center justify-center min-h-[48px] py-1.5 text-[9px] font-mono font-bold tracking-tight transition-all active:scale-95"
+                style={{ color: active ? '#00FF87' : '#777' }}
               >
-                <Icon className="w-4 h-4 mb-0.5" style={active ? { filter: 'drop-shadow(0 0 5px #00FF87)' } : {}} />
+                <Icon className="w-4 h-4 mb-0.5" style={active ? { filter: 'drop-shadow(0 0 6px #00FF87)' } : {}} />
                 <span className="truncate max-w-[50px]">{label}</span>
               </Link>
             );
           })}
           <button
             onClick={logout}
-            className="flex flex-col items-center justify-center py-2 text-[9px] font-mono font-bold tracking-tight text-[#FF006E] transition-all active:scale-95 cursor-pointer"
+            className="flex flex-col items-center justify-center min-h-[48px] py-1.5 text-[9px] font-mono font-bold tracking-tight text-[#FF006E] transition-all active:scale-95 cursor-pointer"
             title="Logout"
           >
-            <LogOut className="w-4 h-4 mb-0.5" style={{ filter: 'drop-shadow(0 0 5px #FF006E)' }} />
+            <LogOut className="w-4 h-4 mb-0.5" style={{ filter: 'drop-shadow(0 0 6px #FF006E)' }} />
             <span className="truncate max-w-[50px]">EXIT</span>
           </button>
         </div>

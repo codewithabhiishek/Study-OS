@@ -135,20 +135,20 @@ export default function TopTasks() {
           return (
             <div
               key={task.id}
-              className="flex items-center gap-3 w-full px-3 py-3 text-left transition-all group relative overflow-hidden"
+              className="flex items-center gap-3 w-full px-3.5 py-3 text-left transition-all group relative overflow-hidden glass-panel glass-card-interactive"
               style={{
-                border: task.completed ? '1px solid rgba(0,255,135,0.3)' : '1px solid #00FF87',
-                boxShadow: task.completed ? 'none' : '3px 3px 0 rgba(255,0,110,0.5)',
-                background: task.completed ? 'rgba(0,255,135,0.05)' : 'black',
+                borderColor: task.completed ? 'rgba(0,255,135,0.3)' : 'rgba(0,255,135,0.6)',
+                boxShadow: task.completed ? 'none' : '3px 3px 0 rgba(255,0,110,0.5), 0 4px 16px rgba(0,0,0,0.4)',
+                background: task.completed ? 'rgba(0,255,135,0.06)' : 'rgba(10, 16, 22, 0.75)',
               }}
             >
               <button
                 onClick={() => toggleMutation.mutate({ id: task.id, completed: task.completed })}
-                className="flex-shrink-0 w-5 h-5 border-2 flex items-center justify-center transition-all"
+                className="flex-shrink-0 w-5 h-5 border-2 flex items-center justify-center transition-all cursor-pointer hover:scale-110 active:scale-95"
                 style={{
                   borderColor: '#00FF87',
                   background: task.completed ? '#00FF87' : 'transparent',
-                  boxShadow: task.completed ? '0 0 8px #00FF87' : '0 0 4px rgba(0,255,135,0.3)',
+                  boxShadow: task.completed ? '0 0 10px #00FF87' : '0 0 4px rgba(0,255,135,0.3)',
                 }}
               >
                 {task.completed && <Check className="w-3 h-3 text-black" strokeWidth={3} />}

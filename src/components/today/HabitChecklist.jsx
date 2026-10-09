@@ -122,20 +122,20 @@ export default function HabitChecklist() {
           return (
             <div
               key={habit.id}
-              className="flex items-center gap-2 px-3 py-2.5 text-left transition-all group relative"
+              className="flex items-center gap-2.5 px-3 py-2.5 text-left transition-all group relative glass-panel-magenta glass-card-interactive-magenta"
               style={{
-                border: done ? '1px solid #FF006E' : '1px solid #333',
-                background: done ? 'rgba(255,0,110,0.1)' : 'transparent',
-                boxShadow: done ? '3px 3px 0 rgba(255,0,110,0.4)' : 'none',
+                borderColor: done ? '#FF006E' : 'rgba(255, 0, 110, 0.25)',
+                background: done ? 'rgba(255,0,110,0.12)' : 'rgba(22, 10, 18, 0.75)',
+                boxShadow: done ? '3px 3px 0 rgba(255,0,110,0.5), 0 4px 16px rgba(0,0,0,0.4)' : 'none',
               }}
             >
               <button
                 onClick={() => toggleMutation.mutate(habit)}
-                className="w-4 h-4 border flex-shrink-0 flex items-center justify-center transition-all"
+                className="w-4 h-4 border flex-shrink-0 flex items-center justify-center transition-all cursor-pointer hover:scale-110 active:scale-95"
                 style={{
-                  borderColor: done ? '#FF006E' : '#444',
+                  borderColor: done ? '#FF006E' : 'rgba(255, 0, 110, 0.5)',
                   background: done ? '#FF006E' : 'transparent',
-                  boxShadow: done ? '0 0 8px #FF006E' : 'none',
+                  boxShadow: done ? '0 0 10px #FF006E' : 'none',
                 }}
               >
                 {done && <Check className="w-2.5 h-2.5 text-black" strokeWidth={3} />}

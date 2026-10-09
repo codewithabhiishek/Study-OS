@@ -111,7 +111,7 @@ export default function ProjectCard({ project }) {
   };
 
   return (
-    <div className="transition-all" style={{ border: '1px solid #00FF87', boxShadow: expanded ? '4px 4px 0 #FF006E' : '4px 4px 0 #00FF87' }}>
+    <div className="transition-all glass-panel glass-card-interactive" style={{ border: '1px solid rgba(0, 255, 135, 0.5)', boxShadow: expanded ? '4px 4px 0 #FF006E, 0 8px 30px rgba(0,0,0,0.5)' : '4px 4px 0 #00FF87, 0 8px 30px rgba(0,0,0,0.5)' }}>
       <button
         onClick={() => setExpanded(!expanded)}
         className="flex items-center gap-3 w-full px-4 py-3.5 text-left transition-all hover:bg-[rgba(0,255,135,0.05)] group"

@@ -70,10 +70,12 @@ function CountdownRow({ item }) {
 
   return (
     <div
-      className="flex items-center justify-between px-3 py-2.5 mb-1.5 transition-all"
+      className={`flex items-center justify-between px-3.5 py-2.5 mb-2 transition-all ${
+        isUrgent ? "glass-panel-magenta glass-card-interactive-magenta" : "glass-panel glass-card-interactive"
+      }`}
       style={{
-        border: `1px solid ${isUrgent ? "#FF006E" : "#1a1a1a"}`,
-        background: isUrgent ? "rgba(255,0,110,0.05)" : "rgba(0,255,135,0.02)",
+        border: `1px solid ${isUrgent ? "rgba(255,0,110,0.5)" : "rgba(0,255,135,0.25)"}`,
+        boxShadow: isUrgent ? "0 4px 16px rgba(255,0,110,0.15)" : "0 4px 16px rgba(0,0,0,0.3)",
       }}
     >
       <div>

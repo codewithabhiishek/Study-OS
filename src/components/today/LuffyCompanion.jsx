@@ -175,38 +175,38 @@ export default function LuffyCompanion() {
   return (
     <div className="mb-6 flex items-center gap-3">
       <div
-  className="relative w-16 h-16 rounded-full overflow-hidden flex-shrink-0"
-  style={{
-    border: '2px solid #00FF87',
-    boxShadow: '0 0 10px rgba(0,255,135,0.35)',
-    background: '#000',
-  }}
-  aria-label="Luffy companion"
->
-  <img
-    src="/luffy.png"
-    alt="Luffy"
-    className="w-full h-full object-cover"
-  />
-</div>
+        className="relative w-16 h-16 rounded-full overflow-hidden flex-shrink-0 transition-transform duration-300 hover:scale-105"
+        style={{
+          border: '2px solid #00FF87',
+          boxShadow: '0 0 15px rgba(0,255,135,0.45)',
+          background: '#050a08',
+        }}
+        aria-label="Luffy companion"
+      >
+        <img
+          src="/luffy.png"
+          alt="Luffy"
+          className="w-full h-full object-cover"
+        />
+      </div>
 
       {message && (
         <div
-          className="w-full max-w-xl p-4"
+          className="w-full max-w-xl p-4 glass-panel glass-card-interactive relative overflow-hidden"
           style={{
-            border: '1px solid #00FF87',
-            boxShadow: '4px 4px 0 #FF006E',
-            background: 'rgba(0,255,135,0.04)',
+            borderColor: 'rgba(0, 255, 135, 0.4)',
+            boxShadow: '4px 4px 0 #FF006E, 0 8px 32px rgba(0,0,0,0.5)',
           }}
         >
           <div
-            className="text-[10px] font-mono font-bold tracking-widest mb-2"
-            style={{ color: '#FF006E', textShadow: '0 0 8px rgba(255,0,110,0.4)' }}
+            className="text-[10px] font-mono font-bold tracking-widest mb-1.5 flex items-center gap-1.5"
+            style={{ color: '#FF006E', textShadow: '0 0 8px rgba(255,0,110,0.5)' }}
           >
-            🏴‍☠️ LUFFY SAYS:
+            <span>🏴‍☠️</span>
+            <span>LUFFY SAYS:</span>
           </div>
           <div
-            className="text-sm sm:text-base leading-snug"
+            className="text-sm sm:text-base leading-snug font-medium"
             style={{ color: '#fff', fontFamily: 'Space Grotesk, sans-serif' }}
           >
             {message}

@@ -111,8 +111,8 @@ export default function MissionBanner() {
   }
 
   return (
-    <div className="mb-8 relative overflow-hidden p-4 border border-[#FF006E]"
-      style={{ boxShadow: '4px 4px 0 #00FF87', background: 'rgba(255,0,110,0.05)' }}>
+    <div className="mb-8 relative overflow-hidden p-4 sm:p-5 border border-[#FF006E]/70 glass-panel-magenta glass-card-interactive-magenta"
+      style={{ boxShadow: '4px 4px 0 #00FF87, 0 10px 30px rgba(0,0,0,0.5)', background: 'rgba(22, 10, 18, 0.75)' }}>
       <div className="flex items-center justify-between mb-2">
         <div className="text-[10px] font-mono tracking-widest flex items-center gap-2" style={{ color: '#FF006E' }}>
           <span>▶ ACTIVE MISSION</span>
