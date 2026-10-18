@@ -8,8 +8,9 @@
 [![React 18](https://img.shields.io/badge/React_18-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)](https://reactjs.org/)
 [![Vite 6](https://img.shields.io/badge/Vite_6-646CFF?style=for-the-badge&logo=vite&logoColor=white)](https://vitejs.dev/)
 [![Tauri v2](https://img.shields.io/badge/Tauri_v2-FFC131?style=for-the-badge&logo=tauri&logoColor=black)](https://tauri.app/)
-[![Tailwind CSS 3](https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
+[![Tailwind CSS 4](https://img.shields.io/badge/Tailwind_CSS-4.x-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
 [![Supabase](https://img.shields.io/badge/Supabase_RLS-3ECF8E?style=for-the-badge&logo=supabase&logoColor=white)](https://supabase.com/)
+
 [![PRs Welcome](https://img.shields.io/badge/PRs-Welcome-FF006E.svg?style=for-the-badge)](https://github.com/codewithabhiishek/Study-OS/pulls)
 
 <p align="center">
@@ -230,6 +231,30 @@ npm run preview
 
 ---
 
+## 🧪 Testing & Quality Assurance
+
+StudyOS includes an automated test suite executed via Node's native test runner (`node --test`), verifying Strix defensive security, input sanitization, tactile haptic safety, streak math, country flag parsing, and URL formatting.
+
+```bash
+# Run unit tests (14 tests)
+npm test
+
+# Production build check
+npm run build
+```
+
+---
+
+## 🛡️ Security Hardening (Strix Standard)
+
+- **Dual Honeypot Traps**: Hidden `name="botcheck"` checkboxes and off-screen decoy inputs disarm automated bot submissions.
+- **Speed-Trap Defense**: Flags and drops submissions completed faster than 1.8 seconds.
+- **Input Sanitization**: Regex boundary stripping (`<[^>]*>?`) and ASCII control character removal on all user inputs.
+- **Mobile Tactile Haptics**: Native vibration engine (`triggerHaptic`) providing tactile feedback on navigation and key actions.
+- **Zero Vulnerabilities**: 100% clean `npm audit` with 0 CVE vulnerabilities across all production and development dependencies.
+
+---
+
 ## 🤝 Contributing
 
 Contributions, issues, and feature requests are welcome!
@@ -249,8 +274,11 @@ Distributed under the **MIT License**. See `LICENSE` for more information.
 
 <div align="center">
 
-### Built with ⚡ by [Abhishek](https://github.com/codewithabhiishek)
+### Built with ⚡ by [Abhishek](https://abhiishek.is-a.dev/)
+
+Explore more projects and experiments at [abhiishek.is-a.dev](https://abhiishek.is-a.dev/).
 
 *⚡ Congrats, you reached the footer. Now go study.*
 
 </div>
+

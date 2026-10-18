@@ -6,6 +6,8 @@ import { useQuery } from '@tanstack/react-query';
 import { supabaseClient } from '@/api/supabaseClient';
 import { useAuth } from '@/lib/AuthContext';
 import UpdateModal from '@/components/updater/UpdateModal';
+import { triggerHaptic } from '@/utils/security';
+
 
 const navItems = [
   { path: '/today', label: 'TODAY', icon: CalendarDays },
@@ -70,6 +72,7 @@ export default function Sidebar() {
               <Link
                 key={path}
                 to={path}
+                onClick={() => triggerHaptic(12)}
                 className={cn(
                   "flex items-center gap-3 px-3 py-2.5 text-[12px] font-mono font-bold tracking-widest transition-all duration-150 relative group cursor-pointer",
                   active
@@ -97,7 +100,7 @@ export default function Sidebar() {
           {/* Check for updates button (Desktop App Only) */}
           {isTauri && (
             <button
-              onClick={() => setUpdateModalOpen(true)}
+              onClick={() => { triggerHaptic(15); setUpdateModalOpen(true); }}
               className="w-full flex items-center justify-center gap-1.5 px-3 py-1.5 text-[10px] font-mono font-bold tracking-wider text-[#00FF87] border border-[#00FF87]/30 hover:bg-[#00FF87] hover:text-black transition-all cursor-pointer group"
             >
               <Sparkles className="w-3 h-3 text-[#00FF87] group-hover:text-black animate-pulse" />
@@ -110,6 +113,7 @@ export default function Sidebar() {
             href="https://abhiishek.is-a.dev/"
             target="_blank"
             rel="noopener noreferrer"
+            onClick={() => triggerHaptic(15)}
             className="w-full flex items-center justify-between px-2.5 py-1.5 text-[10px] font-mono font-bold tracking-wider text-[#00FF87] border border-[#00FF87]/30 hover:bg-[#00FF87] hover:text-black transition-all cursor-pointer group"
             title="Visit Abhishek's Portfolio (abhiishek.is-a.dev) ↗"
           >
@@ -130,7 +134,7 @@ export default function Sidebar() {
           )}
 
           <button
-            onClick={logout}
+            onClick={() => { triggerHaptic(20); logout(); }}
             className="w-full flex items-center justify-center gap-2 px-3 py-2 text-[11px] font-mono font-bold tracking-widest text-[#FF006E] border border-[#FF006E]/40 hover:bg-[#FF006E] hover:text-black transition-all cursor-pointer group"
             style={{ boxShadow: '0 0 10px rgba(255,0,110,0.15)' }}
             title="Logout"
@@ -155,6 +159,7 @@ export default function Sidebar() {
               <Link
                 key={path}
                 to={path}
+                onClick={() => triggerHaptic(12)}
                 className="flex flex-col items-center justify-center min-h-[48px] py-1.5 text-[9px] font-mono font-bold tracking-tight transition-all active:scale-95"
                 style={{ color: active ? '#00FF87' : '#777' }}
               >
@@ -164,7 +169,7 @@ export default function Sidebar() {
             );
           })}
           <button
-            onClick={logout}
+            onClick={() => { triggerHaptic(20); logout(); }}
             className="flex flex-col items-center justify-center min-h-[48px] py-1.5 text-[9px] font-mono font-bold tracking-tight text-[#FF006E] transition-all active:scale-95 cursor-pointer"
             title="Logout"
           >

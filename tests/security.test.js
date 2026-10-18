@@ -1,23 +1,7 @@
-/* eslint-disable no-control-regex */
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { isBotSubmission, sanitizeInput, triggerHaptic } from '../src/utils/security.js';
 
-// Helper simulating Strix form defense logic
-function isBotSubmission({ botcheck, gotcha, loadTime, submitTime }) {
-  if (botcheck === true) return true;
-  if (gotcha && gotcha.trim().length > 0) return true;
-  if (submitTime - loadTime < 1800) return true; // Speed trap (< 1.8s)
-  return false;
-}
-
-function sanitizeInput(text, maxLength = 254) {
-  if (!text || typeof text !== 'string') return '';
-  return text
-    .replace(/<[^>]*>?/gm, '')
-    .replace(/[\x00-\x1F\x7F]/g, '')
-    .trim()
-    .slice(0, maxLength);
-}
 
 test('isBotSubmission flags hidden honeypot fields', () => {
   // Legitimate human submission
@@ -86,3 +70,10 @@ test('sanitizeInput strips tags and control characters while enforcing bounds', 
   const longEmail = 'a'.repeat(300) + '@domain.com';
   assert.equal(sanitizeInput(longEmail, 254).length, 254);
 });
+
+test('triggerHaptic executes safely in non-browser Node environments', () => {
+  assert.doesNotThrow(() => {
+    triggerHaptic(20);
+  });
+});
+
