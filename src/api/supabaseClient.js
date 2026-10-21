@@ -26,6 +26,10 @@ function applySort(query, sort) {
 }
 
 async function getUserId() {
+  const { data: sessionData } = await supabase.auth.getSession();
+  if (sessionData?.session?.user?.id) {
+    return sessionData.session.user.id;
+  }
   const { data } = await supabase.auth.getUser();
   return data?.user?.id ?? null;
 }
@@ -39,9 +43,14 @@ function makeEntity(entityName) {
   return {
     /**
      * .list(sort?, limit?)
+     * Strictly scopes results to the active user to prevent data mismatches across accounts.
      */
     async list(sort, limit) {
+      const userId = await getUserId();
       let q = baseQuery();
+      if (userId) {
+        q = q.eq('user_id', userId);
+      }
       q = applySort(q, sort);
       if (limit) q = q.limit(limit);
       const { data, error } = await q;
@@ -52,9 +61,14 @@ function makeEntity(entityName) {
     /**
      * .filter(filters, sort?, limit?)
      * Only equality filters are used in this app.
+     * Enforces user_id filter so users never access other players' records.
      */
     async filter(filters = {}, sort, limit) {
+      const userId = await getUserId();
       let q = baseQuery();
+      if (userId && !('user_id' in filters)) {
+        q = q.eq('user_id', userId);
+      }
       for (const [k, v] of Object.entries(filters)) {
         q = q.eq(k, v);
       }
@@ -78,18 +92,23 @@ function makeEntity(entityName) {
     },
 
     async update(id, patch) {
-      const { data, error } = await supabase
-        .from(table)
-        .update(patch)
-        .eq('id', id)
-        .select()
-        .single();
+      const userId = await getUserId();
+      let q = supabase.from(table).update(patch).eq('id', id);
+      if (userId) {
+        q = q.eq('user_id', userId);
+      }
+      const { data, error } = await q.select().single();
       if (error) throw error;
       return data;
     },
 
     async delete(id) {
-      const { error } = await supabase.from(table).delete().eq('id', id);
+      const userId = await getUserId();
+      let q = supabase.from(table).delete().eq('id', id);
+      if (userId) {
+        q = q.eq('user_id', userId);
+      }
+      const { error } = await q;
       if (error) throw error;
       return { id };
     },

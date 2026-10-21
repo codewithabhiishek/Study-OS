@@ -6,12 +6,14 @@
 
 [![MIT License](https://img.shields.io/badge/License-MIT-00FF87.svg?style=for-the-badge&logo=opensourceinitiative&logoColor=black)](https://opensource.org/licenses/MIT)
 [![React 18](https://img.shields.io/badge/React_18-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)](https://reactjs.org/)
-[![Vite 6](https://img.shields.io/badge/Vite_6-646CFF?style=for-the-badge&logo=vite&logoColor=white)](https://vitejs.dev/)
-[![Tauri v2](https://img.shields.io/badge/Tauri_v2-FFC131?style=for-the-badge&logo=tauri&logoColor=black)](https://tauri.app/)
+[![Vite 6](https://img.shields.io/badge/Vite-6.4.5-646CFF?style=for-the-badge&logo=vite&logoColor=white)](https://vitejs.dev/)
 [![Tailwind CSS 4](https://img.shields.io/badge/Tailwind_CSS-4.x-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
 [![Supabase](https://img.shields.io/badge/Supabase_RLS-3ECF8E?style=for-the-badge&logo=supabase&logoColor=white)](https://supabase.com/)
-
-[![PRs Welcome](https://img.shields.io/badge/PRs-Welcome-FF006E.svg?style=for-the-badge)](https://github.com/codewithabhiishek/Study-OS/pulls)
+[![Tests](https://img.shields.io/badge/Tests-18%20Passing-success?style=for-the-badge&logo=node.js&logoColor=white)](https://nodejs.org/)
+[![Vulnerabilities](https://img.shields.io/badge/Vulnerabilities-0-brightgreen?style=for-the-badge&logo=snyk&logoColor=white)](https://snyk.io/)
+<a href="https://abhiishek.is-a.dev/" target="_blank" rel="noopener noreferrer">
+  <img src="https://img.shields.io/badge/Author-Abhishek-FF007A?style=for-the-badge&logo=firefox-browser&logoColor=white" alt="Portfolio" />
+</a>
 
 <p align="center">
   <b>100% Free & Open-Source</b> • <b>Zero Ads</b> • <b>Zero Subscriptions</b> • <b>Full Data Ownership</b>
@@ -233,11 +235,17 @@ npm run preview
 
 ## 🧪 Testing & Quality Assurance
 
-StudyOS includes an automated test suite executed via Node's native test runner (`node --test`), verifying Strix defensive security, input sanitization, tactile haptic safety, streak math, country flag parsing, and URL formatting.
+StudyOS includes an automated test suite executed via Node's native test runner (`node --test`), verifying multi-user data isolation, Strix defensive security, input sanitization, tactile haptic safety, streak math, country flag parsing, and URL formatting.
 
 ```bash
-# Run unit tests (14 tests)
+# Run unit tests (18 tests across 5 test suites)
 npm test
+
+# Lint check
+npm run lint
+
+# Vulnerability security audit
+npm audit
 
 # Production build check
 npm run build
@@ -245,8 +253,11 @@ npm run build
 
 ---
 
-## 🛡️ Security Hardening (Strix Standard)
+## 🛡️ Security & Multi-User Data Isolation (Strix Standard)
 
+- **Multi-User Data Isolation**: All entity queries (`list`, `filter`, `update`, `delete`) explicitly filter by `user_id` so players sharing devices or switching accounts never mix up tasks, projects, habits, or sessions.
+- **User-Scoped LocalStorage**: Focus timer states, offline queues, user settings, and companion caches are scoped by user ID (`[key].[userId]`), preventing cross-account state pollution.
+- **Cache Invalidation on Auth Transitions**: React Query cache is automatically purged (`queryClientInstance.clear()`) on user switch and logout to prevent stale profile data leaking across sessions.
 - **Dual Honeypot Traps**: Hidden `name="botcheck"` checkboxes and off-screen decoy inputs disarm automated bot submissions.
 - **Speed-Trap Defense**: Flags and drops submissions completed faster than 1.8 seconds.
 - **Input Sanitization**: Regex boundary stripping (`<[^>]*>?`) and ASCII control character removal on all user inputs.

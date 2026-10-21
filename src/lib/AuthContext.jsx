@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
+import { queryClientInstance } from '@/lib/query-client';
 
 const AuthContext = createContext(null);
 
@@ -17,7 +18,15 @@ export function AuthProvider({ children }) {
     });
 
     const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null);
+      const nextUser = session?.user ?? null;
+      setUser((prevUser) => {
+        if (prevUser?.id && nextUser?.id && prevUser.id !== nextUser.id) {
+          queryClientInstance.clear();
+        } else if (!nextUser) {
+          queryClientInstance.clear();
+        }
+        return nextUser;
+      });
       setIsLoadingAuth(false);
     });
 
@@ -28,9 +37,15 @@ export function AuthProvider({ children }) {
   }, []);
 
   const logout = async () => {
-    await supabase.auth.signOut();
-    setUser(null);
-    window.location.href = '/';
+    try {
+      queryClientInstance.clear();
+      await supabase.auth.signOut();
+    } catch (e) {
+      console.warn("Sign out error:", e);
+    } finally {
+      setUser(null);
+      window.location.href = '/';
+    }
   };
 
   return (

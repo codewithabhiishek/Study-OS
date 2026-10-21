@@ -131,8 +131,9 @@ export default function LuffyCompanion() {
       }
 
       // 2. Check localStorage as a secondary quick cache to prevent API spam
+      const cacheKey = `luffy_msg_${user?.id || 'anon'}_${date}`;
       try {
-        const localSaved = localStorage.getItem(`luffy_msg_${date}`);
+        const localSaved = localStorage.getItem(cacheKey);
         if (localSaved && localSaved !== "THIS IS THE FALLBACK MESSAGE123" && !cancelled) {
           setMessage(localSaved);
           return;
@@ -148,7 +149,7 @@ export default function LuffyCompanion() {
 
       // 4. Save to localStorage
       try {
-        localStorage.setItem(`luffy_msg_${date}`, fresh);
+        localStorage.setItem(cacheKey, fresh);
       } catch (err) {
         console.error("Local storage save error:", err);
       }

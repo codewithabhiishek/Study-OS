@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { supabaseClient } from '@/api/supabaseClient';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useAuth } from '@/lib/AuthContext';
 
 const FocusContext = createContext(null);
 
@@ -16,11 +17,16 @@ export const POMODORO_PRESETS = [
 
 let sharedAudioContext = null;
 
-const OFFLINE_QUEUE_KEY = 'studyos.focus.offline_queue.v1';
+import {
+  OFFLINE_QUEUE_KEY,
+  SETTINGS_KEY,
+  TIMER_STATE_KEY,
+  getScopedKey,
+} from '@/utils/storageUtils';
 
-function getOfflineQueue() {
+function getOfflineQueue(userId) {
   try {
-    const raw = localStorage.getItem(OFFLINE_QUEUE_KEY);
+    const raw = localStorage.getItem(getScopedKey(OFFLINE_QUEUE_KEY, userId));
     if (!raw) return [];
     return JSON.parse(raw);
   } catch {
@@ -87,12 +93,9 @@ function notify(title, body) {
   }
 }
 
-const SETTINGS_KEY = 'studyos.focus.settings.v1';
-const TIMER_STATE_KEY = 'studyos.focus.timer.v1';
-
-function loadSettings() {
+function loadSettings(userId) {
   try {
-    const raw = localStorage.getItem(SETTINGS_KEY);
+    const raw = localStorage.getItem(getScopedKey(SETTINGS_KEY, userId));
     if (!raw) return null;
     return JSON.parse(raw);
   } catch {
@@ -100,9 +103,9 @@ function loadSettings() {
   }
 }
 
-function loadTimerState() {
+function loadTimerState(userId) {
   try {
-    const raw = localStorage.getItem(TIMER_STATE_KEY);
+    const raw = localStorage.getItem(getScopedKey(TIMER_STATE_KEY, userId));
     if (!raw) return null;
     const data = JSON.parse(raw);
     
@@ -117,8 +120,11 @@ function loadTimerState() {
 }
 
 export function FocusProvider({ children }) {
-  const initialSettings = useMemo(() => loadSettings(), []);
-  const initialTimer = useMemo(() => loadTimerState(), []);
+  const { user } = useAuth();
+  const userId = user?.id || null;
+
+  const initialSettings = useMemo(() => loadSettings(userId), [userId]);
+  const initialTimer = useMemo(() => loadTimerState(userId), [userId]);
 
   const [preset, setPreset] = useState(() => {
     const currentPresets = (initialSettings?.pomodoroEnabled ?? false) ? POMODORO_PRESETS : DIRECT_PRESETS;
@@ -156,8 +162,38 @@ export function FocusProvider({ children }) {
   const [offlineQueue, setOfflineQueue] = useState([]);
 
   useEffect(() => {
-    setOfflineQueue(getOfflineQueue());
-  }, []);
+    setOfflineQueue(getOfflineQueue(userId));
+  }, [userId]);
+
+  // Handle switching users on shared computers
+  const prevUserIdRef = useRef(userId);
+  useEffect(() => {
+    if (prevUserIdRef.current !== userId) {
+      prevUserIdRef.current = userId;
+      const userSettings = loadSettings(userId);
+      const userTimer = loadTimerState(userId);
+      setPomodoroEnabled(userSettings?.pomodoroEnabled ?? false);
+      setSoundEnabled(userSettings?.soundEnabled ?? true);
+      setNotificationsEnabled(userSettings?.notificationsEnabled ?? false);
+      setOfflineQueue(getOfflineQueue(userId));
+
+      const currentPresets = (userSettings?.pomodoroEnabled ?? false) ? POMODORO_PRESETS : DIRECT_PRESETS;
+      let matchedPreset = currentPresets[0];
+      if (userTimer?.presetLabel) {
+        matchedPreset = currentPresets.find(p => p.label === userTimer.presetLabel) ||
+                        POMODORO_PRESETS.find(p => p.label === userTimer.presetLabel) ||
+                        DIRECT_PRESETS.find(p => p.label === userTimer.presetLabel) ||
+                        currentPresets[0];
+      }
+      setPreset(matchedPreset);
+      setCustomWork(userTimer?.customWork ?? 30);
+      setIsCustom(userTimer?.isCustom ?? false);
+      setSeconds(userTimer ? userTimer.seconds : matchedPreset.work * 60);
+      setRunning(false);
+      setSelectedProject(userTimer?.selectedProject ?? null);
+      setPhase(userTimer?.phase ?? 'work');
+    }
+  }, [userId]);
 
   const intervalRef = useRef(null);
   const targetEndTimeRef = useRef(null);
@@ -170,32 +206,32 @@ export function FocusProvider({ children }) {
       id: `temp-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
       ...sessionData,
     };
-    const queue = getOfflineQueue();
+    const queue = getOfflineQueue(userId);
     queue.push(session);
     try {
-      localStorage.setItem(OFFLINE_QUEUE_KEY, JSON.stringify(queue));
+      localStorage.setItem(getScopedKey(OFFLINE_QUEUE_KEY, userId), JSON.stringify(queue));
     } catch (e) {
       console.warn("Failed to save offline queue to localStorage:", e);
     }
     setOfflineQueue(queue);
-  }, []);
+  }, [userId]);
 
   const removeFromOfflineQueue = useCallback((tempId) => {
-    const queue = getOfflineQueue();
+    const queue = getOfflineQueue(userId);
     const updated = queue.filter(s => s.id !== tempId);
     try {
-      localStorage.setItem(OFFLINE_QUEUE_KEY, JSON.stringify(updated));
+      localStorage.setItem(getScopedKey(OFFLINE_QUEUE_KEY, userId), JSON.stringify(updated));
     } catch (e) {
       console.warn("Failed to remove from offline queue:", e);
     }
     setOfflineQueue(updated);
-  }, []);
+  }, [userId]);
 
   const syncOfflineQueue = useCallback(async () => {
     if (isSyncingRef.current) return;
     isSyncingRef.current = true;
     try {
-      const queue = getOfflineQueue();
+      const queue = getOfflineQueue(userId);
       if (queue.length === 0) return;
 
       console.log(`Attempting to sync ${queue.length} offline focus sessions...`);
@@ -214,7 +250,7 @@ export function FocusProvider({ children }) {
     } finally {
       isSyncingRef.current = false;
     }
-  }, [removeFromOfflineQueue, queryClient]);
+  }, [userId, removeFromOfflineQueue, queryClient]);
 
   // Sync on mount
   useEffect(() => {
@@ -238,13 +274,13 @@ export function FocusProvider({ children }) {
   useEffect(() => {
     try {
       localStorage.setItem(
-        SETTINGS_KEY,
+        getScopedKey(SETTINGS_KEY, userId),
         JSON.stringify({ pomodoroEnabled, soundEnabled, notificationsEnabled })
       );
     } catch {
       // ignore
     }
-  }, [pomodoroEnabled, soundEnabled, notificationsEnabled]);
+  }, [userId, pomodoroEnabled, soundEnabled, notificationsEnabled]);
 
   // Update preset when pomodoroEnabled changes
   const prevPomodoroEnabledRef = useRef(pomodoroEnabled);
@@ -269,7 +305,7 @@ export function FocusProvider({ children }) {
   useEffect(() => {
     try {
       const targetEndTime = running ? Date.now() + seconds * 1000 : null;
-      localStorage.setItem(TIMER_STATE_KEY, JSON.stringify({
+      localStorage.setItem(getScopedKey(TIMER_STATE_KEY, userId), JSON.stringify({
         seconds,
         running,
         phase,
@@ -282,7 +318,7 @@ export function FocusProvider({ children }) {
     } catch {
       // ignore
     }
-  }, [seconds, running, phase, isCustom, customWork, preset, selectedProject]);
+  }, [userId, seconds, running, phase, isCustom, customWork, preset, selectedProject]);
 
   const getLocalDateStr = (timestamp) => {
     const d = timestamp ? new Date(timestamp) : new Date();
