@@ -4,6 +4,7 @@ import { supabaseClient } from '@/api/supabaseClient';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Play, Pause, RotateCcw, Maximize2, Minimize2, Bell, BellOff } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
+import { triggerHaptic } from '@/utils/security';
 
 import { useFocus } from '@/hooks/FocusContext';
 
@@ -301,17 +302,19 @@ export default function Focus() {
       {/* Controls */}
       <div className="flex items-center gap-4 mb-10">
         <button
-          onClick={reset}
+          type="button"
+          onClick={() => { triggerHaptic(15); reset(); }}
           aria-label="Reset timer"
-          className="w-10 h-10 flex items-center justify-center border border-[#333] transition-all hover:border-[#00FF87] hover:text-[#00FF87]"
-          style={{ color: '#444' }}
+          className="w-12 h-12 flex items-center justify-center border border-[#333] transition-all hover:border-[#00FF87] hover:text-[#00FF87] active:scale-90 touch-target cursor-pointer"
+          style={{ color: '#666' }}
         >
           <RotateCcw className="w-4 h-4" />
         </button>
         <button
-          onClick={() => setRunning(!running)}
-          aria-label={running ? 'Pause' : 'Start'}
-          className="w-16 h-16 flex items-center justify-center font-bold transition-all"
+          type="button"
+          onClick={() => { triggerHaptic(20); setRunning(!running); }}
+          aria-label={running ? 'Pause timer' : 'Start timer'}
+          className="w-16 h-16 flex items-center justify-center font-bold transition-all active:scale-95 touch-target cursor-pointer"
           style={
             running
               ? {
@@ -331,10 +334,11 @@ export default function Focus() {
           {running ? <Pause className="w-6 h-6" /> : <Play className="w-6 h-6 ml-0.5" />}
         </button>
         <button
-          onClick={enterFullscreen}
+          type="button"
+          onClick={() => { triggerHaptic(10); enterFullscreen(); }}
           aria-label={isFullscreen ? 'Exit fullscreen' : 'Enter fullscreen'}
-          className="w-10 h-10 flex items-center justify-center border border-[#333] transition-all hover:border-[#00FF87] hover:text-[#00FF87]"
-          style={{ color: '#444' }}
+          className="w-12 h-12 flex items-center justify-center border border-[#333] transition-all hover:border-[#00FF87] hover:text-[#00FF87] active:scale-90 touch-target cursor-pointer"
+          style={{ color: '#666' }}
         >
           {isFullscreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
         </button>
@@ -347,11 +351,13 @@ export default function Focus() {
             {presets.map((p) => (
               <button
                 key={p.label}
+                type="button"
                 onClick={() => {
+                  triggerHaptic(10);
                   setPreset(p);
                   setIsCustom(false);
                 }}
-                className="px-4 py-2 text-[11px] font-mono font-bold tracking-widest transition-all"
+                className="px-4 py-2.5 text-[11px] font-mono font-bold tracking-widest transition-all active:scale-95 touch-target cursor-pointer"
                 style={
                   !isCustom && preset.label === p.label
                     ? {
@@ -360,15 +366,16 @@ export default function Focus() {
                         border: '1px solid #00FF87',
                         boxShadow: '3px 3px 0 #FF006E',
                       }
-                    : { background: 'transparent', color: '#444', border: '1px solid #222' }
+                    : { background: 'transparent', color: '#666', border: '1px solid #222' }
                 }
               >
                 {p.label}
               </button>
             ))}
             <button
-              onClick={() => setIsCustom(true)}
-              className="px-4 py-2 text-[11px] font-mono font-bold tracking-widest transition-all"
+              type="button"
+              onClick={() => { triggerHaptic(10); setIsCustom(true); }}
+              className="px-4 py-2.5 text-[11px] font-mono font-bold tracking-widest transition-all active:scale-95 touch-target cursor-pointer"
               style={
                 isCustom
                   ? {
@@ -377,7 +384,7 @@ export default function Focus() {
                       border: '1px solid #FF006E',
                       boxShadow: '3px 3px 0 #00FF87',
                     }
-                  : { background: 'transparent', color: '#444', border: '1px solid #222' }
+                  : { background: 'transparent', color: '#666', border: '1px solid #222' }
               }
             >
               CUSTOM
@@ -420,35 +427,38 @@ export default function Focus() {
           {/* Toggles */}
           <div className="flex flex-wrap items-center justify-center gap-2 mb-6">
             <button
-              onClick={() => setPomodoroEnabled((v) => !v)}
-              className="px-3 py-2 text-[10px] font-mono font-bold tracking-widest transition-all"
+              type="button"
+              onClick={() => { triggerHaptic(10); setPomodoroEnabled((v) => !v); }}
+              className="px-3.5 py-2.5 text-[10px] font-mono font-bold tracking-widest transition-all active:scale-95 touch-target cursor-pointer"
               style={
                 pomodoroEnabled
                   ? { background: '#00FF87', color: '#000', border: '1px solid #00FF87' }
-                  : { background: 'transparent', color: '#444', border: '1px solid #222' }
+                  : { background: 'transparent', color: '#666', border: '1px solid #222' }
               }
             >
               POMODORO
             </button>
             <button
-              onClick={() => setSoundEnabled((v) => !v)}
-              className="px-3 py-2 text-[10px] font-mono font-bold tracking-widest transition-all flex items-center gap-1.5"
+              type="button"
+              onClick={() => { triggerHaptic(10); setSoundEnabled((v) => !v); }}
+              className="px-3.5 py-2.5 text-[10px] font-mono font-bold tracking-widest transition-all flex items-center gap-1.5 active:scale-95 touch-target cursor-pointer"
               style={
                 soundEnabled
                   ? { background: '#00FF87', color: '#000', border: '1px solid #00FF87' }
-                  : { background: 'transparent', color: '#444', border: '1px solid #222' }
+                  : { background: 'transparent', color: '#666', border: '1px solid #222' }
               }
             >
-              {soundEnabled ? <Bell className="w-3 h-3" /> : <BellOff className="w-3 h-3" />}
+              {soundEnabled ? <Bell className="w-3.5 h-3.5" /> : <BellOff className="w-3.5 h-3.5" />}
               SOUND
             </button>
             <button
-              onClick={requestNotificationPermission}
-              className="px-3 py-2 text-[10px] font-mono font-bold tracking-widest transition-all"
+              type="button"
+              onClick={() => { triggerHaptic(10); requestNotificationPermission(); }}
+              className="px-3.5 py-2.5 text-[10px] font-mono font-bold tracking-widest transition-all active:scale-95 touch-target cursor-pointer"
               style={
                 notificationsEnabled
                   ? { background: '#00FF87', color: '#000', border: '1px solid #00FF87' }
-                  : { background: 'transparent', color: '#444', border: '1px solid #222' }
+                  : { background: 'transparent', color: '#666', border: '1px solid #222' }
               }
             >
               NOTIFY

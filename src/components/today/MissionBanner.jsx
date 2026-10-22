@@ -4,6 +4,8 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabaseClient } from '@/api/supabaseClient';
 import { Skeleton } from '@/components/ui/skeleton';
 
+import { triggerHaptic } from '@/utils/security';
+
 function useLiveCountdown(targetDate) {
   const [timeLeft, setTimeLeft] = useState({});
 
@@ -112,7 +114,7 @@ export default function MissionBanner() {
 
   return (
     <div className="mb-8 relative overflow-hidden p-4 sm:p-5 border border-[#FF006E]/70 glass-panel-magenta glass-card-interactive-magenta"
-      style={{ boxShadow: '4px 4px 0 #00FF87, 0 10px 30px rgba(0,0,0,0.5)', background: 'rgba(22, 10, 18, 0.75)' }}>
+      style={{ boxShadow: '4px 4px 0 #00FF87, 0 10px 30px rgba(0,0,0,0.5)', background: 'rgba(22, 10, 18, 0.88)' }}>
       <div className="flex items-center justify-between mb-2">
         <div className="text-[10px] font-mono tracking-widest flex items-center gap-2" style={{ color: '#FF006E' }}>
           <span>▶ ACTIVE MISSION</span>
@@ -121,19 +123,36 @@ export default function MissionBanner() {
           )}
         </div>
         {!editing ? (
-          <button onClick={startEditing}
-            className="p-1 transition-all hover:scale-110 flex items-center gap-1 font-mono text-[11px]"
+          <button
+            type="button"
+            onClick={() => { triggerHaptic(10); startEditing(); }}
+            className="p-2 transition-all active:scale-95 flex items-center gap-1 font-mono text-[11px] touch-target cursor-pointer"
             style={{ color: '#FF006E' }}
-            title={activeMission ? "Edit Mission" : "Add Active Mission"}>
+            title={activeMission ? "Edit Mission" : "Add Active Mission"}
+            aria-label={activeMission ? "Edit Mission" : "Add Active Mission"}
+          >
             {activeMission ? <Pencil className="w-3.5 h-3.5" /> : <span className="flex items-center gap-1 text-[#00FF87]"><Plus className="w-3.5 h-3.5" /> ADD TIMELINE</span>}
           </button>
         ) : (
           <div className="flex items-center gap-1">
-            <button onClick={save} disabled={saveMutation.isPending} className="p-1 cursor-pointer" style={{ color: '#00FF87' }}>
-              <Check className="w-3.5 h-3.5" />
+            <button
+              type="button"
+              onClick={() => { triggerHaptic(12); save(); }}
+              disabled={saveMutation.isPending}
+              className="p-2 cursor-pointer touch-target active:scale-90"
+              style={{ color: '#00FF87' }}
+              aria-label="Save mission"
+            >
+              <Check className="w-4 h-4" />
             </button>
-            <button onClick={cancel} className="p-1 cursor-pointer" style={{ color: '#FF006E' }}>
-              <X className="w-3.5 h-3.5" />
+            <button
+              type="button"
+              onClick={() => { triggerHaptic(10); cancel(); }}
+              className="p-2 cursor-pointer touch-target active:scale-90"
+              style={{ color: '#FF006E' }}
+              aria-label="Cancel editing"
+            >
+              <X className="w-4 h-4" />
             </button>
           </div>
         )}

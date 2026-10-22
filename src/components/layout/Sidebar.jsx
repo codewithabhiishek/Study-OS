@@ -74,7 +74,7 @@ export default function Sidebar() {
                 to={path}
                 onClick={() => triggerHaptic(12)}
                 className={cn(
-                  "flex items-center gap-3 px-3 py-2.5 text-[12px] font-mono font-bold tracking-widest transition-all duration-150 relative group cursor-pointer",
+                  "flex items-center gap-3 px-3 py-2.5 text-[12px] font-mono font-bold tracking-widest transition-all duration-150 relative group cursor-pointer active:scale-[0.98]",
                   active
                     ? "text-black"
                     : "text-[#00FF87] hover:text-[#00FF87] md:hover:text-black"
@@ -85,7 +85,7 @@ export default function Sidebar() {
                 } : {}}
               >
                 {!active && (
-                  <span className="absolute inset-0 opacity-0 md:group-hover:opacity-100 transition-opacity"
+                  <span className="absolute inset-0 opacity-0 pointer-events-none md:group-hover:opacity-100 transition-opacity"
                     style={{ background: '#00FF87', boxShadow: '3px 3px 0 #FF006E' }} />
                 )}
                 <Icon className="w-3.5 h-3.5 relative z-10 flex-shrink-0" />
@@ -101,7 +101,8 @@ export default function Sidebar() {
           {isTauri && (
             <button
               onClick={() => { triggerHaptic(15); setUpdateModalOpen(true); }}
-              className="w-full flex items-center justify-center gap-1.5 px-3 py-1.5 text-[10px] font-mono font-bold tracking-wider text-[#00FF87] border border-[#00FF87]/30 hover:bg-[#00FF87] hover:text-black transition-all cursor-pointer group"
+              className="w-full flex items-center justify-center gap-1.5 px-3 py-1.5 text-[10px] font-mono font-bold tracking-wider text-[#00FF87] border border-[#00FF87]/30 hover:bg-[#00FF87] hover:text-black active:scale-95 transition-all cursor-pointer group"
+              aria-label="Check for desktop updates"
             >
               <Sparkles className="w-3 h-3 text-[#00FF87] group-hover:text-black animate-pulse" />
               <span>UPDATES // v1.0.1</span>
@@ -114,8 +115,8 @@ export default function Sidebar() {
             target="_blank"
             rel="noopener noreferrer"
             onClick={() => triggerHaptic(15)}
-            className="w-full flex items-center justify-between px-2.5 py-1.5 text-[10px] font-mono font-bold tracking-wider text-[#00FF87] border border-[#00FF87]/30 hover:bg-[#00FF87] hover:text-black transition-all cursor-pointer group"
-            title="Visit Abhishek's Portfolio (abhiishek.is-a.dev) ↗"
+            className="w-full flex items-center justify-between px-2.5 py-1.5 text-[10px] font-mono font-bold tracking-wider text-[#00FF87] border border-[#00FF87]/30 hover:bg-[#00FF87] hover:text-black active:scale-95 transition-all cursor-pointer group"
+            aria-label="Visit Abhishek's Portfolio (abhiishek.is-a.dev)"
           >
             <span className="flex items-center gap-1.5">
               <Sparkles className="w-3 h-3 text-[#00FF87] group-hover:text-black" />
@@ -125,7 +126,7 @@ export default function Sidebar() {
           </a>
 
           {user?.email && (
-            <div className="flex items-center gap-2 text-[11px] font-mono text-[#00FF87]" title={user.email}>
+            <div className="flex items-center gap-2 text-[11px] font-mono text-[#00FF87]">
               <User className="w-3.5 h-3.5 flex-shrink-0 text-[#00FF87]" />
               <span className="font-bold tracking-wide break-all">
                 {user.user_metadata?.full_name || `@${user.email.split('@')[0]}`}
@@ -135,9 +136,9 @@ export default function Sidebar() {
 
           <button
             onClick={() => { triggerHaptic(20); logout(); }}
-            className="w-full flex items-center justify-center gap-2 px-3 py-2 text-[11px] font-mono font-bold tracking-widest text-[#FF006E] border border-[#FF006E]/40 hover:bg-[#FF006E] hover:text-black transition-all cursor-pointer group"
+            className="w-full flex items-center justify-center gap-2 px-3 py-2 text-[11px] font-mono font-bold tracking-widest text-[#FF006E] border border-[#FF006E]/40 hover:bg-[#FF006E] hover:text-black active:scale-95 transition-all cursor-pointer group"
             style={{ boxShadow: '0 0 10px rgba(255,0,110,0.15)' }}
-            title="Logout"
+            aria-label="Logout"
           >
             <LogOut className="w-3.5 h-3.5 group-hover:scale-110 transition-transform" />
             <span>LOGOUT</span>
@@ -160,8 +161,9 @@ export default function Sidebar() {
                 key={path}
                 to={path}
                 onClick={() => triggerHaptic(12)}
-                className="flex flex-col items-center justify-center min-h-[48px] py-1.5 text-[9px] font-mono font-bold tracking-tight transition-all active:scale-95"
+                className="flex flex-col items-center justify-center min-h-[48px] py-1.5 text-[9px] font-mono font-bold tracking-tight transition-all active:scale-95 touch-target"
                 style={{ color: active ? '#00FF87' : '#777' }}
+                aria-label={label}
               >
                 <Icon className="w-4 h-4 mb-0.5" style={active ? { filter: 'drop-shadow(0 0 6px #00FF87)' } : {}} />
                 <span className="truncate max-w-[50px]">{label}</span>
@@ -170,8 +172,8 @@ export default function Sidebar() {
           })}
           <button
             onClick={() => { triggerHaptic(20); logout(); }}
-            className="flex flex-col items-center justify-center min-h-[48px] py-1.5 text-[9px] font-mono font-bold tracking-tight text-[#FF006E] transition-all active:scale-95 cursor-pointer"
-            title="Logout"
+            className="flex flex-col items-center justify-center min-h-[48px] py-1.5 text-[9px] font-mono font-bold tracking-tight text-[#FF006E] transition-all active:scale-95 cursor-pointer touch-target"
+            aria-label="Logout"
           >
             <LogOut className="w-4 h-4 mb-0.5" style={{ filter: 'drop-shadow(0 0 6px #FF006E)' }} />
             <span className="truncate max-w-[50px]">EXIT</span>

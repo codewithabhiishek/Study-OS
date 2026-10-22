@@ -51,12 +51,7 @@
   * {
     @apply border-border;
     outline: none !important;
-    -webkit-tap-highlight-color: transparent !important;
-    -webkit-tap-highlight-color: rgba(0,0,0,0) !important;
-    -webkit-touch-callout: none !important;
-    -webkit-user-select: none !important;
-    user-select: none !important;
-    touch-action: manipulation !important;
+    -webkit-tap-highlight-color: transparent;
   }
   
   ::selection {
@@ -69,14 +64,34 @@
   html, body {
     @apply bg-black text-foreground font-body antialiased;
     background-color: #000000;
-    -webkit-user-select: none !important;
-    user-select: none !important;
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    touch-action: manipulation;
+    -webkit-touch-callout: none;
+  }
+
+  button, a, input, select, textarea, [role="button"], label {
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
   }
 
   input, textarea {
     -webkit-user-select: auto !important;
     user-select: auto !important;
   }
+}
+
+/* Accessible touch target expander for buttons/toggles on touch screens */
+.touch-target {
+  position: relative;
+}
+.touch-target::after {
+  content: '';
+  position: absolute;
+  inset: -10px;
+  pointer-events: auto;
 }
 
 /* Neon glow utilities */
@@ -105,20 +120,20 @@
   box-shadow: 4px 4px 0px #00FF87;
   border: 1px solid #00FF87;
   transition: transform 0.15s ease, box-shadow 0.15s ease;
+  transform: translateZ(0);
 }
-.card-3d:hover {
-  transform: translate(-2px, -2px);
-  box-shadow: 6px 6px 0px #00FF87;
+.card-3d:active {
+  transform: scale(0.985);
 }
 
 .card-3d-magenta {
   box-shadow: 4px 4px 0px #FF006E;
   border: 1px solid #FF006E;
   transition: transform 0.15s ease, box-shadow 0.15s ease;
+  transform: translateZ(0);
 }
-.card-3d-magenta:hover {
-  transform: translate(-2px, -2px);
-  box-shadow: 6px 6px 0px #FF006E;
+.card-3d-magenta:active {
+  transform: scale(0.985);
 }
 
 /* Scanline overlay */
@@ -137,10 +152,6 @@
   z-index: 1;
 }
 
-/* Glitch hover */
-.glitch:hover {
-  animation: glitch 0.3s steps(2) forwards;
-}
 @keyframes glitch {
   0%   { text-shadow: 2px 0 #FF006E, -2px 0 #00FF87; }
   25%  { text-shadow: -2px 0 #FF006E, 2px 0 #00FF87; clip-path: inset(20% 0 60% 0); }
@@ -196,11 +207,11 @@
   border: 1px solid #FF006E;
   box-shadow: 4px 4px 0px #00FF87;
   transition: all 0.15s ease;
+  transform: translateZ(0);
 }
-.btn-neon-magenta:hover {
-  background: #FF006E;
-  transform: translate(-2px, -2px);
-  box-shadow: 6px 6px 0px #00FF87;
+.btn-neon-magenta:active {
+  transform: translate(2px, 2px);
+  box-shadow: 2px 2px 0px #00FF87;
 }
 
 .btn-neon-green {
@@ -210,43 +221,83 @@
   border: 1px solid #00FF87;
   box-shadow: 4px 4px 0px #FF006E;
   transition: all 0.15s ease;
+  transform: translateZ(0);
 }
-.btn-neon-green:hover {
-  background: #00FF87;
-  transform: translate(-2px, -2px);
-  box-shadow: 6px 6px 0px #FF006E;
+.btn-neon-green:active {
+  transform: translate(2px, 2px);
+  box-shadow: 2px 2px 0px #FF006E;
 }
 
-/* Glassmorphism & Cyber Depth */
+/* Glassmorphism & Cyber Depth - Optimized for 60/120 FPS iPad Compositing */
 .glass-panel {
-  background: rgba(10, 16, 22, 0.75);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(0, 255, 135, 0.22);
-  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.45);
+  background: rgba(10, 16, 22, 0.88);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(0, 255, 135, 0.25);
+  box-shadow: 0 4px 20px 0 rgba(0, 0, 0, 0.45);
+  transform: translateZ(0);
+  will-change: transform;
 }
 
 .glass-panel-magenta {
-  background: rgba(22, 10, 18, 0.75);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 0, 110, 0.25);
-  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.45);
+  background: rgba(22, 10, 18, 0.88);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 0, 110, 0.28);
+  box-shadow: 0 4px 20px 0 rgba(0, 0, 0, 0.45);
+  transform: translateZ(0);
+  will-change: transform;
 }
 
 .glass-card-interactive {
-  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.2s ease;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+  transform: translateZ(0);
 }
-.glass-card-interactive:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 12px 36px 0 rgba(0, 255, 135, 0.15), 4px 4px 0px #00FF87;
-  border-color: rgba(0, 255, 135, 0.6);
+.glass-card-interactive:active {
+  transform: scale(0.99);
 }
 
-.glass-card-interactive-magenta:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 12px 36px 0 rgba(255, 0, 110, 0.15), 4px 4px 0px #FF006E;
-  border-color: rgba(255, 0, 110, 0.6);
+.glass-card-interactive-magenta {
+  transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+  transform: translateZ(0);
+}
+.glass-card-interactive-magenta:active {
+  transform: scale(0.99);
+}
+
+/* Guard hover states strictly for mouse/pointer devices so touch taps don't get intercepted on iPad */
+@media (hover: hover) and (pointer: fine) {
+  .card-3d:hover {
+    transform: translate(-2px, -2px);
+    box-shadow: 6px 6px 0px #00FF87;
+  }
+  .card-3d-magenta:hover {
+    transform: translate(-2px, -2px);
+    box-shadow: 6px 6px 0px #FF006E;
+  }
+  .glitch:hover {
+    animation: glitch 0.3s steps(2) forwards;
+  }
+  .btn-neon-magenta:hover {
+    background: #FF006E;
+    transform: translate(-2px, -2px);
+    box-shadow: 6px 6px 0px #00FF87;
+  }
+  .btn-neon-green:hover {
+    background: #00FF87;
+    transform: translate(-2px, -2px);
+    box-shadow: 6px 6px 0px #FF006E;
+  }
+  .glass-card-interactive:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 28px 0 rgba(0, 255, 135, 0.15), 4px 4px 0px #00FF87;
+    border-color: rgba(0, 255, 135, 0.6);
+  }
+  .glass-card-interactive-magenta:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 28px 0 rgba(255, 0, 110, 0.15), 4px 4px 0px #FF006E;
+    border-color: rgba(255, 0, 110, 0.6);
+  }
 }
 
 /* Ambient Radial Glow Orbs */

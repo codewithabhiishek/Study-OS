@@ -3,6 +3,7 @@ import { Outlet, useLocation, Link } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import { useAuth } from '@/lib/AuthContext';
 import { LogOut } from 'lucide-react';
+import { triggerHaptic } from '@/utils/security';
 
 export default function AppLayout() {
   const location = useLocation();
@@ -11,14 +12,25 @@ export default function AppLayout() {
 
   return (
     <div className="min-h-screen bg-black text-white selection:bg-[#00FF87] selection:text-black relative overflow-x-hidden">
-      {/* Ambient background glow orbs for layered depth */}
-      <div className="fixed top-[-100px] left-[15%] w-[480px] h-[480px] rounded-full glow-orb-green pointer-events-none z-0" />
-      <div className="fixed bottom-[-100px] right-[10%] w-[520px] h-[520px] rounded-full glow-orb-magenta pointer-events-none z-0" />
+      {/* Ambient background glow orbs for layered depth - hardware isolated */}
+      <div
+        className="fixed top-[-100px] left-[15%] w-[480px] h-[480px] rounded-full glow-orb-green pointer-events-none z-0"
+        style={{ transform: 'translateZ(0)', contain: 'strict' }}
+      />
+      <div
+        className="fixed bottom-[-100px] right-[10%] w-[520px] h-[520px] rounded-full glow-orb-magenta pointer-events-none z-0"
+        style={{ transform: 'translateZ(0)', contain: 'strict' }}
+      />
 
-      {/* Global scanline overlay */}
-      <div className="fixed inset-0 pointer-events-none z-50 opacity-30" style={{
-        background: 'repeating-linear-gradient(to bottom, transparent 0px, transparent 3px, rgba(0,0,0,0.1) 3px, rgba(0,0,0,0.1) 4px)'
-      }} />
+      {/* Global scanline overlay - hardware isolated */}
+      <div
+        className="fixed inset-0 pointer-events-none z-50 opacity-30"
+        style={{
+          background: 'repeating-linear-gradient(to bottom, transparent 0px, transparent 3px, rgba(0,0,0,0.1) 3px, rgba(0,0,0,0.1) 4px)',
+          transform: 'translateZ(0)',
+          contain: 'strict',
+        }}
+      />
 
       {/* Mobile top header */}
       <header className="md:hidden flex items-center justify-between px-4 py-3 bg-black/85 backdrop-blur-md border-b border-[#00FF87]/30 sticky top-0 z-30 pt-[calc(0.75rem+env(safe-area-inset-top))] shadow-[0_4px_20px_rgba(0,0,0,0.6)]">
@@ -32,15 +44,16 @@ export default function AppLayout() {
         </Link>
         {user?.email && (
           <div className="flex items-center gap-2.5">
-            <span className="text-[11px] font-mono font-bold text-[#00FF87] truncate max-w-[130px] sm:max-w-[200px]" title={user.email}>
+            <span className="text-[11px] font-mono font-bold text-[#00FF87] truncate max-w-[130px] sm:max-w-[200px]">
               {user.user_metadata?.full_name || `@${user.email.split('@')[0]}`}
             </span>
             <button
-              onClick={logout}
-              className="text-[#FF006E] hover:text-[#FF006E]/80 transition-colors p-1.5 border border-[#FF006E]/40 active:scale-95"
-              title="Logout"
+              type="button"
+              onClick={() => { triggerHaptic(20); logout(); }}
+              className="text-[#FF006E] hover:text-[#FF006E]/80 transition-colors p-2 border border-[#FF006E]/40 active:scale-95 touch-target cursor-pointer flex items-center justify-center min-w-[36px] min-h-[36px]"
+              aria-label="Logout"
             >
-              <LogOut className="w-3.5 h-3.5" />
+              <LogOut className="w-4 h-4" />
             </button>
           </div>
         )}

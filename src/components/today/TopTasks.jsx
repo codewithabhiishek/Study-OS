@@ -4,6 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Check, Plus, Pencil, Trash2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Skeleton } from '@/components/ui/skeleton';
+import { triggerHaptic } from '@/utils/security';
 
 function InlineEdit({ value, onSave, className, style }) {
   const [editing, setEditing] = useState(false);
@@ -30,12 +31,19 @@ function InlineEdit({ value, onSave, className, style }) {
 
   return (
     <span
-      className={cn("flex-1 cursor-text group/text relative", className)}
+      className={cn("flex-1 cursor-text group/text relative inline-flex items-center gap-1", className)}
       style={style}
       onDoubleClick={() => { setVal(value); setEditing(true); }}
     >
-      {value}
-      <Pencil className="w-2.5 h-2.5 inline ml-1.5 opacity-0 group-hover/text:opacity-40 transition-opacity" style={{ color: '#00FF87' }} />
+      <span>{value}</span>
+      <button
+        type="button"
+        onClick={(e) => { e.stopPropagation(); setVal(value); setEditing(true); }}
+        className="inline-flex items-center justify-center p-1 text-[#00FF87] opacity-60 md:opacity-0 md:group-hover/text:opacity-40 hover:!opacity-100 touch-target cursor-pointer"
+        title="Edit task"
+      >
+        <Pencil className="w-3 h-3" />
+      </button>
     </span>
   );
 }
@@ -122,11 +130,13 @@ export default function TopTasks() {
           ▶ {"TODAY'S FOCUS"}
         </div>
         <button
-          onClick={() => setAdding(!adding)}
-          className="w-6 h-6 flex items-center justify-center border border-[#00FF87] text-[#00FF87] transition-all hover:bg-[#00FF87] hover:text-black hover:shadow-[0_0_8px_#00FF87]"
+          type="button"
+          onClick={() => { triggerHaptic(10); setAdding(!adding); }}
+          className="min-w-[32px] min-h-[32px] flex items-center justify-center border border-[#00FF87] text-[#00FF87] transition-all hover:bg-[#00FF87] hover:text-black active:scale-95 touch-target cursor-pointer"
           title={adding ? "Close" : "Add focus task"}
+          aria-label={adding ? "Close task form" : "Add focus task"}
         >
-          <Plus className="w-3.5 h-3.5 transition-colors" />
+          <Plus className="w-4 h-4 transition-colors" />
         </button>
       </div>
       <div className="space-y-2">
@@ -135,23 +145,32 @@ export default function TopTasks() {
           return (
             <div
               key={task.id}
-              className="flex items-center gap-3 w-full px-3.5 py-3 text-left transition-all group relative overflow-hidden glass-panel glass-card-interactive"
+              className="flex items-center gap-2.5 sm:gap-3 w-full px-3 py-2.5 sm:px-3.5 sm:py-3 text-left transition-all group relative overflow-hidden glass-panel glass-card-interactive"
               style={{
                 borderColor: task.completed ? 'rgba(0,255,135,0.3)' : 'rgba(0,255,135,0.6)',
                 boxShadow: task.completed ? 'none' : '3px 3px 0 rgba(255,0,110,0.5), 0 4px 16px rgba(0,0,0,0.4)',
-                background: task.completed ? 'rgba(0,255,135,0.06)' : 'rgba(10, 16, 22, 0.75)',
+                background: task.completed ? 'rgba(0,255,135,0.06)' : 'rgba(10, 16, 22, 0.88)',
               }}
             >
               <button
-                onClick={() => toggleMutation.mutate({ id: task.id, completed: task.completed })}
-                className="flex-shrink-0 w-5 h-5 border-2 flex items-center justify-center transition-all cursor-pointer hover:scale-110 active:scale-95"
-                style={{
-                  borderColor: '#00FF87',
-                  background: task.completed ? '#00FF87' : 'transparent',
-                  boxShadow: task.completed ? '0 0 10px #00FF87' : '0 0 4px rgba(0,255,135,0.3)',
+                type="button"
+                onClick={() => {
+                  triggerHaptic(12);
+                  toggleMutation.mutate({ id: task.id, completed: task.completed });
                 }}
+                aria-label={task.completed ? "Mark task as incomplete" : "Mark task as completed"}
+                className="flex-shrink-0 w-8 h-8 -ml-1.5 flex items-center justify-center transition-all cursor-pointer touch-target active:scale-90"
               >
-                {task.completed && <Check className="w-3 h-3 text-black" strokeWidth={3} />}
+                <div
+                  className="w-5 h-5 border-2 flex items-center justify-center transition-all"
+                  style={{
+                    borderColor: '#00FF87',
+                    background: task.completed ? '#00FF87' : 'transparent',
+                    boxShadow: task.completed ? '0 0 10px #00FF87' : '0 0 4px rgba(0,255,135,0.3)',
+                  }}
+                >
+                  {task.completed && <Check className="w-3.5 h-3.5 text-black" strokeWidth={3} />}
+                </div>
               </button>
               <InlineEdit
                 value={task.title}
@@ -175,11 +194,16 @@ export default function TopTasks() {
                   style={{ color: '#FF006E', border: '1px solid #FF006E' }}>HOT</span>
               )}
               <button
-                onClick={() => deleteMutation.mutate(task.id)}
-                className="opacity-0 group-hover:opacity-40 hover:!opacity-100 transition-opacity p-0.5"
-                style={{ color: '#FF006E' }}
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  triggerHaptic(15);
+                  deleteMutation.mutate(task.id);
+                }}
+                aria-label="Delete task"
+                className="opacity-50 md:opacity-0 md:group-hover:opacity-40 hover:!opacity-100 transition-opacity p-2 text-[#FF006E] touch-target active:scale-90 cursor-pointer"
               >
-                <Trash2 className="w-3 h-3" />
+                <Trash2 className="w-3.5 h-3.5" />
               </button>
               <span className="text-[10px] font-mono" style={{ color: '#00FF87', opacity: 0.4 }}>
                 {String(i + 1).padStart(2, '0')}

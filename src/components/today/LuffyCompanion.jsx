@@ -176,7 +176,7 @@ export default function LuffyCompanion() {
   return (
     <div className="mb-6 flex items-center gap-3">
       <div
-        className="relative w-16 h-16 rounded-full overflow-hidden flex-shrink-0 transition-transform duration-300 hover:scale-105"
+        className="relative w-16 h-16 rounded-full overflow-hidden flex-shrink-0 transition-transform duration-200 active:scale-95 cursor-pointer"
         style={{
           border: '2px solid #00FF87',
           boxShadow: '0 0 15px rgba(0,255,135,0.45)',

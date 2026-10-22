@@ -14,6 +14,7 @@ import {
   isToday,
 } from "date-fns";
 import { Skeleton } from "@/components/ui/skeleton";
+import { triggerHaptic } from "@/utils/security";
 
 // Live countdown hook
 function useCountdown(targetDate) {
@@ -207,20 +208,23 @@ export default function Calendar() {
           >
             CALENDAR
           </h1>
-          <div className="flex items-center gap-1.5 sm:gap-3 flex-wrap">
+          <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
             <button
-              onClick={() => setCurrentMonth(new Date())}
-              className="px-2 sm:px-2.5 py-1 border border-[#00FF87] hover:bg-[#00FF87] hover:text-black transition-all font-mono text-[9px] sm:text-[10px] font-bold tracking-widest"
+              type="button"
+              onClick={() => { triggerHaptic(10); setCurrentMonth(new Date()); }}
+              className="px-2.5 py-1.5 border border-[#00FF87] hover:bg-[#00FF87] hover:text-black active:scale-95 transition-all font-mono text-[9px] sm:text-[10px] font-bold tracking-widest touch-target cursor-pointer"
               style={{ color: "#00FF87" }}
             >
               TODAY
             </button>
             <button
-              onClick={() => setCurrentMonth(subMonths(currentMonth, 1))}
-              className="p-1 sm:p-1.5 border border-[#00FF87] hover:bg-[#00FF87] hover:text-black transition-all"
+              type="button"
+              onClick={() => { triggerHaptic(10); setCurrentMonth(subMonths(currentMonth, 1)); }}
+              className="min-w-[34px] min-h-[34px] flex items-center justify-center border border-[#00FF87] hover:bg-[#00FF87] hover:text-black active:scale-90 transition-all touch-target cursor-pointer"
               style={{ color: "#00FF87" }}
+              aria-label="Previous month"
             >
-              <ChevronLeft className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+              <ChevronLeft className="w-4 h-4" />
             </button>
             <span
               className="font-mono font-bold text-xs sm:text-sm tracking-widest min-w-[75px] sm:min-w-[85px] text-center"
@@ -229,11 +233,13 @@ export default function Calendar() {
               {format(currentMonth, "MMM yyyy").toUpperCase()}
             </span>
             <button
-              onClick={() => setCurrentMonth(addMonths(currentMonth, 1))}
-              className="p-1 sm:p-1.5 border border-[#00FF87] hover:bg-[#00FF87] hover:text-black transition-all"
+              type="button"
+              onClick={() => { triggerHaptic(10); setCurrentMonth(addMonths(currentMonth, 1)); }}
+              className="min-w-[34px] min-h-[34px] flex items-center justify-center border border-[#00FF87] hover:bg-[#00FF87] hover:text-black active:scale-90 transition-all touch-target cursor-pointer"
               style={{ color: "#00FF87" }}
+              aria-label="Next month"
             >
-              <ChevronRight className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+              <ChevronRight className="w-4 h-4" />
             </button>
           </div>
         </div>

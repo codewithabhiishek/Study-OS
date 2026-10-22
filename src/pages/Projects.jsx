@@ -44,7 +44,11 @@ export default function Projects() {
         </h1>
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild>
-            <button className="w-8 h-8 flex items-center justify-center font-mono font-bold transition-all btn-neon-green text-black">
+            <button
+              type="button"
+              className="min-w-[36px] min-h-[36px] flex items-center justify-center font-mono font-bold transition-all btn-neon-green text-black touch-target active:scale-95 cursor-pointer"
+              aria-label="Create new project"
+            >
               <Plus className="w-4 h-4" />
             </button>
           </DialogTrigger>
@@ -65,7 +69,7 @@ export default function Projects() {
               <input type="date" value={deadline} onChange={(e) => setDeadline(e.target.value)}
                 className="w-full text-sm font-mono bg-black py-2.5 px-3 outline-none"
                 style={{ border: '1px solid #333', color: '#888', caretColor: '#00FF87' }} />
-              <button type="submit" className="w-full py-3 font-mono font-bold text-sm tracking-widest btn-neon-magenta">
+              <button type="submit" className="w-full py-3.5 font-mono font-bold text-sm tracking-widest btn-neon-magenta active:scale-[0.98] cursor-pointer touch-target">
                 INITIALIZE PROJECT
               </button>
             </form>

@@ -7,6 +7,8 @@ import TopTasks from '@/components/today/TopTasks';
 import HabitChecklist from '@/components/today/HabitChecklist';
 import LuffyCompanion from '@/components/today/LuffyCompanion';
 
+import { triggerHaptic } from '@/utils/security';
+
 export default function Today() {
   const { user } = useAuth();
   const greeting = () => {
@@ -45,7 +47,8 @@ export default function Today() {
 
       <Link
         to="/focus"
-        className="inline-flex items-center gap-2 px-5 py-3 font-mono font-bold text-sm tracking-widest transition-all mt-2 btn-neon-green"
+        onClick={() => triggerHaptic(15)}
+        className="inline-flex items-center gap-2 px-5 py-3.5 font-mono font-bold text-sm tracking-widest transition-all mt-2 btn-neon-green touch-target active:scale-95 cursor-pointer"
       >
         <Zap className="w-4 h-4" />
         START FOCUS SESSION

@@ -5,6 +5,7 @@ import { calculateStreak } from '@/utils/habitUtils';
 import { useFocus } from '@/hooks/FocusContext';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
+import { triggerHaptic } from '@/utils/security';
 
 export default function Review() {
   const [timeframe, setTimeframe] = useState('daily'); // 'daily', 'weekly', or 'monthly'
@@ -221,37 +222,37 @@ export default function Review() {
           </div>
           <div className="flex gap-1.5">
             <button 
-              onClick={() => setTimeframe('daily')}
-              className="text-[9px] font-mono px-2 py-0.5 border transition-all"
+              type="button"
+              onClick={() => { triggerHaptic(10); setTimeframe('daily'); }}
+              className="text-[9px] sm:text-[10px] font-mono px-2.5 py-1.5 border transition-all touch-target active:scale-95 cursor-pointer"
               style={{ 
                 borderColor: timeframe === 'daily' ? '#00FF87' : '#222', 
-                color: timeframe === 'daily' ? '#00FF87' : '#444',
+                color: timeframe === 'daily' ? '#00FF87' : '#666',
                 background: timeframe === 'daily' ? 'rgba(0,255,135,0.1)' : 'transparent',
-                cursor: 'pointer'
               }}
             >
               DAILY
             </button>
             <button 
-              onClick={() => setTimeframe('weekly')}
-              className="text-[9px] font-mono px-2 py-0.5 border transition-all"
+              type="button"
+              onClick={() => { triggerHaptic(10); setTimeframe('weekly'); }}
+              className="text-[9px] sm:text-[10px] font-mono px-2.5 py-1.5 border transition-all touch-target active:scale-95 cursor-pointer"
               style={{ 
                 borderColor: timeframe === 'weekly' ? '#00FF87' : '#222', 
-                color: timeframe === 'weekly' ? '#00FF87' : '#444',
+                color: timeframe === 'weekly' ? '#00FF87' : '#666',
                 background: timeframe === 'weekly' ? 'rgba(0,255,135,0.1)' : 'transparent',
-                cursor: 'pointer'
               }}
             >
               WEEKLY
             </button>
             <button 
-              onClick={() => setTimeframe('monthly')}
-              className="text-[9px] font-mono px-2 py-0.5 border transition-all"
+              type="button"
+              onClick={() => { triggerHaptic(10); setTimeframe('monthly'); }}
+              className="text-[9px] sm:text-[10px] font-mono px-2.5 py-1.5 border transition-all touch-target active:scale-95 cursor-pointer"
               style={{ 
                 borderColor: timeframe === 'monthly' ? '#00FF87' : '#222', 
-                color: timeframe === 'monthly' ? '#00FF87' : '#444',
+                color: timeframe === 'monthly' ? '#00FF87' : '#666',
                 background: timeframe === 'monthly' ? 'rgba(0,255,135,0.1)' : 'transparent',
-                cursor: 'pointer'
               }}
             >
               MONTHLY
@@ -283,34 +284,35 @@ export default function Review() {
           {timeframe === 'weekly' && (
             <div className="flex items-center gap-1.5 sm:gap-2 mb-1 self-end sm:self-auto">
               <button 
-                onClick={() => setWeekOffset(prev => prev + 1)}
-                className="p-1 border transition-all"
+                type="button"
+                onClick={() => { triggerHaptic(10); setWeekOffset(prev => prev + 1); }}
+                className="min-w-[32px] min-h-[32px] flex items-center justify-center border transition-all touch-target active:scale-90 cursor-pointer"
                 style={{ 
                   borderColor: '#00FF87',
                   color: '#00FF87', 
                   background: 'transparent',
-                  cursor: 'pointer'
                 }}
-                title="Go back a week"
+                aria-label="Go back a week"
               >
-                <ChevronLeft className="w-3.5 h-3.5" />
+                <ChevronLeft className="w-4 h-4" />
               </button>
               <span className="text-[9px] sm:text-[10px] font-mono font-bold tracking-wider text-center min-w-[150px] sm:min-w-[180px]" style={{ color: '#fff' }}>
                 {formatWeekRange(startOfActiveWeek)}
               </span>
               <button 
-                onClick={() => setWeekOffset(prev => Math.max(0, prev - 1))}
+                type="button"
+                onClick={() => { triggerHaptic(10); setWeekOffset(prev => Math.max(0, prev - 1)); }}
                 disabled={weekOffset === 0}
-                className="p-1 border transition-all"
+                className="min-w-[32px] min-h-[32px] flex items-center justify-center border transition-all touch-target active:scale-90"
                 style={{ 
                   borderColor: weekOffset === 0 ? '#111' : '#00FF87',
                   color: weekOffset === 0 ? '#222' : '#00FF87', 
                   background: 'transparent',
                   cursor: weekOffset === 0 ? 'not-allowed' : 'pointer' 
                 }}
-                title="Go forward a week"
+                aria-label="Go forward a week"
               >
-                <ChevronRight className="w-3.5 h-3.5" />
+                <ChevronRight className="w-4 h-4" />
               </button>
             </div>
           )}
