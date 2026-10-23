@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { RefreshCw, CheckCircle2, AlertTriangle, Download, ExternalLink, X, Sparkles, Terminal } from 'lucide-react';
+import React, { useState, useEffect, useCallback } from 'react';
+import { RefreshCw, CheckCircle2, AlertTriangle, Download, ExternalLink, Terminal } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 
 const APP_VERSION = 'v1.0.1';
@@ -8,13 +8,12 @@ const GITHUB_REPO = 'codewithabhiishek/Study-OS';
 export default function UpdateModal({ open, onOpenChange }) {
   const [checking, setChecking] = useState(false);
   const [updateInfo, setUpdateInfo] = useState(null);
-  const [isLatest, setIsLatest] = useState(true);
   const [downloading, setDownloading] = useState(false);
   const [progress, setProgress] = useState(0);
   const [errorMsg, setErrorMsg] = useState('');
   const isTauri = typeof window !== 'undefined' && Boolean(window.__TAURI_INTERNALS__);
 
-  const checkForUpdates = async () => {
+  const checkForUpdates = useCallback(async () => {
     setChecking(true);
     setErrorMsg('');
     try {
@@ -30,7 +29,6 @@ export default function UpdateModal({ open, onOpenChange }) {
               date: tauriUpdate.date || new Date().toISOString(),
               tauriUpdateInstance: tauriUpdate,
             });
-            setIsLatest(false);
             setChecking(false);
             return;
           }
@@ -57,28 +55,25 @@ export default function UpdateModal({ open, onOpenChange }) {
             date: release.published_at || release.created_at,
             htmlUrl: release.html_url,
           });
-          setIsLatest(false);
           setChecking(false);
           return;
         }
       }
 
       // No newer release found
-      setIsLatest(true);
       setUpdateInfo(null);
     } catch (err) {
       console.error('[Update check error]', err);
-      setIsLatest(true);
     } finally {
       setChecking(false);
     }
-  };
+  }, [isTauri]);
 
   useEffect(() => {
     if (open) {
       checkForUpdates();
     }
-  }, [open]);
+  }, [open, checkForUpdates]);
 
   const handleInstallTauriUpdate = async () => {
     if (!updateInfo?.tauriUpdateInstance) {

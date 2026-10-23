@@ -85,7 +85,6 @@ function notify(title, body) {
   try {
     if (typeof Notification === 'undefined') return;
     if (Notification.permission === 'granted') {
-      // eslint-disable-next-line no-new
       new Notification(title, { body });
     }
   } catch {
@@ -199,11 +198,13 @@ export function FocusProvider({ children }) {
   const targetEndTimeRef = useRef(null);
   const isFirstMount = useRef(true);
   const isSyncingRef = useRef(false);
+  const secondsRef = useRef(seconds);
+  secondsRef.current = seconds;
   const queryClient = useQueryClient();
 
   const addToOfflineQueue = useCallback((sessionData) => {
     const session = {
-      id: `temp-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+      id: `temp-${Date.now()}-${Math.random().toString(36).slice(2, 11)}`,
       ...sessionData,
     };
     const queue = getOfflineQueue(userId);
@@ -237,7 +238,7 @@ export function FocusProvider({ children }) {
       console.log(`Attempting to sync ${queue.length} offline focus sessions...`);
       for (const session of queue) {
         try {
-          const { id, ...dataToSync } = session;
+          const { id: _id, ...dataToSync } = session;
           await supabaseClient.entities.FocusSession.create(dataToSync);
           removeFromOfflineQueue(session.id);
           queryClient.invalidateQueries({ queryKey: ['focus_sessions'] });
@@ -383,7 +384,7 @@ export function FocusProvider({ children }) {
   // Initialize targetEndTimeRef when running state changes
   useEffect(() => {
     if (running) {
-      targetEndTimeRef.current = Date.now() + seconds * 1000;
+      targetEndTimeRef.current = Date.now() + secondsRef.current * 1000;
     } else {
       targetEndTimeRef.current = null;
     }
@@ -410,7 +411,7 @@ export function FocusProvider({ children }) {
     }
 
     // Reset log guard when a new work session starts and we are running
-    if (phase === 'work' && seconds > 0) {
+    if (phase === 'work' && secondsRef.current > 0) {
       sessionLoggedRef.current = false;
     }
 
@@ -456,7 +457,7 @@ export function FocusProvider({ children }) {
     return () => {
       if (intervalRef.current) clearInterval(intervalRef.current);
     };
-  }, [running, phase, soundEnabled, notificationsEnabled, workMinutes, breakMinutes, pomodoroEnabled, selectedProject, isCustom, logMutation]);
+  }, [running, phase, soundEnabled, notificationsEnabled, workMinutes, breakMinutes, pomodoroEnabled, selectedProject, isCustom, logFocusSession]);
 
   // Update document title with remaining time
   useEffect(() => {

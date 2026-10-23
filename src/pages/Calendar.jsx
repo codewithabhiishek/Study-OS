@@ -7,7 +7,6 @@ import {
   startOfMonth,
   endOfMonth,
   eachDayOfInterval,
-  isSameDay,
   isSameMonth,
   addMonths,
   subMonths,
@@ -47,15 +46,6 @@ function useCountdown(targetDate) {
     return () => clearInterval(id);
   }, [targetDate]);
   return t;
-}
-
-function toTitleCase(str) {
-  if (!str) return "";
-  return str
-    .toLowerCase()
-    .split(" ")
-    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(" ");
 }
 
 function parseLocalDate(dateStr) {
@@ -414,7 +404,7 @@ export default function Calendar() {
         )}
 
         <div className="space-y-0">
-          {isLoadingDeadlines ? (
+          {isLoadingDeadlines || isLoadingTasks ? (
             [...Array(3)].map((_, i) => (
               <div
                 key={i}

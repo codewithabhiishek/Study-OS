@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import { supabaseClient } from '@/api/supabaseClient';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { Play, Pause, RotateCcw, Maximize2, Minimize2, Bell, BellOff } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { triggerHaptic } from '@/utils/security';
@@ -30,9 +30,7 @@ export default function Focus() {
     notificationsEnabled,
     setNotificationsEnabled,
     reset,
-    workMinutes,
     phaseMinutes,
-    logMutation,
     offlineQueue,
   } = useFocus();
 
