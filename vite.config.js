@@ -29,7 +29,6 @@ export default defineConfig({
             '@radix-ui/react-dialog',
             '@radix-ui/react-label',
             '@radix-ui/react-slot',
-            '@radix-ui/react-toast',
           ],
           'vendor-date': ['date-fns'],
           'vendor-lucide': ['lucide-react'],

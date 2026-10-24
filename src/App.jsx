@@ -1,5 +1,4 @@
 import { useEffect, lazy, Suspense } from 'react';
-import { Toaster } from '@/components/ui/toaster';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { queryClientInstance } from '@/lib/query-client';
 import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
@@ -8,7 +7,6 @@ import { AuthProvider } from '@/lib/AuthContext';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import AppLayout from '@/components/layout/AppLayout';
 import { FocusProvider } from '@/hooks/FocusContext';
-import { Analytics } from '@vercel/analytics/react';
 import UpdateNotifier from '@/components/updater/UpdateNotifier';
 
 const Landing = lazy(() => import('@/pages/Landing'));
@@ -101,9 +99,7 @@ function App() {
             </Suspense>
           </Router>
         </FocusProvider>
-        <Toaster />
         <UpdateNotifier />
-        <Analytics />
       </QueryClientProvider>
     </AuthProvider>
   );
