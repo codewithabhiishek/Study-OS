@@ -60,10 +60,24 @@ export default function AppLayout() {
       </header>
 
       <Sidebar />
-      <main className="md:ml-52 min-h-screen pb-28 md:pb-12 relative z-10">
-        <div className={`mx-auto px-3.5 sm:px-6 py-5 sm:py-8 ${isWidePage ? 'max-w-6xl' : 'max-w-3xl'} transition-all duration-300`}>
+      <main className="md:ml-52 min-h-screen pb-28 md:pb-12 relative z-10 flex flex-col justify-between">
+        <div className={`mx-auto px-3.5 sm:px-6 py-5 sm:py-8 w-full ${isWidePage ? 'max-w-6xl' : 'max-w-3xl'} transition-all duration-300 flex-1`}>
           <Outlet />
         </div>
+        <footer className="mt-8 pt-4 pb-6 border-t border-[#00FF87]/20 text-center font-mono">
+          <p className="text-[11px] text-zinc-400 tracking-wider">
+            SYSTEM // STUDYOS • CRAFTED BY{' '}
+            <a
+              href="https://abhiishek.is-a.dev/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-[#00FF87] hover:underline font-bold transition-colors inline-flex items-center gap-1"
+            >
+              <span>ABHISHEK</span>
+              <span className="text-[10px]">↗</span>
+            </a>
+          </p>
+        </footer>
       </main>
     </div>
   );

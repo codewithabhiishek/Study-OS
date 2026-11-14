@@ -6,6 +6,7 @@
 import React, { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/lib/AuthContext';
+import { getLuffyCacheKey } from '@/utils/storageUtils';
 
 const FALLBACK_MESSAGES = [
   "If you don't take risks, you can't create a future! Keep grinding!",
@@ -131,9 +132,10 @@ export default function LuffyCompanion() {
       }
 
       // 2. Check localStorage as a secondary quick cache to prevent API spam
-      const cacheKey = `luffy_msg_${user?.id || 'anon'}_${date}`;
+      const cacheKey = getLuffyCacheKey(user?.id, date);
+      const legacyKey = `luffy_msg_${user?.id || 'anon'}_${date}`;
       try {
-        const localSaved = localStorage.getItem(cacheKey);
+        const localSaved = localStorage.getItem(cacheKey) || localStorage.getItem(legacyKey);
         if (localSaved && localSaved !== "THIS IS THE FALLBACK MESSAGE123" && !cancelled) {
           setMessage(localSaved);
           return;

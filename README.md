@@ -9,7 +9,7 @@
 [![Vite 6](https://img.shields.io/badge/Vite-6.4.5-646CFF?style=for-the-badge&logo=vite&logoColor=white)](https://vitejs.dev/)
 [![Tailwind CSS 4](https://img.shields.io/badge/Tailwind_CSS-4.x-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
 [![Supabase](https://img.shields.io/badge/Supabase_RLS-3ECF8E?style=for-the-badge&logo=supabase&logoColor=white)](https://supabase.com/)
-[![Tests](https://img.shields.io/badge/Tests-18%20Passing-success?style=for-the-badge&logo=node.js&logoColor=white)](https://nodejs.org/)
+[![Tests](https://img.shields.io/badge/Tests-31%20Passing-success?style=for-the-badge&logo=node.js&logoColor=white)](https://nodejs.org/)
 [![Vulnerabilities](https://img.shields.io/badge/Vulnerabilities-0-brightgreen?style=for-the-badge&logo=snyk&logoColor=white)](https://snyk.io/)
 <a href="https://abhiishek.is-a.dev/" target="_blank" rel="noopener noreferrer">
   <img src="https://img.shields.io/badge/Author-Abhishek-FF007A?style=for-the-badge&logo=firefox-browser&logoColor=white" alt="Portfolio" />
@@ -238,7 +238,7 @@ npm run preview
 StudyOS includes an automated test suite executed via Node's native test runner (`node --test`), verifying multi-user data isolation, Strix defensive security, input sanitization, tactile haptic safety, streak math, country flag parsing, and URL formatting.
 
 ```bash
-# Run unit tests (18 tests across 5 test suites)
+# Run unit tests (31 tests across 6 test suites)
 npm test
 
 # Lint check

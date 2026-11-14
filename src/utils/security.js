@@ -28,19 +28,4 @@ export function isBotSubmission({ botcheck, gotcha, loadTime, submitTime }) {
   return false;
 }
 
-/**
- * Safe mobile tactile haptic feedback utilizing navigator.vibrate
- */
-export function triggerHaptic(duration = 15) {
-  if (
-    typeof window !== 'undefined' &&
-    typeof navigator !== 'undefined' &&
-    typeof navigator.vibrate === 'function'
-  ) {
-    try {
-      navigator.vibrate(duration);
-    } catch {
-      // Ignore vibration errors on unsupported hardware
-    }
-  }
-}
+export { triggerHaptic, haptics, HAPTIC_PATTERNS } from '../lib/hapticsService.js';
