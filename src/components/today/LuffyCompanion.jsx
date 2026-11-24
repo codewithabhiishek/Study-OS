@@ -70,7 +70,7 @@ Rules:
 Return only the message, no preamble, no quotes.`;
 
 async function generateFromGemini(apiKey) {
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${encodeURIComponent(
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${encodeURIComponent(
     apiKey,
   )}`;
   const res = await fetch(url, {

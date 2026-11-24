@@ -165,14 +165,16 @@ export default function Calendar() {
   // Group deadlines/tasks/uni-deadlines by date
   const eventsByDate = {};
   deadlines.forEach((d) => {
-    const k = d.date;
-    if (!eventsByDate[k]) eventsByDate[k] = [];
-    eventsByDate[k].push({ ...d, type: "deadline" });
+    const k = d.date ? String(d.date).slice(0, 10) : null;
+    if (k) {
+      if (!eventsByDate[k]) eventsByDate[k] = [];
+      eventsByDate[k].push({ ...d, type: "deadline" });
+    }
   });
   tasks
     .filter((t) => t.due_date)
     .forEach((t) => {
-      const k = t.due_date;
+      const k = String(t.due_date).slice(0, 10);
       if (!eventsByDate[k]) eventsByDate[k] = [];
       eventsByDate[k].push({ ...t, type: "task" });
     });

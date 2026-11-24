@@ -444,12 +444,14 @@ export function FocusProvider({ children }) {
             targetEndTimeRef.current = Date.now() + breakMinutes * 60 * 1000;
             return;
           }
+          setSeconds(workMinutes * 60);
           setRunning(false);
           return;
         }
         // break finished
         if (notificationsEnabled) notify('Break over', 'Back to focus.');
         setPhase('work');
+        setSeconds(workMinutes * 60);
         setRunning(false);
       }
     }, 1000);
@@ -482,15 +484,14 @@ export function FocusProvider({ children }) {
       } else if (parsed > 230) {
         setCustomWork(230);
       }
-    }
-    setRunning((prev) => {
-      const n = typeof valOrFunc === 'function' ? valOrFunc(prev) : valOrFunc;
-      if (n && seconds <= 0) {
-        return false;
+      if (secondsRef.current <= 0) {
+        const resetSecs = phaseMinutes * 60;
+        setSeconds(resetSecs);
+        targetEndTimeRef.current = Date.now() + resetSecs * 1000;
       }
-      return n;
-    });
-  }, [running, customWork, seconds]);
+    }
+    setRunning(valOrFunc);
+  }, [running, customWork, phaseMinutes]);
 
   const toggleSoundEnabled = useCallback((valOrFunc) => {
     unlockAudioContext();

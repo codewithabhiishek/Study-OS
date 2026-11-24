@@ -72,12 +72,20 @@ export default function ProjectCard({ project }) {
 
   const deleteTaskMutation = useMutation({
     mutationFn: (id) => supabaseClient.entities.Task.delete(id),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['project-tasks', project.id] }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['project-tasks', project.id] });
+      queryClient.invalidateQueries({ queryKey: ['top-tasks'] });
+      queryClient.invalidateQueries({ queryKey: ['all-tasks'] });
+    },
   });
 
   const renameTaskMutation = useMutation({
     mutationFn: ({ id, title }) => supabaseClient.entities.Task.update(id, { title }),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['project-tasks', project.id] }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['project-tasks', project.id] });
+      queryClient.invalidateQueries({ queryKey: ['top-tasks'] });
+      queryClient.invalidateQueries({ queryKey: ['all-tasks'] });
+    },
   });
 
   const { data: tasks = [], isLoading: isLoadingTasks } = useQuery({
@@ -87,13 +95,19 @@ export default function ProjectCard({ project }) {
 
   const toggleMutation = useMutation({
     mutationFn: ({ id, completed }) => supabaseClient.entities.Task.update(id, { completed: !completed }),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['project-tasks', project.id] }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['project-tasks', project.id] });
+      queryClient.invalidateQueries({ queryKey: ['top-tasks'] });
+      queryClient.invalidateQueries({ queryKey: ['all-tasks'] });
+    },
   });
 
   const createMutation = useMutation({
     mutationFn: (title) => supabaseClient.entities.Task.create({ title, project_id: project.id, order: tasks.length }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['project-tasks', project.id] });
+      queryClient.invalidateQueries({ queryKey: ['top-tasks'] });
+      queryClient.invalidateQueries({ queryKey: ['all-tasks'] });
       setNewTask('');
       setAdding(false);
     },
