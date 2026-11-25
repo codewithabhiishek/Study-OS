@@ -6,6 +6,7 @@ import { useFocus } from '@/hooks/FocusContext';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { triggerHaptic } from '@/utils/security';
+import { parseLocalDate } from '@/utils/dateUtils';
 
 export default function Review() {
   const [timeframe, setTimeframe] = useState('daily'); // 'daily', 'weekly', or 'monthly'
@@ -33,13 +34,6 @@ export default function Review() {
     queryKey: ['all-tasks'],
     queryFn: () => supabaseClient.entities.Task.list(),
   });
-
-  // Local timezone safe parsing of YYYY-MM-DD strings to local midnight
-  const parseLocalDate = (dateStr) => {
-    if (!dateStr) return new Date(0);
-    const [year, month, day] = dateStr.split('-').map(Number);
-    return new Date(year, month - 1, day);
-  };
 
   const todayMidnight = new Date();
   todayMidnight.setHours(0, 0, 0, 0);

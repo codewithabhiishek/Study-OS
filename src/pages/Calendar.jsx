@@ -14,44 +14,20 @@ import {
 } from "date-fns";
 import { Skeleton } from "@/components/ui/skeleton";
 import { triggerHaptic } from "@/utils/security";
+import { parseLocalDate, calculateTimeRemaining } from "@/utils/dateUtils";
 
 // Live countdown hook
 function useCountdown(targetDate) {
-  const [t, setT] = useState({});
+  const [t, setT] = useState(() => calculateTimeRemaining(targetDate));
   useEffect(() => {
     const calc = () => {
-      let target;
-      if (
-        typeof targetDate === "string" &&
-        targetDate.includes("-") &&
-        !targetDate.includes("T")
-      ) {
-        const [year, month, day] = targetDate.split("-").map(Number);
-        target = new Date(year, month - 1, day, 23, 59, 59);
-      } else {
-        target = new Date(targetDate);
-      }
-
-      const diff = target - new Date();
-      if (diff <= 0) return setT({ expired: true });
-      setT({
-        days: Math.floor(diff / 86400000),
-        hours: Math.floor((diff % 86400000) / 3600000),
-        minutes: Math.floor((diff % 3600000) / 60000),
-        seconds: Math.floor((diff % 60000) / 1000),
-      });
+      setT(calculateTimeRemaining(targetDate));
     };
     calc();
     const id = setInterval(calc, 1000);
     return () => clearInterval(id);
   }, [targetDate]);
   return t;
-}
-
-function parseLocalDate(dateStr) {
-  if (!dateStr) return new Date(0);
-  const [year, month, day] = dateStr.split("-").map(Number);
-  return new Date(year, month - 1, day);
 }
 
 function CountdownRow({ item }) {
@@ -123,12 +99,6 @@ export default function Calendar() {
   const [adding, setAdding] = useState(false);
   const [newDeadline, setNewDeadline] = useState({ title: "", date: "" });
 
-  const parseLocalDate = (dateStr) => {
-    if (!dateStr) return new Date(0);
-    const [year, month, day] = dateStr.split("-").map(Number);
-    return new Date(year, month - 1, day);
-  };
-
   const { data: deadlines = [], isLoading: isLoadingDeadlines } = useQuery({
     queryKey: ["deadlines"],
     queryFn: async () => {
@@ -188,6 +158,13 @@ export default function Calendar() {
       return endOfDay >= new Date();
     })
     .sort((a, b) => parseLocalDate(a.date) - parseLocalDate(b.date));
+
+  const pastDeadlines = deadlines
+    .filter((d) => {
+      const endOfDay = parseLocalDate(d.date);
+      endOfDay.setHours(23, 59, 59, 999);
+      return endOfDay < new Date();
+    });
 
   return (
     <div className="flex flex-col lg:flex-row gap-6">
@@ -360,8 +337,11 @@ export default function Calendar() {
           <form
             onSubmit={(e) => {
               e.preventDefault();
-              if (newDeadline.title && newDeadline.date)
-                createMutation.mutate(newDeadline);
+              const trimmedTitle = newDeadline.title.trim();
+              if (trimmedTitle && newDeadline.date) {
+                triggerHaptic(12);
+                createMutation.mutate({ ...newDeadline, title: trimmedTitle });
+              }
             }}
             className="mb-3 p-3 space-y-2"
             style={{
@@ -439,10 +419,14 @@ export default function Calendar() {
               <div key={`${d.type}-${d.id}`} className="group relative">
                 <CountdownRow item={d} />
                 <button
-                  onClick={() => deleteMutation.mutate(d.id)}
+                  onClick={() => {
+                    triggerHaptic(15);
+                    deleteMutation.mutate(d.id);
+                  }}
                   className="absolute top-2 right-2 opacity-0 group-hover:opacity-40 hover:!opacity-100 transition-opacity"
                   style={{ color: "#FF006E" }}
                   title="Delete Deadline"
+                  aria-label="Delete Deadline"
                 >
                   <Trash2 className="w-3 h-3" />
                 </button>
@@ -452,11 +436,7 @@ export default function Calendar() {
         </div>
 
         {/* Past deadlines */}
-        {deadlines.filter((d) => {
-          const endOfDay = parseLocalDate(d.date);
-          endOfDay.setHours(23, 59, 59, 999);
-          return endOfDay < new Date();
-        }).length > 0 && (
+        {pastDeadlines.length > 0 && (
           <div className="mt-4">
             <div
               className="text-[10px] font-mono tracking-widest mb-2"
@@ -464,33 +444,31 @@ export default function Calendar() {
             >
               {"// ELAPSED"}
             </div>
-            {deadlines
-              .filter((d) => {
-                const endOfDay = parseLocalDate(d.date);
-                endOfDay.setHours(23, 59, 59, 999);
-                return endOfDay < new Date();
-              })
-              .map((d) => (
-                <div
-                  key={d.id}
-                  className="flex items-center justify-between px-3 py-2 mb-1 group"
-                  style={{ border: "1px solid #1a1a1a" }}
+            {pastDeadlines.map((d) => (
+              <div
+                key={d.id}
+                className="flex items-center justify-between px-3 py-2 mb-1 group"
+                style={{ border: "1px solid #1a1a1a" }}
+              >
+                <span
+                  className="text-[11px] font-mono line-through"
+                  style={{ color: "#333" }}
                 >
-                  <span
-                    className="text-[11px] font-mono line-through"
-                    style={{ color: "#333" }}
-                  >
-                    {d.title}
-                  </span>
-                  <button
-                    onClick={() => deleteMutation.mutate(d.id)}
-                    className="opacity-0 group-hover:opacity-40 hover:!opacity-100 transition-opacity"
-                    style={{ color: "#FF006E" }}
-                  >
-                    <Trash2 className="w-2.5 h-2.5" />
-                  </button>
-                </div>
-              ))}
+                  {d.title}
+                </span>
+                <button
+                  onClick={() => {
+                    triggerHaptic(15);
+                    deleteMutation.mutate(d.id);
+                  }}
+                  className="opacity-0 group-hover:opacity-40 hover:!opacity-100 transition-opacity"
+                  style={{ color: "#FF006E" }}
+                  aria-label="Delete elapsed deadline"
+                >
+                  <Trash2 className="w-2.5 h-2.5" />
+                </button>
+              </div>
+            ))}
           </div>
         )}
       </div>

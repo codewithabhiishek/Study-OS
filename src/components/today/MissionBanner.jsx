@@ -5,29 +5,14 @@ import { supabaseClient } from '@/api/supabaseClient';
 import { Skeleton } from '@/components/ui/skeleton';
 
 import { triggerHaptic } from '@/utils/security';
+import { calculateTimeRemaining } from '@/utils/dateUtils';
 
 function useLiveCountdown(targetDate) {
-  const [timeLeft, setTimeLeft] = useState({});
+  const [timeLeft, setTimeLeft] = useState(() => calculateTimeRemaining(targetDate));
 
   useEffect(() => {
     const calc = () => {
-      if (!targetDate) return;
-      let target;
-      if (typeof targetDate === 'string' && targetDate.includes('-') && !targetDate.includes('T')) {
-        const [year, month, day] = targetDate.split('-').map(Number);
-        target = new Date(year, month - 1, day, 23, 59, 59);
-      } else {
-        target = new Date(targetDate);
-      }
-
-      const diff = target - new Date();
-      if (diff <= 0) return setTimeLeft({ days: 0, hours: 0, minutes: 0, seconds: 0 });
-      setTimeLeft({
-        days: Math.floor(diff / 86400000),
-        hours: Math.floor((diff % 86400000) / 3600000),
-        minutes: Math.floor((diff % 3600000) / 60000),
-        seconds: Math.floor((diff % 60000) / 1000),
-      });
+      setTimeLeft(calculateTimeRemaining(targetDate));
     };
     calc();
     const id = setInterval(calc, 1000);

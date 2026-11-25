@@ -23,21 +23,40 @@ export default function ResetPassword() {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => {
+    let mounted = true;
+
+    async function initSession() {
+      const code = searchParams.get("code");
+      if (code) {
+        try {
+          await supabase.auth.exchangeCodeForSession(code);
+          if (mounted) setHasValidSession(true);
+        } catch (e) {
+          console.warn("Failed to exchange code for session:", e);
+        }
+      }
+
+      const { data } = await supabase.auth.getSession();
+      if (!mounted) return;
       if (data.session || resetToken || hasHashToken) {
         setHasValidSession(true);
       }
       setCheckingAuth(false);
-    });
+    }
+
+    initSession();
 
     const { data: sub } = supabase.auth.onAuthStateChange((event) => {
       if (event === "PASSWORD_RECOVERY" || event === "SIGNED_IN") {
-        setHasValidSession(true);
+        if (mounted) setHasValidSession(true);
       }
     });
 
-    return () => sub.subscription.unsubscribe();
-  }, [resetToken, hasHashToken]);
+    return () => {
+      mounted = false;
+      sub.subscription.unsubscribe();
+    };
+  }, [resetToken, hasHashToken, searchParams]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();

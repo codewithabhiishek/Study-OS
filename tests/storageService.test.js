@@ -114,19 +114,24 @@ describe('storageService unit tests', () => {
       storageA.setItem(SETTINGS_KEY, 'settingsA');
       storageA.setItem(TIMER_STATE_KEY, 'timerA');
       storageA.setItem(OFFLINE_QUEUE_KEY, 'queueA');
+      // Also cache daily motivation for alice
+      mockStore.set(getLuffyCacheKey('alice', '2026-11-25'), 'Stay focused!');
 
       storageB.setItem(SETTINGS_KEY, 'settingsB');
       storageB.setItem(TIMER_STATE_KEY, 'timerB');
+      mockStore.set(getLuffyCacheKey('bob', '2026-11-25'), 'Bob motivation');
 
       const cleared = storageA.clearUserData();
-      assert.strictEqual(cleared, 3);
+      assert.strictEqual(cleared, 4);
 
       assert.strictEqual(storageA.getItem(SETTINGS_KEY), null);
       assert.strictEqual(storageA.getItem(TIMER_STATE_KEY), null);
       assert.strictEqual(storageA.getItem(OFFLINE_QUEUE_KEY), null);
+      assert.strictEqual(mockStore.has(getLuffyCacheKey('alice', '2026-11-25')), false);
 
       assert.strictEqual(storageB.getItem(SETTINGS_KEY), 'settingsB');
       assert.strictEqual(storageB.getItem(TIMER_STATE_KEY), 'timerB');
+      assert.strictEqual(mockStore.has(getLuffyCacheKey('bob', '2026-11-25')), true);
     });
 
     test('handles SSR gracefully when localStorage is undefined', () => {

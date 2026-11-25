@@ -84,7 +84,11 @@ export function createScopedStorage(userId) {
         const suffix = `.${safeId}`;
         for (let i = 0; i < localStorage.length; i++) {
           const key = localStorage.key(i);
-          if (key && key.endsWith(suffix) && key.startsWith('studyos.')) {
+          if (
+            key &&
+            key.startsWith('studyos.') &&
+            (key.endsWith(suffix) || key.includes(`.${safeId}.`))
+          ) {
             keysToRemove.push(key);
           }
         }

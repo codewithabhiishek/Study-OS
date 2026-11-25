@@ -5,6 +5,7 @@ import { Check, Plus, Pencil, Trash2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Skeleton } from '@/components/ui/skeleton';
 import { triggerHaptic } from '@/utils/security';
+import { parseLocalDate } from '@/utils/dateUtils';
 
 function InlineEdit({ value, onSave, className, style }) {
   const [editing, setEditing] = useState(false);
@@ -116,12 +117,6 @@ export default function ProjectCard({ project }) {
   const completed = tasks.filter(t => t.completed).length;
   const total = tasks.length;
   const progress = total > 0 ? Math.round((completed / total) * 100) : 0;
-
-  const parseLocalDate = (dateStr) => {
-    if (!dateStr) return new Date(0);
-    const [year, month, day] = dateStr.split('-').map(Number);
-    return new Date(year, month - 1, day);
-  };
 
   const daysLeft = project.deadline
     ? Math.ceil((parseLocalDate(project.deadline) - new Date()) / (1000 * 60 * 60 * 24))

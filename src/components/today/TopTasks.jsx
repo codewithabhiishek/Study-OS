@@ -73,18 +73,25 @@ export default function TopTasks() {
 
   const renameMutation = useMutation({
     mutationFn: ({ id, title }) => supabaseClient.entities.Task.update(id, { title }),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['top-tasks'] }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['top-tasks'] });
+      queryClient.invalidateQueries({ queryKey: ['all-tasks'] });
+    },
   });
 
   const deleteMutation = useMutation({
     mutationFn: (id) => supabaseClient.entities.Task.delete(id),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['top-tasks'] }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['top-tasks'] });
+      queryClient.invalidateQueries({ queryKey: ['all-tasks'] });
+    },
   });
 
   const createMutation = useMutation({
     mutationFn: (title) => supabaseClient.entities.Task.create({ title, is_top_three: true, order: tasks.length }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['top-tasks'] });
+      queryClient.invalidateQueries({ queryKey: ['all-tasks'] });
       setNewTask('');
       setAdding(false);
     },
